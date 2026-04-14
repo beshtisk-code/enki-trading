@@ -1622,7 +1622,7 @@ onAuthStateChanged(auth, async user => {
   if (user) {
     // Check allowed list in Firebase
     const safeKey = user.email.replace(/\./g,'_').replace('@','_at_');
-    const snap = await get(ref(db, `config/allowed_emails/${safeKey}`));
+    const snap = await get(ref(db, `allowed_emails/${safeKey}`));
     if (!snap.exists()) {
       await signOut(auth);
       showAuthError("This email is not authorised. Contact the system admin.");
