@@ -50,9 +50,9 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;min-he
 .panel{background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:12px}
 /* Tables */
 table{width:100%;border-collapse:collapse;font-size:11px}
-th{text-align:left;font-size:9px;font-family:'JetBrains Mono',monospace;color:var(--text3);padding:7px 12px 6px;border-bottom:1px solid var(--border);white-space:nowrap;font-weight:500;letter-spacing:.05em}
-.tr,th.r{text-align:right}
-td{padding:7px 12px;border-bottom:1px solid var(--border);font-family:'JetBrains Mono',monospace;font-size:11px;white-space:nowrap}
+th{text-align:left;font-size:9px;font-family:'JetBrains Mono',monospace;color:var(--text3);padding:6px 10px 5px;border-bottom:1px solid var(--border);white-space:nowrap;font-weight:500;letter-spacing:.05em}
+.tr,th.r,td.r{text-align:right}
+td{padding:6px 10px;border-bottom:1px solid var(--border);font-family:'JetBrains Mono',monospace;font-size:11px;white-space:nowrap}
 tr:last-child td{border-bottom:none}tr:hover td{background:var(--bg3)}
 .pill{display:inline-block;padding:2px 6px;border-radius:7px;font-size:9px;font-weight:700}
 .pg{background:rgba(0,208,132,.12);color:var(--green)}.pga{background:rgba(0,208,132,.22);color:#0ff5c0}
@@ -73,7 +73,7 @@ tr:last-child td{border-bottom:none}tr:hover td{background:var(--bg3)}
 .sc-chev.open{transform:rotate(180deg)}
 .sc-body{display:none;overflow-x:auto}.sc-body.open{display:block}
 .bt{width:100%;border-collapse:collapse;font-size:11px}
-.bt th{background:var(--bg3);padding:6px 12px;font-size:8px;font-family:'JetBrains Mono',monospace;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;border-bottom:1px solid var(--border);white-space:nowrap;font-weight:500}
+.bt th{background:var(--bg3);padding:6px 10px;font-size:8px;font-family:'JetBrains Mono',monospace;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;border-bottom:1px solid var(--border);white-space:nowrap;font-weight:500}
 .bt th.r,.bt td.r{text-align:right}
 .bt td{padding:7px 12px;border-bottom:1px solid var(--border);font-family:'JetBrains Mono',monospace;font-size:11px;white-space:nowrap}
 .bt tr:last-child td{border-bottom:none}.bt tr:hover td{background:rgba(255,255,255,.02)}
@@ -104,6 +104,7 @@ input.fi:focus{border-color:var(--acc)}
 .sb-v{font-size:12px;font-weight:700;font-family:'JetBrains Mono',monospace}
 /* Trade log */
 .tlw{max-height:420px;overflow-y:auto}
+.tlw table{table-layout:auto;width:100%}
 .tlw::-webkit-scrollbar{width:4px}.tlw::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:2px}
 .pgn{display:flex;align-items:center;gap:8px;padding:8px 12px;border-top:1px solid var(--border);font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--text3)}
 .pgbtn{padding:3px 10px;border-radius:6px;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);cursor:pointer;font-family:inherit;font-size:10px}
@@ -576,11 +577,10 @@ body.light .dot{background:#00a86b;box-shadow:0 0 8px #00a86b}
   <div class="panel">
     <div class="tlw">
       <table><thead><tr>
-        <th>Date</th><th>Ticker</th><th>Setup</th><th>Cat · Alloc%</th><th>By</th>
+        <th>Date</th><th>Ticker</th><th>Setup</th><th>Cat</th><th>Alloc%</th>
         <th class="r">Entry</th><th class="r">Exit</th>
-        <th class="r">Gross R</th><th class="r">Net R</th>
-        <th class="r">Acc R</th>
-        <th>W/L</th><th>SH</th><th>Miss</th><th>★</th>
+        <th class="r">Pre Ad. R</th><th class="r">Net R</th><th class="r">Ad. R</th>
+        <th>W/L</th><th>SH</th><th>Miss</th><th>By</th><th>★</th>
       </tr></thead><tbody id="tl-body"></tbody></table>
     </div>
     <div class="pgn">
@@ -1446,20 +1446,24 @@ function renderTL(){
     const missLbl=t.mr?`<span style="font-size:8px;color:var(--amber);cursor:help" title="${t.mo||t.mr}">⚑</span>`:'—';
     const catAlloc=t.al?`<span style="font-size:9px;color:var(--text3)">(${t.al}%)</span>`:'';
     const arVal=t.ar!==undefined?`<span style="color:${t.ar>=0?'var(--green)':'var(--red)'};font-weight:700">${t.ar>=0?'+':''}${f(t.ar,2)}</span>`:'—';
+    const rvVal=t.ar!==undefined?rv(t.rn,t.ar):t.rn;
+    const rvColor=rvVal>=0?'var(--green)':'var(--red)';
     return `<tr>
-      <td>${t.dt}</td>
+      <td style="white-space:nowrap">${t.dt}</td>
       <td style="font-weight:700">${t.tk}</td>
       <td><span style="font-size:9px;background:var(--bg3);padding:1px 5px;border-radius:4px">${t.s}</span></td>
-      <td>${t.c} ${catAlloc}</td>
-      <td class="r">$${f(t.en,2)}</td><td class="r">$${f(t.ex,2)}</td>
-      <td class="r" style="color:${t.w?'var(--green)':'var(--red)'}">${t.w?'+':''}${f(t.rg,4)}R</td>
-      <td class="r" style="font-weight:700;color:${t.w?'var(--green)':'var(--red)'}">${t.w?'+':''}${f(t.rn,4)}R</td>
-      <td class="r">${arVal}</td>
+      <td style="font-size:10px">${t.c}</td>
+      <td style="font-size:10px;color:var(--text3)">${t.al?t.al+'%':'—'}</td>
+      <td class="r">$${f(t.en,2)}</td>
+      <td class="r">$${f(t.ex,2)}</td>
+      <td class="r" style="color:${t.w?'var(--green)':'var(--red)'};font-size:10px">${t.w?'+':''}${f(t.rg,4)}R</td>
+      <td class="r" style="color:${t.w?'var(--green)':'var(--red)'};font-size:10px">${t.w?'+':''}${f(t.rn,4)}R</td>
+      <td class="r" style="font-weight:700;color:${rvColor}">${rvVal>=0?'+':''}${f(rvVal,viewMode==='acc'?1:4)}${viewMode==='acc'?'':'R'}</td>
       <td><span class="pill ${t.w?'pg':'pr'}">${t.w?'W':'L'}</span></td>
-      <td style="color:${t.sh?'var(--red)':'var(--text3)'}">${t.sh?'Y':'—'}</td>
+      <td style="color:${t.sh?'var(--red)':'var(--text3)'};font-size:10px">${t.sh?'Y':'—'}</td>
       <td>${missLbl}</td>
-      <td>${actions}${t.na?'<span style="font-size:8px;color:var(--amber)">★</span>':''}</td>
       <td style="font-size:9px;color:var(--text3)">${t.by?t.by.split('@')[0]:'—'}</td>
+      <td>${actions}${t.na?'<span style="font-size:8px;color:var(--amber)">★</span>':''}</td>
     </tr>`;
   }).join('');
 }
@@ -1592,8 +1596,8 @@ function afSubmit(){
   const win=rg>0;const rn=win?rg*.8:rg*1.2;
   const isNew=dateVal>=CUTOFF;
   const ym=dateVal.slice(0,7);
-  const dt=new Date(dateVal);
-  const fdt=`${dt.getMonth()+1}/${dt.getDate()}/${dt.getFullYear()}`;
+  const [fy,fm,fd]=dateVal.split('-').map(Number);
+  const fdt=`${fm}/${fd}/${fy}`;
   const alloc=getNewAlloc(cat,dateVal);
   const ar=parseFloat((alloc*rn).toFixed(4));
   const rec={s:setup,c:cat,tk:ticker,dt:fdt,ym,
@@ -1680,8 +1684,8 @@ function editSave(){
   const win=rg>0;const rn=win?rg*.8:rg*1.2;
   const isNew=dateVal>=CUTOFF;
   const ym=dateVal.slice(0,7);
-  const dt=new Date(dateVal);
-  const fdt=`${dt.getMonth()+1}/${dt.getDate()}/${dt.getFullYear()}`;
+  const [efy,efm,efd]=dateVal.split('-').map(Number);
+  const fdt=`${efm}/${efd}/${efy}`;
   const alloc=getNewAlloc(cat,dateVal);
   const ar=parseFloat((alloc*rn).toFixed(4));
   newTrades[editIdx]={...newTrades[editIdx],s:setup,c:cat,tk:ticker,dt:fdt,ym,
