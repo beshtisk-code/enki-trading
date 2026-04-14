@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Enki Trading</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0d0a1e;color:#e2e0ff;font-family:'Syne',sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px}
+.logo{font-size:13px;font-family:'JetBrains Mono',monospace;color:#5a4e8a;letter-spacing:.2em;text-transform:uppercase;margin-bottom:14px}
+h1{font-size:42px;font-weight:800;letter-spacing:-.8px;margin-bottom:8px;text-align:center}
+h1 span{color:#00d084}
+.tagline{font-size:12px;font-family:'JetBrains Mono',monospace;color:#5a4e8a;letter-spacing:.1em;margin-bottom:56px;text-align:center}
+.systems{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;width:100%;max-width:860px}
+.card{background:#160e38;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:28px 28px 24px;cursor:pointer;transition:all .2s;text-decoration:none;display:block}
+.card:hover{transform:translateY(-3px);border-color:rgba(0,208,132,.35);box-shadow:0 12px 40px rgba(0,208,132,.08)}
+.card.disabled{cursor:default;opacity:.45}
+.card.disabled:hover{transform:none;border-color:rgba(255,255,255,.08);box-shadow:none}
+.card-icon{font-size:28px;margin-bottom:14px}
+.card-name{font-size:18px;font-weight:800;margin-bottom:4px}
+.card-sub{font-size:10px;font-family:'JetBrains Mono',monospace;color:#5a4e8a;letter-spacing:.08em;text-transform:uppercase;margin-bottom:16px}
+.card-stats{display:flex;gap:20px;flex-wrap:wrap}
+.cs{display:flex;flex-direction:column;gap:2px}
+.cs-l{font-size:8px;font-family:'JetBrains Mono',monospace;color:#5a4e8a;letter-spacing:.07em;text-transform:uppercase}
+.cs-v{font-size:13px;font-weight:700;font-family:'JetBrains Mono',monospace}
+.tag-live{display:inline-flex;align-items:center;gap:5px;font-size:9px;font-family:'JetBrains Mono',monospace;color:#00d084;background:rgba(0,208,132,.1);border:1px solid rgba(0,208,132,.25);padding:3px 10px;border-radius:12px;margin-bottom:14px}
+.tag-live::before{content:'';width:6px;height:6px;border-radius:50%;background:#00d084;box-shadow:0 0 6px #00d084;animation:pulse 2s infinite}
+.tag-soon{display:inline-flex;align-items:center;gap:5px;font-size:9px;font-family:'JetBrains Mono',monospace;color:#5a4e8a;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);padding:3px 10px;border-radius:12px;margin-bottom:14px}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.footer{margin-top:48px;font-size:10px;font-family:'JetBrains Mono',monospace;color:#2d2550;letter-spacing:.06em}
+
+/* ── Auth overlay ── */
+#auth-overlay{
+  position:fixed;inset:0;background:#0d0a1e;z-index:9999;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Syne',sans-serif;
+  transition:opacity .3s;
+}
+#auth-overlay.hidden{opacity:0;pointer-events:none;}
+.auth-box{
+  background:#160e38;border:1px solid rgba(255,255,255,.1);
+  border-radius:20px;padding:40px 44px;width:100%;max-width:400px;
+  box-shadow:0 24px 80px rgba(0,0,0,.6);
+}
+.auth-logo{font-size:11px;font-family:'JetBrains Mono',monospace;
+  color:#5a4e8a;letter-spacing:.18em;text-transform:uppercase;margin-bottom:10px;}
+.auth-title{font-size:26px;font-weight:800;margin-bottom:4px;}
+.auth-title span{color:#00d084;}
+.auth-sub{font-size:11px;font-family:'JetBrains Mono',monospace;
+  color:#5a4e8a;letter-spacing:.06em;margin-bottom:28px;}
+.auth-lbl{font-size:9px;font-family:'JetBrains Mono',monospace;
+  color:#5a4e8a;letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px;}
+.auth-inp{width:100%;background:#1e1545;border:1px solid rgba(255,255,255,.12);
+  border-radius:9px;padding:11px 14px;color:#e2e0ff;
+  font-family:'JetBrains Mono',monospace;font-size:13px;outline:none;
+  transition:border-color .15s;margin-bottom:14px;}
+.auth-inp:focus{border-color:#00d084;}
+.auth-btn{width:100%;background:#00d084;color:#000;border:none;
+  border-radius:9px;padding:12px;font-family:'JetBrains Mono',monospace;
+  font-size:13px;font-weight:700;cursor:pointer;letter-spacing:.04em;
+  transition:opacity .15s;margin-top:4px;}
+.auth-btn:hover{opacity:.85;}
+.auth-btn:disabled{opacity:.4;cursor:default;}
+.auth-err{font-size:11px;font-family:'JetBrains Mono',monospace;
+  color:#f56565;background:rgba(245,101,101,.1);border:1px solid rgba(245,101,101,.2);
+  border-radius:7px;padding:8px 12px;margin-bottom:14px;display:none;}
+.auth-err.show{display:block;}
+.auth-footer{font-size:9px;font-family:'JetBrains Mono',monospace;
+  color:#2d2550;text-align:center;margin-top:20px;letter-spacing:.06em;}
+/* User badge */
+.user-badge{display:flex;align-items:center;gap:8px;
+  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);
+  border-radius:20px;padding:4px 12px 4px 8px;font-family:'JetBrains Mono',monospace;}
+.user-avatar{width:22px;height:22px;border-radius:50%;background:#00d084;
+  display:flex;align-items:center;justify-content:center;
+  font-size:10px;font-weight:700;color:#000;flex-shrink:0;}
+.user-email{font-size:10px;color:#9d8fd4;max-width:160px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.logout-btn{font-size:9px;color:#5a4e8a;background:transparent;border:none;
+  cursor:pointer;font-family:'JetBrains Mono',monospace;padding:0;
+  letter-spacing:.04em;}
+.logout-btn:hover{color:#f56565;}
+</style>
+</head>
+<body>
+
+
+<!-- Auth overlay -->
+<div id="auth-overlay">
+  <div class="auth-box">
+    <div class="auth-logo">Enki Trading Systems</div>
+    <div class="auth-title"><span>Enki</span> Trading</div>
+    <div class="auth-sub">Private access only</div>
+    <div class="auth-lbl">Email address</div>
+    <input class="auth-inp" type="email" id="auth-email" placeholder="your@email.com" autocomplete="email">
+    <div class="auth-lbl">Password</div>
+    <input class="auth-inp" type="password" id="auth-pass" placeholder="••••••••" autocomplete="current-password">
+    <div class="auth-err" id="auth-err"></div>
+    <button class="auth-btn" id="auth-btn" onclick="authSignIn()">Sign in →</button>
+    <div class="auth-footer">PRIVATE · AUTHORISED ACCESS ONLY</div>
+  </div>
+</div>
+
+<div class="logo">Enki Trading Systems</div>
+<h1>Trade<span>Hub</span></h1>
+<div class="tagline">Systematic performance tracking · All systems in one place</div>
+
+<div class="systems">
+
+  <!-- Omega -->
+  <a class="card" href="./omega/">
+    <div class="tag-live">LIVE</div>
+    <div class="card-icon">Ω</div>
+    <div class="card-name">Omega System</div>
+    <div class="card-sub">US Smallcap · Short bias · Apr 2024 –</div>
+    <div class="card-stats">
+      <div class="cs"><div class="cs-l">Trades</div><div class="cs-v" style="color:#22d3ee">820</div></div>
+      <div class="cs"><div class="cs-l">Win rate</div><div class="cs-v" style="color:#00d084">76.6%</div></div>
+      <div class="cs"><div class="cs-l">Ad. R total</div><div class="cs-v" style="color:#fbbf24">1,373+</div></div>
+    </div>
+  </a>
+
+  <!-- Alpha -->
+  <div class="card disabled">
+    <div class="tag-soon">COMING SOON</div>
+    <div class="card-icon">α</div>
+    <div class="card-name">Alpha System</div>
+    <div class="card-sub">US Smallcap · Short bias · Active –</div>
+    <div class="card-stats">
+      <div class="cs"><div class="cs-l">Status</div><div class="cs-v" style="color:#5a4e8a">In progress</div></div>
+    </div>
+  </div>
+
+</div>
+
+<div id="user-badge-wrap" style="position:fixed;top:16px;right:16px;display:none"></div>
+<div class="footer">ENKI TRADING · PRIVATE · ALL RIGHTS RESERVED</div>
+
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getDatabase, ref, get, set, push, onValue }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDaSqgXaxUO1AVJFHjmGJtbQfO_YCWf4WU",
+  authDomain: "trading-system-enki.firebaseapp.com",
+  databaseURL: "https://trading-system-enki-default-rtdb.firebaseio.com",
+  projectId: "trading-system-enki",
+  storageBucket: "trading-system-enki.firebasestorage.app",
+  messagingSenderId: "410422069967",
+  appId: "1:410422069967:web:d1218e4615d7b36ffec5ba"
+};
+
+const app  = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db   = getDatabase(app);
+
+// ── Expose globals for the main script ──
+window._db   = db;
+window._ref  = ref;
+window._set  = set;
+window._push = push;
+window._onValue = onValue;
+window._currentUser = null;
+
+// ── Auth state ──
+onAuthStateChanged(auth, async user => {
+  if (user) {
+    // Check allowed list in Firebase
+    const snap = await get(ref(db, `config/allowed_emails/${btoa(user.email.replace(/\./g,'_'))}`));
+    if (!snap.exists()) {
+      await signOut(auth);
+      showAuthError("This email is not authorised. Contact the system admin.");
+      return;
+    }
+    window._currentUser = user;
+    hideOverlay();
+    showUserBadge(user.email);
+    window._tradeAuthor = user.email; if (typeof window.onAuthReady === 'function') window.onAuthReady(user);
+  } else {
+    window._currentUser = null;
+    showOverlay();
+  }
+});
+
+// ── Sign in ──
+window.authSignIn = async function() {
+  const email = document.getElementById('auth-email').value.trim();
+  const pass  = document.getElementById('auth-pass').value;
+  const btn   = document.getElementById('auth-btn');
+  if (!email || !pass) { showAuthError('Please enter email and password.'); return; }
+  btn.disabled = true;
+  btn.textContent = 'Signing in...';
+  try {
+    await signInWithEmailAndPassword(auth, email, pass);
+  } catch(e) {
+    const msgs = {
+      'auth/user-not-found':    'Email not found.',
+      'auth/wrong-password':    'Incorrect password.',
+      'auth/invalid-email':     'Invalid email address.',
+      'auth/too-many-requests': 'Too many attempts. Try again later.',
+      'auth/invalid-credential':'Incorrect email or password.',
+    };
+    showAuthError(msgs[e.code] || 'Sign in failed. Try again.');
+    btn.disabled = false;
+    btn.textContent = 'Sign in →';
+  }
+};
+
+// ── Sign out ──
+window.authSignOut = async function() {
+  await signOut(auth);
+};
+
+// ── UI helpers ──
+function showOverlay(){
+  const o = document.getElementById('auth-overlay');
+  if (o) { o.classList.remove('hidden'); }
+}
+function hideOverlay(){
+  const o = document.getElementById('auth-overlay');
+  if (o) { o.classList.add('hidden'); setTimeout(()=>o.style.display='none',300); }
+}
+function showAuthError(msg){
+  const el = document.getElementById('auth-err');
+  if (el) { el.textContent = msg; el.classList.add('show'); }
+}
+function showUserBadge(email){
+  const badge = document.getElementById('user-badge-wrap');
+  if (!badge) return;
+  const initials = email.split('@')[0].slice(0,2).toUpperCase();
+  badge.innerHTML = `
+    <div class="user-badge">
+      <div class="user-avatar">${initials}</div>
+      <span class="user-email">${email}</span>
+      <button class="logout-btn" onclick="authSignOut()">sign out</button>
+    </div>`;
+  badge.style.display = 'flex';
+}
+
+// ── Enter key on password ──
+document.addEventListener('DOMContentLoaded', () => {
+  const pass = document.getElementById('auth-pass');
+  if (pass) pass.addEventListener('keydown', e => { if(e.key==='Enter') window.authSignIn(); });
+  const email = document.getElementById('auth-email');
+  if (email) email.addEventListener('keydown', e => { if(e.key==='Enter') document.getElementById('auth-pass')?.focus(); });
+});
+</script>
+
+</body>
+</html>
