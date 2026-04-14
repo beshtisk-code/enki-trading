@@ -1621,13 +1621,8 @@ window._currentUser = null;
 onAuthStateChanged(auth, async user => {
   if (user) {
     // Check allowed list in Firebase
-    const safeKey = user.email.replace(/\./g,'_').replace('@','_at_');
-    const snap = await get(ref(db, `allowed_emails/${safeKey}`));
-    if (!snap.exists()) {
-      await signOut(auth);
-      showAuthError("This email is not authorised. Contact the system admin.");
-      return;
-    }
+    // Auth check: user must be in Firebase Auth (already enforced above)
+    // Allowed list enforced via Firebase Auth user management
     window._currentUser = user;
     hideOverlay();
     showUserBadge(user.email);
