@@ -381,6 +381,17 @@ body.light .dot{background:#00a86b;box-shadow:0 0 8px #00a86b}
     <th class="r">Avg W</th><th class="r">Avg L</th>
   </tr></thead><tbody id="ov-setup-body"></tbody></table></div>
 
+
+  <!-- Allocation Monitor -->
+  <div class="sec">Risk allocation monitor <span style="font-size:9px;color:var(--text3);font-family:'JetBrains Mono',monospace;font-weight:400;margin-left:6px">New vs Old · since Apr 13 2026</span></div>
+  <div class="panel" style="padding:14px 16px;margin-bottom:18px" id="alloc-monitor-panel">
+    <div id="alloc-monitor-content">
+      <div style="font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--text3);text-align:center;padding:12px 0">
+        No trades yet since Apr 13 2026 — add new trades to start monitoring
+      </div>
+    </div>
+  </div>
+
   <div class="sec">Monthly net R heatmap</div>
   <div class="panel" style="padding:12px 14px"><div id="heatmap"></div></div>
 </div>
@@ -751,7 +762,7 @@ function rerenderCurrent(){
   const lbl=rvLabel();
   const mth=document.getElementById('ov-th-mean');if(mth)mth.textContent='Mean '+lbl;
   const tth=document.getElementById('ov-th-total');if(tth)tth.textContent='Total '+lbl;
-  if(v==='overview'){buildOvTable();buildHaid();buildHeatmap();}
+  if(v==='overview'){buildOvTable();buildHaid();buildHeatmap();buildAllocMonitor();}
   else if(v==='setups') rebuildSetupCards();
   else if(v==='categories') buildCat();
   else if(v==='monthly') buildMonthly();
@@ -1977,6 +1988,140 @@ function buildDailyCharts(trades){
   });
 }
 
+
+// ── Allocation Monitor ──
+const OA_REF = {"A": 31.2, "B": 16.1, "C": 34.5, "D": 31.2, "E": 10.8, "F": 9.4, "G": 26.5, "H": 27.2, "M": 15.4, "N": 30.0, "Aa": 28.85, "Ab": 28.85, "Ac": 28.85, "Ad": 28.85, "Ae": 28.85, "Tf": 30.0, "Tg": 30.0, "Th": 30.0, "Tm": 30.0, "Tn": 30.0, "As1": 7.95, "Top1": 34.0};
+
+function buildAllocMonitor(){
+  const CUTOFF_AM = '4/13/2026';
+  const cutoffDt = new Date('2026-04-13');
+  
+  // Get all trades (historical + new)
+  const all = allT();
+  const newPeriod = all.filter(t => {
+    const dt = parseDate(t.dt);
+    return dt && dt >= cutoffDt;
+  });
+
+  const panel = document.getElementById('alloc-monitor-content');
+  if(!panel) return;
+
+  if(newPeriod.length === 0){
+    panel.innerHTML = `<div style="font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--text3);text-align:center;padding:12px 0">
+      No trades yet since Apr 13 2026 — add new trades to start monitoring
+    </div>`;
+    return;
+  }
+
+  // Compute actual (new alloc) vs simulated (old alloc)
+  let actualTotal=0, simTotal=0;
+  const byCat = {};
+
+  newPeriod.forEach(t => {
+    const cat = t.c;
+    const rn  = t.rn;
+    const newA = t.al || 0;
+    const oldA = OA_REF[cat] || 0;
+    const actualAr = newA * rn;
+    const simAr    = oldA * rn;
+    actualTotal += actualAr;
+    simTotal    += simAr;
+    if(!byCat[cat]) byCat[cat] = {actual:0,sim:0,n:0,newA,oldA};
+    byCat[cat].actual += actualAr;
+    byCat[cat].sim    += simAr;
+    byCat[cat].n++;
+  });
+
+  actualTotal = parseFloat(actualTotal.toFixed(2));
+  simTotal    = parseFloat(simTotal.toFixed(2));
+  const diff  = parseFloat((actualTotal - simTotal).toFixed(2));
+  const better = diff > 0.5 ? 'NEW BETTER' : diff < -0.5 ? 'OLD BETTER' : 'SIMILAR';
+  const verdictColor = diff > 0.5 ? 'var(--green)' : diff < -0.5 ? 'var(--red)' : 'var(--amber)';
+  const verdictBg   = diff > 0.5 ? 'var(--gdim)' : diff < -0.5 ? 'var(--rdim)' : 'var(--adim)';
+
+  // Days elapsed
+  const today = new Date();
+  const days = Math.round((today - cutoffDt)/(1000*60*60*24));
+  const nextReview = new Date(cutoffDt); nextReview.setMonth(nextReview.getMonth()+3);
+  const nextReviewStr = `${nextReview.getMonth()+1}/${nextReview.getDate()}/${nextReview.getFullYear()}`;
+
+  // Sort cats by abs diff
+  const catRows = Object.entries(byCat)
+    .map(([cat,v]) => ({cat, ...v, diff: parseFloat((v.actual-v.sim).toFixed(2))}))
+    .sort((a,b) => Math.abs(b.diff)-Math.abs(a.diff))
+    .slice(0,6);
+
+  const maxAbs = Math.max(...catRows.map(r=>Math.abs(r.diff)),1);
+
+  panel.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <div>
+        <div style="font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--text3)">
+          ${newPeriod.length} trades · ${days} days since Apr 13 2026
+        </div>
+      </div>
+      <div style="font-size:9px;font-family:'JetBrains Mono',monospace;font-weight:700;
+        background:${verdictBg};color:${verdictColor};
+        padding:4px 10px;border-radius:10px;letter-spacing:.06em">
+        ${better} ${diff>=0?'+':''}${diff}
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px">
+      <div class="mc">
+        <div class="ml">Actual Acc R</div>
+        <div class="mv" style="color:${actualTotal>=0?'var(--green)':'var(--red)'};font-size:18px">
+          ${actualTotal>=0?'+':''}${actualTotal.toFixed(1)}
+        </div>
+        <div style="font-size:9px;font-family:'JetBrains Mono',monospace;color:var(--text3);margin-top:2px">new allocations</div>
+      </div>
+      <div class="mc">
+        <div class="ml">Simulated Acc R</div>
+        <div class="mv" style="color:var(--text2);font-size:18px">
+          ${simTotal>=0?'+':''}${simTotal.toFixed(1)}
+        </div>
+        <div style="font-size:9px;font-family:'JetBrains Mono',monospace;color:var(--text3);margin-top:2px">if old kept</div>
+      </div>
+      <div class="mc">
+        <div class="ml">Difference</div>
+        <div class="mv" style="color:${verdictColor};font-size:18px">
+          ${diff>=0?'+':''}${diff.toFixed(1)}
+        </div>
+        <div style="font-size:9px;font-family:'JetBrains Mono',monospace;color:var(--text3);margin-top:2px">new minus old</div>
+      </div>
+    </div>
+
+    <div style="font-size:9px;font-family:'JetBrains Mono',monospace;color:var(--text3);
+      letter-spacing:.07em;text-transform:uppercase;margin-bottom:8px">Biggest movers by category</div>
+    <div style="display:flex;flex-direction:column;gap:6px">
+      ${catRows.map(r => {
+        const barW = Math.round(Math.abs(r.diff)/maxAbs*100);
+        const barCol = r.diff>=0?'var(--green)':'var(--red)';
+        const dStr = (r.diff>=0?'+':'')+r.diff.toFixed(1);
+        return `<div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:11px;font-weight:700;color:var(--acc);min-width:32px;font-family:'JetBrains Mono',monospace">${r.cat}</span>
+          <span style="font-size:9px;color:var(--text3);min-width:80px;font-family:'JetBrains Mono',monospace">${r.oldA}%→${r.newA}%</span>
+          <div style="flex:1;background:var(--bg3);border-radius:3px;height:6px;overflow:hidden">
+            <div style="width:${barW}%;height:100%;background:${barCol};border-radius:3px"></div>
+          </div>
+          <span style="font-size:11px;color:${barCol};min-width:44px;text-align:right;font-family:'JetBrains Mono',monospace;font-weight:700">${dStr}</span>
+          <span style="font-size:9px;color:var(--text3);min-width:24px;font-family:'JetBrains Mono',monospace">${r.n}t</span>
+        </div>`;
+      }).join('')}
+    </div>
+
+    <div style="border-top:1px solid var(--border);margin-top:12px;padding-top:8px;
+      display:flex;justify-content:space-between;align-items:center">
+      <span style="font-size:9px;font-family:'JetBrains Mono',monospace;color:var(--text3)">
+        next review: ${nextReviewStr} · recommend 50+ trades before drawing conclusions
+      </span>
+      <span style="font-size:9px;font-family:'JetBrains Mono',monospace;color:var(--text3)">
+        ${newPeriod.length}t · ${days}d
+      </span>
+    </div>
+  `;
+}
+
 // ── Tab switching ──
 document.querySelectorAll('.mtab').forEach(tab=>{
   tab.addEventListener('click',()=>{
@@ -1995,6 +2140,7 @@ document.querySelectorAll('.mtab').forEach(tab=>{
 window.onAuthReady = function(user) {
   window._tradeAuthor = user.email;
   afSetDate();
+  setTimeout(buildAllocMonitor, 500);
   // Load from localStorage as initial state
   try{const s=JSON.parse(localStorage.getItem('omegaNewTrades')||'[]');if(Array.isArray(s))newTrades=s;}catch(e){}
   rebuildSetupCards();
