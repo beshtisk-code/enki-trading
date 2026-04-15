@@ -1608,6 +1608,8 @@ function afSubmit(){
     at:new Date().toISOString()};
   newTrades.unshift(rec);
   try{localStorage.setItem('omegaNewTrades',JSON.stringify(newTrades));}catch(e){}
+  // Push to Firebase
+  if (typeof window.fbPushNewTrade === 'function') window.fbPushNewTrade(rec);
   if(msg){msg.textContent='✓ Saved!';msg.style.color='var(--green)';setTimeout(()=>msg.textContent='',3000);}
   document.getElementById('af-ticker').value='';
   document.getElementById('af-entry').value='';
@@ -1637,8 +1639,13 @@ function confirmDel(idx){
 
 function doDelete(){
   if(delIdx===null) return;
+  const delTrade = newTrades[delIdx];
   newTrades.splice(delIdx,1);
   try{localStorage.setItem('omegaNewTrades',JSON.stringify(newTrades));}catch(e){}
+  // Delete from Firebase
+  if (delTrade && delTrade._fbid && typeof window.fbDeleteTrade === 'function') {
+    window.fbDeleteTrade(delTrade._fbid);
+  }
   closeModal('del-modal'); delIdx=null;
   renderTL(); buildHaid();
 }
@@ -1688,10 +1695,15 @@ function editSave(){
   const fdt=`${efm}/${efd}/${efy}`;
   const alloc=getNewAlloc(cat,dateVal);
   const ar=parseFloat((alloc*rn).toFixed(4));
-  newTrades[editIdx]={...newTrades[editIdx],s:setup,c:cat,tk:ticker,dt:fdt,ym,
+  const updatedTrade = {...newTrades[editIdx],s:setup,c:cat,tk:ticker,dt:fdt,ym,
     en:entry,ex:exit_,rg:parseFloat(rg.toFixed(4)),rn:parseFloat(rn.toFixed(4)),
     w:win,sh,na:isNew,al:alloc,ar,subset};
+  newTrades[editIdx] = updatedTrade;
   try{localStorage.setItem('omegaNewTrades',JSON.stringify(newTrades));}catch(e){}
+  // Update Firebase
+  if (updatedTrade._fbid && typeof window.fbUpdateTrade === 'function') {
+    window.fbUpdateTrade(updatedTrade._fbid, updatedTrade);
+  }
   closeModal('edit-modal'); editIdx=null;
   renderTL(); buildHaid();
 }
@@ -1981,11 +1993,27 @@ document.querySelectorAll('.mtab').forEach(tab=>{
 
 // ── Init ──
 window.onAuthReady = function(user) {
-  // Tag new trades with user info
   window._tradeAuthor = user.email;
   afSetDate();
+  // Load from localStorage as initial state
   try{const s=JSON.parse(localStorage.getItem('omegaNewTrades')||'[]');if(Array.isArray(s))newTrades=s;}catch(e){}
   rebuildSetupCards();
+  // Then listen to Firebase for realtime trades (overrides localStorage)
+  if (typeof window.fbListenNewTrades === 'function') {
+    window.fbListenNewTrades(function(fbTrades) {
+      // Merge: Firebase is source of truth for new trades
+      newTrades = fbTrades.sort((a,b)=>{
+        const da=new Date(a.at||0), db2=new Date(b.at||0);
+        return db2-da;
+      });
+      // Also save to localStorage as cache
+      try{localStorage.setItem('omegaNewTrades', JSON.stringify(newTrades));}catch(e){}
+      // Re-render if trade log is visible
+      if(document.getElementById('v-log').classList.contains('on')) initTL();
+      else renderTL && renderTL();
+      buildHaid();
+    });
+  }
 };
 
 </script>
@@ -2097,6 +2125,40 @@ document.addEventListener('DOMContentLoaded', () => {
   const email = document.getElementById('auth-email');
   if (email) email.addEventListener('keydown', e => { if(e.key==='Enter') document.getElementById('auth-pass')?.focus(); });
 });
+
+  // ── New trades Firebase sync ──
+  window.fbPushNewTrade = async function(trade) {
+    if (!window._currentUser) return;
+    try {
+      const newRef = push(ref(db, 'omega/new_trades'));
+      const tradeWithId = {...trade, _fbid: newRef.key};
+      await set(newRef, tradeWithId);
+      // Update local copy with _fbid
+      const idx = newTrades.findIndex(t => t.at === trade.at && t.tk === trade.tk);
+      if (idx >= 0) newTrades[idx]._fbid = newRef.key;
+    } catch(e) { console.error('fbPushNewTrade error:', e); }
+  };
+
+  window.fbDeleteTrade = async function(fbid) {
+    if (!fbid) return;
+    try { await set(ref(db, 'omega/new_trades/' + fbid), null); }
+    catch(e) { console.error('fbDeleteTrade error:', e); }
+  };
+
+  window.fbUpdateTrade = async function(fbid, trade) {
+    if (!fbid) return;
+    try { await set(ref(db, 'omega/new_trades/' + fbid), trade); }
+    catch(e) { console.error('fbUpdateTrade error:', e); }
+  };
+
+  window.fbListenNewTrades = function(callback) {
+    onValue(ref(db, 'omega/new_trades'), snap => {
+      const data = snap.val();
+      const trades = data ? Object.values(data).filter(Boolean) : [];
+      callback(trades);
+    });
+  };
+
 </script>
 
 </body>
