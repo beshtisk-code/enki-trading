@@ -1262,21 +1262,118 @@ function buildSetupSummary(bySetup, filtered){
         const barW = (Math.abs(val)/maxAccR*100).toFixed(1);
         const col = val>0 ? (setupColors[d.s]||defaultColor) : 'rgba(245,101,101,.6)';
         const sign = val>=0?'+':'';
-        return `<div style="display:flex;align-items:center;gap:10px;margin-bottom:7px">
-          <div style="width:64px;text-align:right;font-size:11px;font-weight:700;font-family:'JetBrains Mono',monospace;color:${col};flex-shrink:0">${d.s}</div>
-          <div style="flex:1;position:relative;height:18px;background:var(--bg3);border-radius:4px;overflow:hidden">
-            <div style="position:absolute;left:0;top:0;height:100%;width:${barW}%;background:${col};border-radius:4px;transition:width .3s"></div>
-            <div style="position:absolute;left:8px;top:0;height:100%;display:flex;align-items:center;font-size:9px;font-family:'JetBrains Mono',monospace;color:rgba(0,0,0,.75);font-weight:700">
-              ${sign}${val.toFixed(1)} ${metricLabel}
-              ${pct>0?'<span style="opacity:.6;margin-left:6px">('+pct+'% of group)</span>':''}
+        const sid = 'sc-detail-'+d.s.replace(/[^a-z0-9]/gi,'');
+        return `<div style="margin-bottom:7px">
+          <div style="display:flex;align-items:center;gap:10px;cursor:pointer" onclick="toggleSetupDetail('${sid}','${d.s}')">
+            <div style="width:64px;text-align:right;font-size:11px;font-weight:700;font-family:'JetBrains Mono',monospace;color:${col};flex-shrink:0">${d.s}</div>
+            <div style="flex:1;position:relative;height:18px;background:var(--bg3);border-radius:4px;overflow:hidden">
+              <div style="position:absolute;left:0;top:0;height:100%;width:${barW}%;background:${col};border-radius:4px;transition:width .3s"></div>
+              <div style="position:absolute;left:8px;top:0;height:100%;display:flex;align-items:center;font-size:9px;font-family:'JetBrains Mono',monospace;color:rgba(0,0,0,.75);font-weight:700">
+                ${sign}${val.toFixed(1)} ${metricLabel}
+                ${pct>0?'<span style="opacity:.6;margin-left:6px">('+pct+'% of group)</span>':''}
+              </div>
+            </div>
+            <div style="width:90px;text-align:right;font-size:9px;font-family:'JetBrains Mono',monospace;color:var(--text3);flex-shrink:0">
+              ${d.n} trades · ${d.wr}% WR
+              <span style="margin-left:4px;opacity:.5">▼</span>
             </div>
           </div>
-          <div style="width:90px;text-align:right;font-size:9px;font-family:'JetBrains Mono',monospace;color:var(--text3);flex-shrink:0">
-            ${d.n} trades · ${d.wr}% WR
-          </div>
+          <div id="${sid}" style="display:none;margin:6px 0 4px 74px;background:var(--bg3);border-radius:6px;padding:10px 12px;border-left:3px solid ${col}"></div>
         </div>`;
       }).join('')}
     </div>`;
+}
+
+
+// ── Setup detail panel (best months breakdown) ──
+function toggleSetupDetail(id, setupName){
+  const el = document.getElementById(id);
+  if(!el) return;
+  const isOpen = el.style.display !== 'none';
+  // Close all others first
+  document.querySelectorAll('[id^="sc-detail-"]').forEach(e => {
+    e.style.display = 'none';
+    // Reset arrow on sibling
+    const arrow = e.previousElementSibling?.querySelector('span[style*="opacity:.5"]');
+    if(arrow) arrow.textContent = '▼';
+  });
+  if(isOpen){ return; }
+  el.style.display = 'block';
+  // Flip arrow
+  const arrow = el.previousElementSibling?.querySelector('span[style*="opacity:.5"]');
+  if(arrow) arrow.textContent = '▲';
+  buildSetupDetailPanel(id, setupName);
+}
+
+function buildSetupDetailPanel(id, setupName){
+  const el = document.getElementById(id);
+  if(!el) return;
+
+  const all = allT();
+  const trades = all.filter(t=>t.s===setupName);
+  if(!trades.length){ el.innerHTML='<div style="font-size:10px;color:var(--text3)">No trades found.</div>'; return; }
+
+  // Group by month
+  const months = {};
+  trades.forEach(t => {
+    const m = t.ym || '';
+    if(!m) return;
+    if(!months[m]) months[m] = [];
+    months[m].push(t);
+  });
+
+  // Stats per month
+  const monthStats = Object.entries(months).map(([m, mTrades]) => {
+    const accR = mTrades.reduce((a,t)=>a+(t.ar||0),0);
+    const netR = mTrades.reduce((a,t)=>a+(t.rn||0),0);
+    const wins = mTrades.filter(t=>t.wl==='W').length;
+    const wr   = Math.round(wins/mTrades.length*100);
+    return { m, n:mTrades.length, accR, netR, wr };
+  }).sort((a,b)=>b.accR-a.accR);
+
+  const maxAbs = Math.max(...monthStats.map(d=>Math.abs(d.accR)))||1;
+  const medals = ['🥇','🥈','🥉'];
+  const col = ({
+    'A':'#22c55e','T':'#818cf8','Op100':'#f59e0b',
+    'D2':'#06b6d4','AtmShelf':'#e879f9','S1n':'#fb7185'
+  })[setupName] || '#94a3b8';
+
+  const topN = monthStats.slice(0,3);
+  const hasNeg = monthStats.some(d=>d.accR<0);
+
+  el.innerHTML = `
+    <div style="font-size:9px;font-family:'JetBrains Mono',monospace;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px">
+      ${setupName} · all-time monthly breakdown · ${trades.length} total trades
+    </div>
+
+    <div style="display:flex;gap:16px;margin-bottom:10px;flex-wrap:wrap">
+      ${topN.map((d,i)=>`
+        <div style="display:flex;align-items:center;gap:6px">
+          <span style="font-size:13px">${medals[i]}</span>
+          <div>
+            <div style="font-size:10px;font-weight:700;font-family:'JetBrains Mono',monospace;color:${col}">${d.m}</div>
+            <div style="font-size:9px;font-family:'JetBrains Mono',monospace;color:var(--text3)">${d.accR>=0?'+':''}${d.accR.toFixed(1)} Ad.R · ${d.n}t · ${d.wr}%WR</div>
+          </div>
+        </div>`).join('')}
+    </div>
+
+    <div style="font-size:9px;font-family:'JetBrains Mono',monospace;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px">All months</div>
+    ${monthStats.map(d => {
+      const barW = (Math.abs(d.accR)/maxAbs*85).toFixed(1);
+      const isPos = d.accR >= 0;
+      const barCol = isPos ? col : 'rgba(245,101,101,.6)';
+      const rank = monthStats.indexOf(d)+1;
+      return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+        <div style="width:50px;font-size:9px;font-family:'JetBrains Mono',monospace;color:var(--text3);text-align:right;flex-shrink:0">${d.m.slice(5)}-${d.m.slice(2,4)}</div>
+        <div style="flex:1;position:relative;height:14px;background:var(--bg2);border-radius:3px;overflow:hidden">
+          <div style="position:absolute;left:0;top:0;height:100%;width:${barW}%;background:${barCol};border-radius:3px"></div>
+          <div style="position:absolute;left:6px;top:0;height:100%;display:flex;align-items:center;font-size:8px;font-family:'JetBrains Mono',monospace;color:rgba(0,0,0,.7);font-weight:700">
+            ${isPos?'+':''}${d.accR.toFixed(1)} Ad.R · ${d.n}t
+          </div>
+        </div>
+        <div style="width:28px;font-size:8px;font-family:'JetBrains Mono',monospace;color:${rank<=3?col:'var(--text3)'};font-weight:700;flex-shrink:0">#${rank}</div>
+      </div>`;
+    }).join('')}`;
 }
 
 function setupFilterChange(){
