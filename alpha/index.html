@@ -29,6 +29,12 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;min-he
 .dot{width:8px;height:8px;border-radius:50%;background:var(--acc);box-shadow:0 0 8px var(--acc);animation:pulse 2s infinite;display:inline-block;margin-right:6px}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 .badge{font-size:9px;font-family:'JetBrains Mono',monospace;padding:2px 8px;border-radius:5px;background:rgba(246,173,85,.15);color:var(--amber);border:1px solid rgba(246,173,85,.3)}
+/* Cross-nav buttons */
+.nav-btn{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--text);background:var(--bg3);border:1px solid var(--border2);padding:4px 10px;border-radius:6px;text-decoration:none;letter-spacing:.04em;transition:all .15s;cursor:pointer}
+.nav-btn:hover{border-color:var(--acc);color:var(--acc);background:var(--bg4)}
+.nav-btn.hub{color:var(--text2)}
+.nav-btn.xsys{color:var(--acc);border-color:rgba(251,191,36,.3)}
+.nav-btn.xsys:hover{background:rgba(251,191,36,.1)}
 /* Tabs */
 .main-tabs{display:flex;gap:2px;padding:0 24px;border-bottom:1px solid var(--border);margin-bottom:18px;overflow-x:auto}
 .mtab{padding:9px 18px;font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:all .15s;background:none;border-top:none;border-left:none;border-right:none;letter-spacing:.05em}
@@ -343,6 +349,8 @@ body.light .dot{background:#00a86b;box-shadow:0 0 8px #00a86b}
     <div class="sub"><span class="dot"></span>881 TRADES · 7/10/2023 – 4/10/2026 · $3K → $9.79B</div>
   </div>
   <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+    <a class="nav-btn hub" href="../" title="Back to hub">⌂ Hub</a>
+    <a class="nav-btn xsys" href="../omega/" title="Switch to Omega">→ Omega</a>
     <span class="sma-pill sma-above-plus">ABOVE+ 20-SMA</span>
     <span class="badge">⚡ New alloc: Apr 13 2026+</span>
     <div id="user-badge-wrap" style="display:none"></div>
