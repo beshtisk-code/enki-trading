@@ -12,13 +12,17 @@ body{background:#0d0a1e;color:#e2e0ff;font-family:'Syne',sans-serif;min-height:1
 h1{font-size:42px;font-weight:800;letter-spacing:-.8px;margin-bottom:8px;text-align:center}
 h1 span{color:#00d084}
 .tagline{font-size:12px;font-family:'JetBrains Mono',monospace;color:#5a4e8a;letter-spacing:.1em;margin-bottom:56px;text-align:center}
-.systems{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;width:100%;max-width:860px}
+.systems{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;width:100%;max-width:860px}
 .card{background:#160e38;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:28px 28px 24px;cursor:pointer;transition:all .2s;text-decoration:none;display:block}
 .card:hover{transform:translateY(-3px);border-color:rgba(0,208,132,.35);box-shadow:0 12px 40px rgba(0,208,132,.08)}
 .card.disabled{cursor:default;opacity:.45}
 .card.disabled:hover{transform:none;border-color:rgba(255,255,255,.08);box-shadow:none}
 /* Alpha-specific amber/gold accent */
 .card.alpha:hover{border-color:rgba(251,191,36,.35);box-shadow:0 12px 40px rgba(251,191,36,.12)}
+/* Portfolio card spans both columns and uses purple accent */
+.card.portfolio{grid-column:1 / -1;background:linear-gradient(135deg,#160e38 0%,#1a1144 50%,#160e38 100%)}
+.card.portfolio:hover{border-color:rgba(167,139,250,.4);box-shadow:0 12px 40px rgba(167,139,250,.15)}
+@media (max-width:600px){.systems{grid-template-columns:1fr}.card.portfolio{grid-column:1}}
 .card-icon{font-size:28px;margin-bottom:14px}
 .card-name{font-size:18px;font-weight:800;margin-bottom:4px}
 .card-sub{font-size:10px;font-family:'JetBrains Mono',monospace;color:#5a4e8a;letter-spacing:.08em;text-transform:uppercase;margin-bottom:16px}
@@ -30,6 +34,8 @@ h1 span{color:#00d084}
 .tag-live::before{content:'';width:6px;height:6px;border-radius:50%;background:#00d084;box-shadow:0 0 6px #00d084;animation:pulse 2s infinite}
 .tag-live-alpha{display:inline-flex;align-items:center;gap:5px;font-size:9px;font-family:'JetBrains Mono',monospace;color:#fbbf24;background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.3);padding:3px 10px;border-radius:12px;margin-bottom:14px}
 .tag-live-alpha::before{content:'';width:6px;height:6px;border-radius:50%;background:#fbbf24;box-shadow:0 0 6px #fbbf24;animation:pulse 2s infinite}
+.tag-live-port{display:inline-flex;align-items:center;gap:5px;font-size:9px;font-family:'JetBrains Mono',monospace;color:#a78bfa;background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.3);padding:3px 10px;border-radius:12px;margin-bottom:14px}
+.tag-live-port::before{content:'';width:6px;height:6px;border-radius:50%;background:#a78bfa;box-shadow:0 0 6px #a78bfa;animation:pulse 2s infinite}
 .tag-soon{display:inline-flex;align-items:center;gap:5px;font-size:9px;font-family:'JetBrains Mono',monospace;color:#5a4e8a;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);padding:3px 10px;border-radius:12px;margin-bottom:14px}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 .footer{margin-top:48px;font-size:10px;font-family:'JetBrains Mono',monospace;color:#2d2550;letter-spacing:.06em}
@@ -111,6 +117,20 @@ h1 span{color:#00d084}
 <div class="tagline">Systematic performance tracking · All systems in one place</div>
 
 <div class="systems">
+
+  <!-- Portfolio (spans both columns, top) -->
+  <a class="card portfolio" href="./portfolio/">
+    <div class="tag-live-port">LIVE</div>
+    <div class="card-icon">◆</div>
+    <div class="card-name">Portfolio View</div>
+    <div class="card-sub">Alpha + Omega combined · Correlation · Risk metrics · Diversification</div>
+    <div class="card-stats">
+      <div class="cs"><div class="cs-l">Total trades</div><div class="cs-v" style="color:#a78bfa">1,699</div></div>
+      <div class="cs"><div class="cs-l">Combined WR</div><div class="cs-v" style="color:#00d084">79.3%</div></div>
+      <div class="cs"><div class="cs-l">Combined AccR</div><div class="cs-v" style="color:#fbbf24">3,094+</div></div>
+      <div class="cs"><div class="cs-l">Daily correlation</div><div class="cs-v" style="color:#22d3ee">0.65</div></div>
+    </div>
+  </a>
 
   <!-- Omega -->
   <a class="card" href="./omega/">
