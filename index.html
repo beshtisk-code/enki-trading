@@ -17,6 +17,8 @@ h1 span{color:#00d084}
 .card:hover{transform:translateY(-3px);border-color:rgba(0,208,132,.35);box-shadow:0 12px 40px rgba(0,208,132,.08)}
 .card.disabled{cursor:default;opacity:.45}
 .card.disabled:hover{transform:none;border-color:rgba(255,255,255,.08);box-shadow:none}
+/* Alpha-specific amber/gold accent */
+.card.alpha:hover{border-color:rgba(251,191,36,.35);box-shadow:0 12px 40px rgba(251,191,36,.12)}
 .card-icon{font-size:28px;margin-bottom:14px}
 .card-name{font-size:18px;font-weight:800;margin-bottom:4px}
 .card-sub{font-size:10px;font-family:'JetBrains Mono',monospace;color:#5a4e8a;letter-spacing:.08em;text-transform:uppercase;margin-bottom:16px}
@@ -26,6 +28,8 @@ h1 span{color:#00d084}
 .cs-v{font-size:13px;font-weight:700;font-family:'JetBrains Mono',monospace}
 .tag-live{display:inline-flex;align-items:center;gap:5px;font-size:9px;font-family:'JetBrains Mono',monospace;color:#00d084;background:rgba(0,208,132,.1);border:1px solid rgba(0,208,132,.25);padding:3px 10px;border-radius:12px;margin-bottom:14px}
 .tag-live::before{content:'';width:6px;height:6px;border-radius:50%;background:#00d084;box-shadow:0 0 6px #00d084;animation:pulse 2s infinite}
+.tag-live-alpha{display:inline-flex;align-items:center;gap:5px;font-size:9px;font-family:'JetBrains Mono',monospace;color:#fbbf24;background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.3);padding:3px 10px;border-radius:12px;margin-bottom:14px}
+.tag-live-alpha::before{content:'';width:6px;height:6px;border-radius:50%;background:#fbbf24;box-shadow:0 0 6px #fbbf24;animation:pulse 2s infinite}
 .tag-soon{display:inline-flex;align-items:center;gap:5px;font-size:9px;font-family:'JetBrains Mono',monospace;color:#5a4e8a;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);padding:3px 10px;border-radius:12px;margin-bottom:14px}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 .footer{margin-top:48px;font-size:10px;font-family:'JetBrains Mono',monospace;color:#2d2550;letter-spacing:.06em}
@@ -122,15 +126,17 @@ h1 span{color:#00d084}
   </a>
 
   <!-- Alpha -->
-  <div class="card disabled">
-    <div class="tag-soon">COMING SOON</div>
+  <a class="card alpha" href="./alpha/">
+    <div class="tag-live-alpha">LIVE</div>
     <div class="card-icon">α</div>
     <div class="card-name">Alpha System</div>
-    <div class="card-sub">US Smallcap · Short bias · Active –</div>
+    <div class="card-sub">US Smallcap · Short bias · Jul 2023 –</div>
     <div class="card-stats">
-      <div class="cs"><div class="cs-l">Status</div><div class="cs-v" style="color:#5a4e8a">In progress</div></div>
+      <div class="cs"><div class="cs-l">Trades</div><div class="cs-v" style="color:#22d3ee">881</div></div>
+      <div class="cs"><div class="cs-l">Win rate</div><div class="cs-v" style="color:#00d084">81.3%</div></div>
+      <div class="cs"><div class="cs-l">Ad. R total</div><div class="cs-v" style="color:#fbbf24">1,845+</div></div>
     </div>
-  </div>
+  </a>
 
 </div>
 
