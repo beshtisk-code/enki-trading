@@ -326,6 +326,13 @@ body.light .dot{background:#00a86b;box-shadow:0 0 8px #00a86b}
 </style>
 </head>
 <body>
+<script>
+// Pre-render theme init — prevents flash of dark before full script runs.
+(function(){try{
+  var t = localStorage.getItem('enkiTheme');
+  if (t !== 'dark') document.body.classList.add('light');
+}catch(e){ document.body.classList.add('light'); }})();
+</script>
 
 <!-- Auth overlay -->
 <div id="auth-overlay">
@@ -963,7 +970,7 @@ function changeScale(dir){
 }
 
 // ── Theme toggle ──
-let isDark=true;
+let isDark=false;
 function toggleTheme(){
   isDark=!isDark;
   document.body.classList.toggle('light',!isDark);
@@ -982,9 +989,18 @@ function toggleTheme(){
     if(sc!==null){scaleIdx=parseInt(sc);} else {scaleIdx=2;}
     changeScale(0);
     const th=localStorage.getItem('enkiTheme');
-    if(th==='light'){isDark=false;document.body.classList.add('light');
-      const btn=document.getElementById('theme-btn');if(btn)btn.textContent='☾ Dark';}
-  }catch(e){}
+    // DEFAULT: light. Only apply dark if user explicitly saved 'dark'.
+    if(th==='dark'){
+      isDark=true;
+      const btn=document.getElementById('theme-btn');if(btn)btn.textContent='☀ Light';
+    } else {
+      isDark=false;
+      document.body.classList.add('light');
+      const btn=document.getElementById('theme-btn');if(btn)btn.textContent='☾ Dark';
+    }
+  }catch(e){
+    document.body.classList.add('light');
+  }
 })();
 
 function setViewMode(mode){

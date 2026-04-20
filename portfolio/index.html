@@ -135,6 +135,13 @@ body.light .rc-seg{color:#fff}
 </style>
 </head>
 <body>
+<script>
+// Pre-render theme init — prevents flash of dark before full script runs.
+(function(){try{
+  var t = localStorage.getItem('port_theme');
+  if (t !== 'dark') document.body.classList.add('light');
+}catch(e){ document.body.classList.add('light'); }})();
+</script>
 
 <div id="auth-overlay">
   <div class="auth-box">
@@ -409,13 +416,24 @@ function toggleTheme(){
   try{localStorage.setItem('port_theme', isLight?'light':'dark');}catch(e){}
   renderAll();
 }
+// DEFAULT: light. Only stay dark if user explicitly saved 'dark'.
 try{
   const saved = localStorage.getItem('port_theme');
-  if(saved === 'light'){
+  if(saved === 'dark'){
+    // Stay dark — don't add .light class
+    document.addEventListener('DOMContentLoaded',()=>{
+      const b=document.getElementById('theme-btn'); if(b) b.textContent='☀ Light';
+    });
+  } else {
+    // Light default
     document.body.classList.add('light');
-    document.addEventListener('DOMContentLoaded',()=>{document.getElementById('theme-btn').textContent='🌙 Dark';});
+    document.addEventListener('DOMContentLoaded',()=>{
+      const b=document.getElementById('theme-btn'); if(b) b.textContent='🌙 Dark';
+    });
   }
-}catch(e){}
+}catch(e){
+  document.body.classList.add('light');
+}
 
 function themeColors(){
   const isLight = document.body.classList.contains('light');
