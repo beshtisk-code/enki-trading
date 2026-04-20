@@ -3319,6 +3319,7 @@ window.onAuthReady = function(user) {
   setTimeout(buildFeeOvBox, 400);
   // Load from localStorage as initial state
   try{const s=JSON.parse(localStorage.getItem('omegaNewTrades')||'[]');if(Array.isArray(s))newTrades=s;}catch(e){}
+  rebuildAllStats();
   rebuildSetupCards();
   // Then listen to Firebase for realtime trades (overrides localStorage)
   if (typeof window.fbListenNewTrades === 'function') {
