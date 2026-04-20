@@ -3628,7 +3628,7 @@ window.fcLoadProjects = function() {
       }, err => {
         console.error('[forecast] Read failed:', err);
         const cont = document.getElementById('fc-projects-list');
-        if (cont) cont.innerHTML = '<div style="font-size:11px;color:var(--red,#f56565);font-family:\\'JetBrains Mono\\',monospace">✗ Cannot read projects from Firebase. Permission denied? ' + (err.message || err.code || '') + '</div>';
+        if (cont) cont.innerHTML = `<div style="font-size:11px;color:var(--red,#f56565);font-family:'JetBrains Mono',monospace">✗ Cannot read projects from Firebase. Permission denied? ${err.message || err.code || ''}</div>`;
       });
     } catch (err) {
       console.error('[forecast] Load setup failed:', err);
