@@ -345,7 +345,7 @@ body.light .dot{background:#00a86b;box-shadow:0 0 8px #00a86b}
 <div class="sticky-top"><div class="hdr">
   <div>
     <h1><span>Omega</span> System</h1>
-    <div class="sub"><span class="dot"></span>818 TRADES · 1/4/2024 – 4/9/2026 · $3K → $297.5M</div>
+    <div class="sub"><span class="dot"></span><span id="hdr-sub-text">818 TRADES · 1/4/2024 – 4/9/2026 · $3K → $297.5M</span></div>
   </div>
   <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
     <a class="nav-btn hub" href="../" title="Back to hub">⌂ Hub</a>
@@ -380,13 +380,7 @@ body.light .dot{background:#00a86b;box-shadow:0 0 8px #00a86b}
 </div>
 </div><!-- /sticky-top -->
 <div class="view on" id="v-overview">
-  <div class="mg">
-    <div class="mc"><div class="ml">Total trades</div><div class="mv cc">820</div><div class="ms">1/4/2024 – 4/9/2026</div></div>
-    <div class="mc"><div class="ml">Win rate</div><div class="mv gc">76.6%</div><div class="ms">628W / 192L</div></div>
-    <div class="mc"><div class="ml">Total net R</div><div class="mv gc">+34.025R</div><div class="ms">fees deducted</div></div>
-    <div class="mc"><div class="mv gold">$297.5M</div><div class="ml" style="margin-top:3px">End equity</div><div class="ms">started $3,000</div></div>
-    <div class="mc"><div class="ml">Max drawdown</div><div class="mv rc">-60.14%</div><div class="ms">from peak</div></div>
-  </div>
+  <div class="mg" id="ov-metrics"></div>
   <div class="mg4">
     <div class="mc"><div class="ml">Best setup</div><div class="mv" style="font-size:14px;color:var(--acc)">Op100</div><div class="ms">WR 87.9% · PF 8.21×</div></div>
     <div class="mc"><div class="ml">Worst bucket</div><div class="mv" style="font-size:14px;color:var(--red)">T/M</div><div class="ms">PF 0.94× — negative EV</div></div>
@@ -998,7 +992,7 @@ function rerenderCurrent(){
   const lbl=rvLabel();
   const mth=document.getElementById('ov-th-mean');if(mth)mth.textContent='Mean '+lbl;
   const tth=document.getElementById('ov-th-total');if(tth)tth.textContent='Total '+lbl;
-  if(v==='overview'){buildOvTable();buildHaid();buildHeatmap();buildAllocMonitor();buildAllocPhases();buildFeeOvBox();}
+  if(v==='overview'){buildOvMetrics();buildOvTable();buildHaid();buildHeatmap();buildAllocMonitor();buildAllocPhases();buildFeeOvBox();}
   else if(v==='setups') rebuildSetupCards();
   else if(v==='categories') buildCat();
   else if(v==='monthly') buildMonthly();
@@ -1114,6 +1108,8 @@ function rebuildAllStats(){
   ML.length = 0;
   Object.keys(MO).sort().forEach(k => ML.push(k));
   // DAY intentionally NOT recomputed — keep frozen back-test curve
+  // Update overview metric cards
+  if(typeof buildOvMetrics==='function') buildOvMetrics();
 }
 
 function calcStats(rows){
@@ -1631,6 +1627,59 @@ document.querySelectorAll('[data-cf2]').forEach(b=>{
   b.addEventListener('click',()=>{document.querySelectorAll('[data-cf2]').forEach(x=>x.classList.remove('on','rd'));b.classList.add('on','rd');cfE=b.dataset.cf2;buildCat();});
 });
 
+
+
+// ── Overview metric cards (dynamic) ──
+function buildOvMetrics(){
+  const el = document.getElementById('ov-metrics');
+  if(!el) return;
+  const all = allT();
+  if(!all.length){ el.innerHTML=''; return; }
+
+  const wins   = all.filter(t=>t.w).length;
+  const losses = all.length - wins;
+  const netR   = all.reduce((a,t)=>a+(t.rn||0),0);
+  const accR   = all.reduce((a,t)=>a+(t.ar||0),0);
+  const wr     = (wins/all.length*100).toFixed(1);
+  const dates  = all.map(t=>t.dt).filter(Boolean).sort();
+  const dRange = dates.length ? dates[0]+' – '+dates[dates.length-1] : '—';
+
+  // Max drawdown from DAY
+  const maxDD  = DAY.length ? Math.min(...DAY.map(d=>d.dd||0)).toFixed(2) : '—';
+  const endEq  = DAY.length ? DAY[DAY.length-1].equity : 0;
+  const fmtEq  = endEq>=1e9 ? '$'+(endEq/1e9).toFixed(1)+'B' :
+                 endEq>=1e6 ? '$'+(endEq/1e6).toFixed(1)+'M' :
+                 endEq>=1e3 ? '$'+(endEq/1e3).toFixed(1)+'K' : '$'+endEq.toFixed(0);
+
+  // Best setup by AccR
+  let bestSetup='—';
+  let bestAccR=-Infinity;
+  SO.forEach(s=>{ if(SS[s]&&SS[s].tar>bestAccR){bestAccR=SS[s].tar;bestSetup=s;} });
+
+  // Last ticker added
+  const sorted = [...all].sort((a,b)=>{
+    const da=a.at||a.dt||'', db=b.at||b.dt||'';
+    return da>db?-1:da<db?1:0;
+  });
+  const lastT = sorted[0];
+  const lastStr = lastT ? lastT.tk+' ('+lastT.dt+')' : '—';
+
+  // Update header subtitle
+  const hdrSub = document.getElementById('hdr-sub-text');
+  if(hdrSub) hdrSub.textContent = all.length+' TRADES · '+dRange+' · $3K → '+fmtEq;
+
+  el.innerHTML = [
+    {l:'Total trades', v:all.length, s:dRange, vc:'cc'},
+    {l:'Win rate', v:wr+'%', s:wins+'W / '+losses+'L', vc:'gc'},
+    {l:'Total net R', v:(netR>=0?'+':'')+netR.toFixed(3)+'R', s:'fees deducted', vc:'gc'},
+    {l:'End equity', v:fmtEq, s:'started $3,000', vc:'gold'},
+    {l:'Max drawdown', v:maxDD+'%', s:'from peak', vc:'rc'},
+  ].map(m=>`<div class="mc"><div class="ml">${m.l}</div><div class="mv ${m.vc}">${m.v}</div><div class="ms">${m.s}</div></div>`).join('')
+  + `<div class="mc" style="grid-column:1/-1;border-top:1px solid var(--border);padding-top:8px;margin-top:4px">
+      <div class="ml">Last trade logged</div>
+      <div style="font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--acc);font-weight:700">${lastStr}</div>
+    </div>`;
+}
 
 function buildOvTable(){
   const body=document.getElementById('ov-setup-body');
@@ -3320,6 +3369,7 @@ window.onAuthReady = function(user) {
   // Load from localStorage as initial state
   try{const s=JSON.parse(localStorage.getItem('omegaNewTrades')||'[]');if(Array.isArray(s))newTrades=s;}catch(e){}
   rebuildAllStats();
+  buildOvMetrics();
   rebuildSetupCards();
   // Then listen to Firebase for realtime trades (overrides localStorage)
   if (typeof window.fbListenNewTrades === 'function') {
