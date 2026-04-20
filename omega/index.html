@@ -1641,8 +1641,7 @@ function buildOvMetrics(){
   const netR   = all.reduce((a,t)=>a+(t.rn||0),0);
   const accR   = all.reduce((a,t)=>a+(t.ar||0),0);
   const wr     = (wins/all.length*100).toFixed(1);
-  const dates  = all.map(t=>t.dt).filter(Boolean).sort();
-  const dRange = dates.length ? dates[0]+' – '+dates[dates.length-1] : '—';
+  const dRange = ordinals.length ? ordToStr(minOrd)+' – '+ordToStr(maxOrd) : '—';
 
   // Max drawdown from DAY
   const maxDD  = DAY.length ? Math.min(...DAY.map(d=>d.dd||0)).toFixed(2) : '—';
@@ -1657,12 +1656,21 @@ function buildOvMetrics(){
   SO.forEach(s=>{ if(SS[s]&&SS[s].tar>bestAccR){bestAccR=SS[s].tar;bestSetup=s;} });
 
   // Last ticker added
-  const sorted = [...all].sort((a,b)=>{
-    const da=a.at||a.dt||'', db=b.at||b.dt||'';
-    return da>db?-1:da<db?1:0;
-  });
+  // Parse any date format to comparable integer YYYYMMDD
+  const toOrdinal = s => {
+    if(!s) return 0;
+    if(s.includes('T')) s = s.slice(0,10); // ISO timestamp
+    if(s.includes('-')){ const[y,m,d]=s.split('-'); return parseInt(y)*10000+parseInt(m)*100+parseInt(d); }
+    if(s.includes('/')){ const[m,d,y]=s.split('/'); return parseInt(y)*10000+parseInt(m)*100+parseInt(d); }
+    return 0;
+  };
+  const sorted = [...all].sort((a,b)=>toOrdinal(b.dt)-toOrdinal(a.dt));
   const lastT = sorted[0];
   const lastStr = lastT ? lastT.tk+' ('+lastT.dt+')' : '—';
+  // Date range from dt field
+  const ordinals = all.map(t=>toOrdinal(t.dt)).filter(Boolean);
+  const minOrd = Math.min(...ordinals), maxOrd = Math.max(...ordinals);
+  const ordToStr = o => { const y=Math.floor(o/10000),m=Math.floor((o%10000)/100),d=o%100; return m+'/'+d+'/'+y; };
 
   // Update header subtitle
   const hdrSub = document.getElementById('hdr-sub-text');
