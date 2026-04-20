@@ -2023,7 +2023,7 @@ function afOnEntry(){
     const dv=document.getElementById('af-date').value;
     const isV2 = dv && dv >= CUTOFF;
     const sig = SIG[setup+'/'+cat] || '';
-    const av = isV2 && sig === 'avoid';
+    const av = false; // disabled per user request - no AVOID warning on add-trade form
     const rng = CR[cat]||'';
     const alloc=getNewAlloc(cat,dv);
     if(catEl) catEl.innerHTML=`<span style="font-weight:800;color:${av?'var(--amber)':'var(--acc)'}">${cat}</span> <span style="font-size:10px;color:var(--text3)">${rng} · ${alloc}%</span>`;
