@@ -3671,9 +3671,32 @@ window.fcSaveProject = async function(name) {
         bands: window.fcCurrentRun.bands,
         checkpoints: [{date: dateStr, equity: window.fcCurrentRun.params.startEquity, isInitial: true}]
       };
+      // Defensive: Firebase rejects any undefined value anywhere in the tree.
+      // Recursively strip undefined keys, convert NaN/Infinity to null, and convert typed arrays to plain arrays.
+      function sanitizeForFirebase(obj) {
+        if (obj === null || obj === undefined) return null;
+        if (typeof obj === 'number') return (Number.isFinite(obj) ? obj : null);
+        if (Array.isArray(obj) || ArrayBuffer.isView(obj)) {
+          const arr = [];
+          for (let i = 0; i < obj.length; i++) arr.push(sanitizeForFirebase(obj[i]));
+          return arr;
+        }
+        if (typeof obj === 'object') {
+          const out = {};
+          for (const k of Object.keys(obj)) {
+            const v = obj[k];
+            if (v === undefined) continue;            // strip undefined
+            if (typeof v === 'function') continue;     // strip functions
+            out[k] = sanitizeForFirebase(v);
+          }
+          return out;
+        }
+        return obj;  // primitives (string, boolean)
+      }
+      const cleanProject = sanitizeForFirebase(project);
       console.log('[forecast] Writing to Firebase path: omega/forecast_projects/' + id);
-      console.log('[forecast] Payload size (chars):', JSON.stringify(project).length);
-      await set(ref(db, 'omega/forecast_projects/' + id), project);
+      console.log('[forecast] Payload size (chars):', JSON.stringify(cleanProject).length);
+      await set(ref(db, 'omega/forecast_projects/' + id), cleanProject);
       console.log('[forecast] ✓ Save succeeded');
       setMsg('✓ Saved as "' + name.trim() + '"', 'var(--green,#00d084)');
       document.getElementById('fc-proj-name').value = '';
@@ -4059,9 +4082,12 @@ window.fcRunSimulation = function() {
   const summary = computeSummary(paths, N_PATHS, p.horizon, p.startEquity);
   const elapsed = ((performance.now() - t0)/1000).toFixed(2);
   document.getElementById('fc-runtime').textContent = '10K paths in ' + elapsed + 's · ' + filtered.length + 'd source';
+  // Build a lightweight summary for Firebase save (strip the large finalDistribution array).
+  // Use destructuring to OMIT the key — setting it to undefined would still fail Firebase validation.
+  const {finalDistribution, ...summaryForSave} = summary;
   window.fcCurrentRun = {
     params: p,
-    summary: {...summary, finalDistribution: undefined},  // strip large array for save
+    summary: summaryForSave,
     bands,
     fullSummary: summary
   };
