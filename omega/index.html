@@ -381,12 +381,7 @@ body.light .dot{background:#00a86b;box-shadow:0 0 8px #00a86b}
 </div><!-- /sticky-top -->
 <div class="view on" id="v-overview">
   <div class="mg" id="ov-metrics"></div>
-  <div class="mg4">
-    <div class="mc"><div class="ml">Best setup</div><div class="mv" style="font-size:14px;color:var(--acc)">Op100</div><div class="ms">WR 87.9% · PF 8.21×</div></div>
-    <div class="mc"><div class="ml">Worst bucket</div><div class="mv" style="font-size:14px;color:var(--red)">T/M</div><div class="ms">PF 0.94× — negative EV</div></div>
-    <div class="mc"><div class="ml">Neg months</div><div class="mv ac">7 / 28</div><div class="ms">21 profitable</div></div>
-    <div class="mc"><div class="ml">20-SMA position</div><div class="mv" id="sma-ov-val">—</div><div class="ms">running R vs 20-day SMA</div></div>
-  </div>
+  <div class="mg4" id="ov-metrics2"></div>
 
   <!-- How am I doing -->
   <div class="haid">
@@ -1641,7 +1636,24 @@ function buildOvMetrics(){
   const netR   = all.reduce((a,t)=>a+(t.rn||0),0);
   const accR   = all.reduce((a,t)=>a+(t.ar||0),0);
   const wr     = (wins/all.length*100).toFixed(1);
+  // Date/sort helpers
+  const toOrdinal = s => {
+    if(!s) return 0;
+    if(s.includes('T')) s = s.slice(0,10);
+    if(s.includes('-')){ const[y,m,d]=s.split('-'); return parseInt(y)*10000+parseInt(m)*100+parseInt(d); }
+    if(s.includes('/')){ const[m,d,y]=s.split('/'); return parseInt(y)*10000+parseInt(m)*100+parseInt(d); }
+    return 0;
+  };
+  const ordToStr = o => { const y=Math.floor(o/10000),m=Math.floor((o%10000)/100),d=o%100; return m+'/'+d+'/'+y; };
+  const ordinals = all.map(t=>toOrdinal(t.dt)).filter(Boolean);
+  const minOrd = ordinals.length ? Math.min(...ordinals) : 0;
+  const maxOrd = ordinals.length ? Math.max(...ordinals) : 0;
   const dRange = ordinals.length ? ordToStr(minOrd)+' – '+ordToStr(maxOrd) : '—';
+
+  // Last ticker — sort by date desc
+  const sorted = [...all].sort((a,b)=>toOrdinal(b.dt)-toOrdinal(a.dt));
+  const lastT = sorted[0];
+  const lastStr = lastT ? lastT.tk+' ('+lastT.dt+')' : '—';
 
   // Max drawdown from DAY
   const maxDD  = DAY.length ? Math.min(...DAY.map(d=>d.dd||0)).toFixed(2) : '—';
@@ -1654,23 +1666,6 @@ function buildOvMetrics(){
   let bestSetup='—';
   let bestAccR=-Infinity;
   SO.forEach(s=>{ if(SS[s]&&SS[s].tar>bestAccR){bestAccR=SS[s].tar;bestSetup=s;} });
-
-  // Last ticker added
-  // Parse any date format to comparable integer YYYYMMDD
-  const toOrdinal = s => {
-    if(!s) return 0;
-    if(s.includes('T')) s = s.slice(0,10); // ISO timestamp
-    if(s.includes('-')){ const[y,m,d]=s.split('-'); return parseInt(y)*10000+parseInt(m)*100+parseInt(d); }
-    if(s.includes('/')){ const[m,d,y]=s.split('/'); return parseInt(y)*10000+parseInt(m)*100+parseInt(d); }
-    return 0;
-  };
-  const sorted = [...all].sort((a,b)=>toOrdinal(b.dt)-toOrdinal(a.dt));
-  const lastT = sorted[0];
-  const lastStr = lastT ? lastT.tk+' ('+lastT.dt+')' : '—';
-  // Date range from dt field
-  const ordinals = all.map(t=>toOrdinal(t.dt)).filter(Boolean);
-  const minOrd = Math.min(...ordinals), maxOrd = Math.max(...ordinals);
-  const ordToStr = o => { const y=Math.floor(o/10000),m=Math.floor((o%10000)/100),d=o%100; return m+'/'+d+'/'+y; };
 
   // Update header subtitle
   const hdrSub = document.getElementById('hdr-sub-text');
@@ -1687,6 +1682,22 @@ function buildOvMetrics(){
       <div class="ml">Last trade logged</div>
       <div style="font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--acc);font-weight:700">${lastStr}</div>
     </div>`;
+
+  // Fill mg4 (best/worst/neg months)
+  const el2 = document.getElementById('ov-metrics2');
+  if(el2){
+    const negMo = ML.filter(k=>MO[k]&&MO[k].net<0).length;
+    const posMo = ML.length - negMo;
+    const bestS = SO.reduce((b,s)=>SS[s]&&SS[s].tar>(SS[b]?.tar||0)?s:b, SO[0]);
+    const worstS = SO.reduce((b,s)=>SS[s]&&SS[s].n>=5&&SS[s].pf<(SS[b]?.pf||99)?s:b, SO[0]);
+    const bestSt = SS[bestS]||{};
+    const worstSt = SS[worstS]||{};
+    el2.innerHTML =
+      `<div class="mc"><div class="ml">Best setup</div><div class="mv" style="font-size:14px;color:var(--acc)">${bestS}</div><div class="ms">WR ${bestSt.wr}% · PF ${(bestSt.pf||0).toFixed(2)}×</div></div>`+
+      `<div class="mc"><div class="ml">Worst bucket</div><div class="mv" style="font-size:14px;color:var(--red)">${worstS}</div><div class="ms">PF ${(worstSt.pf||0).toFixed(2)}× — negative EV</div></div>`+
+      `<div class="mc"><div class="ml">Neg months</div><div class="mv ac">${negMo} / ${ML.length}</div><div class="ms">${posMo} profitable</div></div>`+
+      `<div class="mc"><div class="ml">20-SMA position</div><div class="mv" id="sma-ov-val">—</div><div class="ms">running R vs 20-day SMA</div></div>`;
+  }
 }
 
 function buildOvTable(){
