@@ -377,6 +377,7 @@ body.light .dot{background:#00a86b;box-shadow:0 0 8px #00a86b}
   <button class="mtab" data-v="analytics">Analytics</button>
   <button class="mtab" data-v="ticker">Ticker Lookup</button>
   <button class="mtab" data-v="fees">Fee Monitor</button>
+  <button class="mtab" data-v="forecast">Forecast</button>
 </div>
 </div><!-- /sticky-top -->
 <div class="view on" id="v-overview">
@@ -802,6 +803,114 @@ body.light .dot{background:#00a86b;box-shadow:0 0 8px #00a86b}
 
 </div>
 
+<div class="view" id="v-forecast">
+  <div class="mg" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-bottom:14px">
+    <div class="mc">
+      <div class="ml">Account size ($)</div>
+      <input type="number" id="fc-equity" value="10000" min="100" step="100" style="background:var(--bg3);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;padding:6px 10px;width:100%;outline:none">
+      <div class="ms" style="margin-top:4px">Your current account</div>
+    </div>
+    <div class="mc">
+      <div class="ml" style="margin-bottom:6px">Horizon</div>
+      <div class="fc-btn-group" style="display:flex;gap:4px;flex-wrap:wrap">
+        <button class="fc-btn" data-h="21">1M</button>
+        <button class="fc-btn active" data-h="63">3M</button>
+        <button class="fc-btn" data-h="126">6M</button>
+        <button class="fc-btn" data-h="252">1Y</button>
+      </div>
+    </div>
+    <div class="mc">
+      <div class="ml" style="margin-bottom:6px">Sample window</div>
+      <div class="fc-btn-group" style="display:flex;gap:4px;flex-wrap:wrap">
+        <button class="fc-btn active" data-w="all">All</button>
+        <button class="fc-btn" data-w="12m">12M</button>
+        <button class="fc-btn" data-w="6m">6M</button>
+        <button class="fc-btn" data-w="3m">3M</button>
+      </div>
+      <div id="fc-window-warn" style="font-size:9px;color:var(--amber);margin-top:6px;display:none;line-height:1.4">ÔÜá Small sample (~60d). Wider, less reliable bands.</div>
+    </div>
+    <div class="mc">
+      <div class="ml" style="margin-bottom:6px">Method</div>
+      <div class="fc-btn-group" style="display:flex;gap:4px">
+        <button class="fc-btn active" data-m="day">Standard</button>
+        <button class="fc-btn" data-m="block">Conservative</button>
+      </div>
+      <div class="ms" style="margin-top:6px;font-size:9px">Standard: day bootstrap. Conservative: 5-day blocks.</div>
+    </div>
+    <div class="mc" style="display:flex;flex-direction:column;justify-content:center;align-items:center">
+      <button class="ui-btn" id="fc-run" style="background:var(--green);color:#000;border:none;padding:10px 20px;font-size:13px;font-weight:700">ÔûÂ Run 10K simulations</button>
+      <div id="fc-runtime" style="font-size:9px;color:var(--text3);margin-top:6px"></div>
+    </div>
+  </div>
+
+  <div id="fc-warning" class="info" style="display:none;background:rgba(245,101,101,.08);border-left-color:var(--red)">
+    <strong>Read this before interpreting numbers.</strong> Monte Carlo simulations resample your historical results, but past performance is not a guarantee. Omega's recent past has been unusually strong (mean daily AccR +3.3%), which makes the median forecast extremely optimistic. <strong>Anchor on P25 and P5, not P50</strong> ÔÇö the worst-case bands are the realistic planning numbers. If markets shift regime (regulation, liquidity, short-availability), actual results may fall well outside these bands.
+  </div>
+
+  <div id="fc-results" style="display:none">
+
+    <div class="mg" id="fc-summary-cards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-bottom:14px"></div>
+
+    <div class="sec" style="font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--text3);letter-spacing:.12em;text-transform:uppercase;margin:24px 0 10px">Equity fan chart</div>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px"><div style="height:340px"><canvas id="fc-fan-chart"></canvas></div></div>
+
+    <div class="sec" style="font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--text3);letter-spacing:.12em;text-transform:uppercase;margin:24px 0 10px">Final equity distribution</div>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px"><div style="height:240px"><canvas id="fc-hist-chart"></canvas></div></div>
+
+    <div class="sec" style="font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--text3);letter-spacing:.12em;text-transform:uppercase;margin:24px 0 10px">Probability of loss thresholds</div>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:0;overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;font-size:11px;font-family:'JetBrains Mono',monospace">
+        <thead><tr><th style="text-align:left;padding:10px;font-size:9px;color:var(--text3);letter-spacing:.08em;border-bottom:1px solid var(--border)">Outcome</th><th style="text-align:right;padding:10px;font-size:9px;color:var(--text3);letter-spacing:.08em;border-bottom:1px solid var(--border)">Probability</th><th style="text-align:left;padding:10px;font-size:9px;color:var(--text3);letter-spacing:.08em;border-bottom:1px solid var(--border)">Interpretation</th></tr></thead>
+        <tbody id="fc-ruin-body"></tbody>
+      </table>
+    </div>
+
+    <details class="explain" style="margin-top:14px">
+      <summary style="cursor:pointer;padding:10px 14px;font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--acc,#22d3ee);font-weight:600">Ôû© How to read these numbers (click to expand)</summary>
+      <div style="padding:12px 18px;font-size:11px;color:var(--text2);line-height:1.7">
+        <p style="margin-bottom:8px"><strong>P50 (median)</strong> ÔÇö half of the simulated outcomes ended above this number, half below. Do NOT treat as "expected" ÔÇö anchor lower.</p>
+        <p style="margin-bottom:8px"><strong>P25</strong> ÔÇö only 25% of simulations did worse. This is a realistic conservative planning number per Bandy's CAR25 framework.</p>
+        <p style="margin-bottom:8px"><strong>P5</strong> ÔÇö only 5% of simulations did worse. Worst-case-but-not-impossible scenario.</p>
+        <p style="margin-bottom:8px"><strong>Median Max DD</strong> ÔÇö across all simulations, this is the typical worst drawdown experienced during the horizon. P95 Max DD is the worst 5% of simulations.</p>
+        <p><strong>Method:</strong> Day-level bootstrap (Standard) or 5-day block bootstrap (Conservative). 10,000 simulated paths. Block method is more conservative because it preserves short-term streaks. Tested IID-clean on Omega's daily series (Ljung-Box p=0.65, runs test p=0.20).</p>
+      </div>
+    </details>
+
+  </div>
+
+  <div class="sec" style="font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--text3);letter-spacing:.12em;text-transform:uppercase;margin:24px 0 10px">Saved projects</div>
+  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:14px">
+    <div style="font-size:11px;color:var(--text2);margin-bottom:10px;line-height:1.5">
+      <strong style="color:var(--text)">How to save:</strong> (1) Set your account size, horizon, window, and method above. (2) Click <strong style="color:var(--green,#00d084)">ÔûÂ Run 10K simulations</strong>. (3) Once the results appear, come back here, type a name, and click Save.
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap">
+      <input type="text" id="fc-proj-name" placeholder="Project name (e.g. April 2026 baseline)" style="background:var(--bg3);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;padding:8px 12px;flex:1;min-width:200px;outline:none">
+      <button class="ui-btn" id="fc-save-btn" style="background:var(--acc,#22d3ee);color:#000;font-weight:700;padding:8px 16px">­ƒÆ¥ Save current run</button>
+    </div>
+    <div id="fc-save-msg" style="font-size:11px;color:var(--text3);margin-bottom:10px;min-height:16px;font-family:'JetBrains Mono',monospace"></div>
+    <div id="fc-projects-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px"></div>
+  </div>
+
+  <div id="fc-checkpoint-section" style="display:none">
+    <div class="sec" style="font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--text3);letter-spacing:.12em;text-transform:uppercase;margin:24px 0 10px">Checkpoints ÔÇö track real account vs forecast</div>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px">
+      <div style="font-size:11px;color:var(--text2);margin-bottom:10px">Add a checkpoint with your real account size today, or auto-update from the live trade log. The checkpoint will be plotted on the forecast cone and show which percentile you're tracking.</div>
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap">
+        <input type="date" id="fc-cp-date" style="background:var(--bg3);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;padding:8px 12px;outline:none">
+        <input type="number" id="fc-cp-equity" placeholder="Real account size today" style="background:var(--bg3);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;padding:8px 12px;outline:none">
+        <button class="ui-btn" id="fc-cp-add">+ Add checkpoint</button>
+        <button class="ui-btn" id="fc-cp-update-from-trades" style="background:rgba(34,211,238,.12);border-color:var(--cyan,#22d3ee);color:var(--cyan,#22d3ee);font-weight:700">Ôƒ│ Update from real trades</button>
+      </div>
+      <div id="fc-tracking-status" style="font-size:11px;font-family:'JetBrains Mono',monospace;padding:10px 12px;border-radius:6px;margin-bottom:10px;display:none"></div>
+      <div id="fc-cp-list" style="font-size:11px;font-family:'JetBrains Mono',monospace"></div>
+    </div>
+  </div>
+
+</div>
+
+
+
+
 <div class="view" id="v-ticker">
 
   <!-- Search bar -->
@@ -1063,13 +1172,6 @@ function dateRangePreset(preset){
 // ── Rebuild stats from merged AT+newTrades after Firebase sync ──
 function rebuildAllStats(){
   const all = allT();
-  // Ensure every trade has ym — Firebase trades may lack it
-  all.forEach(t=>{
-    if(!t.ym && t.dt){
-      if(t.dt.includes('-')){ t.ym=t.dt.slice(0,7); }
-      else if(t.dt.includes('/')){ const[m,d,y]=t.dt.split('/'); t.ym=y+'-'+m.padStart(2,'0'); }
-    }
-  });
   const ssNew = {};
   SO.forEach(s => {
     const rows = all.filter(t => t.s === s);
@@ -1153,37 +1255,6 @@ function rebuildAllStats(){
 
   // Update overview metric cards
   if(typeof buildOvMetrics==='function') buildOvMetrics();
-  // Broadcast live stats to Firebase for Hub
-  broadcastStats();
-}
-
-function broadcastStats(){
-  if(!window._currentUser||!window._set||!window._ref||!window._db){
-    console.log('broadcastStats: skipped (no auth/db yet)');
-    return;
-  }
-  const all=allT();
-  if(!all.length) return;
-  const wins=all.filter(t=>t.w).length;
-  const accR=all.reduce((a,t)=>a+(t.ar||0),0);
-  const endEq=DAY.length?DAY[DAY.length-1].equity:3000;
-  const toOrd=s=>{if(!s)return 0;if(s.includes('T'))s=s.slice(0,10);if(s.includes('-')){const[y,m,d]=s.split('-');return parseInt(y)*10000+parseInt(m)*100+parseInt(d);}if(s.includes('/')){const[m,d,y]=s.split('/');return parseInt(y)*10000+parseInt(m)*100+parseInt(d);}return 0;};
-  const sorted=[...all].sort((a,b)=>toOrd(b.dt)-toOrd(a.dt));
-  const last=sorted[0];
-  const payload={
-    trades:all.length, wins:wins,
-    wr:parseFloat((wins/all.length*100).toFixed(1)),
-    accR:parseFloat(accR.toFixed(2)),
-    endEq:parseFloat(endEq.toFixed(2)),
-    lastTrade:last?last.tk+' ('+last.dt+')':'—',
-    lastTicker:last?last.tk:'—',
-    lastDate:last?last.dt:'—',
-    updated:new Date().toISOString()
-  };
-  console.log('broadcastStats: writing to omega/stats', payload);
-  window._set(window._ref(window._db,'omega/stats'), payload)
-    .then(()=>console.log('broadcastStats: ✓ omega/stats written'))
-    .catch(e=>console.error('broadcastStats: ✗ write failed', e));
 }
 
 function calcStats(rows){
@@ -3448,8 +3519,6 @@ document.querySelectorAll('.mtab').forEach(tab=>{
     document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));
     tab.classList.add('on');
     document.getElementById('v-'+tab.dataset.v).classList.add('on');
-    if(tab.dataset.v==='overview'){buildOvMetrics();buildOvTable();buildHaid();buildHeatmap();buildAllocMonitor();buildAllocPhases();buildFeeOvBox();}
-    if(tab.dataset.v==='monthly') buildMonthly();
     if(tab.dataset.v==='log') initTL();
     if(tab.dataset.v==='categories') buildCat();
     if(tab.dataset.v==='setups') rebuildSetupCards();
@@ -3637,5 +3706,696 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<style>
+.fc-btn{background:var(--bg3);border:1px solid var(--border);color:var(--text2);font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;padding:6px 12px;border-radius:6px;cursor:pointer;letter-spacing:.04em;transition:all .12s}
+.fc-btn:hover{border-color:var(--acc,#22d3ee);color:var(--acc,#22d3ee)}
+.fc-btn.active{background:var(--acc,#22d3ee);color:#000;border-color:var(--acc,#22d3ee)}
+body.light .fc-btn.active{color:#fff}
+.fc-proj-card{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px;cursor:pointer;transition:all .12s}
+.fc-proj-card:hover{border-color:var(--acc,#22d3ee)}
+.fc-proj-card.loaded{border-color:var(--acc,#22d3ee);background:rgba(34,211,238,.04)}
+.fc-proj-name{font-size:12px;font-weight:700;color:var(--text);margin-bottom:4px}
+.fc-proj-meta{font-size:9px;color:var(--text3);font-family:'JetBrains Mono',monospace;letter-spacing:.04em;line-height:1.5}
+.fc-proj-actions{display:flex;gap:6px;margin-top:8px}
+.fc-proj-actions button{font-size:9px;padding:4px 8px;background:transparent;border:1px solid var(--border);border-radius:4px;color:var(--text2);cursor:pointer;font-family:'JetBrains Mono',monospace}
+.fc-proj-actions button:hover{border-color:var(--acc,#22d3ee);color:var(--acc,#22d3ee)}
+.fc-proj-actions button.del:hover{border-color:var(--red);color:var(--red)}
+details.explain{background:var(--bg3);border:1px solid var(--border);border-radius:6px;overflow:hidden}
+details.explain summary{list-style:none}
+details.explain summary::-webkit-details-marker{display:none}
+.fc-cp-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);font-family:'JetBrains Mono',monospace;font-size:11px}
+.fc-cp-row:last-child{border-bottom:none}
+.fc-cp-row .del{background:transparent;border:none;color:var(--text3);cursor:pointer;font-size:14px;padding:0 6px}
+.fc-cp-row .del:hover{color:var(--red)}
+</style>
+
+<script type="module">
+/* Firebase imports for forecast project storage */
+import { getDatabase, ref, set, get, remove, push, onValue }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+/* Wait for the existing window._db to be ready */
+function whenDbReady(cb){
+  if (window._db) { cb(); return; }
+  let tries = 0;
+  const iv = setInterval(() => {
+    if (window._db || tries++ > 100) {
+      clearInterval(iv);
+      if (window._db) cb();
+      else console.error('Firebase db never initialized for forecast');
+    }
+  }, 100);
+}
+
+window.fcProjects = {};  // {projectId: project}
+window.fcCurrentProject = null;
+window.fcCurrentRun = null;  // last completed simulation run
+
+window.fcLoadProjects = function() {
+  console.log('[forecast] fcLoadProjects called');
+  whenDbReady(() => {
+    try {
+      const db = window._db;
+      if (!db) { console.error('[forecast] DB not ready'); return; }
+      const path = ref(db, 'omega/forecast_projects');
+      onValue(path, snap => {
+        const data = snap.val() || {};
+        const count = Object.keys(data).length;
+        console.log('[forecast] Loaded ' + count + ' project(s) from Firebase');
+        window.fcProjects = data;
+        renderProjectsList();
+      }, err => {
+        console.error('[forecast] Read failed:', err);
+        const cont = document.getElementById('fc-projects-list');
+        if (cont) cont.innerHTML = `<div style="font-size:11px;color:var(--red,#f56565);font-family:'JetBrains Mono',monospace">Ô£ù Cannot read projects from Firebase. Permission denied? ${err.message || err.code || ''}</div>`;
+      });
+    } catch (err) {
+      console.error('[forecast] Load setup failed:', err);
+    }
+  });
+};
+
+window.fcSaveProject = async function(name) {
+  console.log('[forecast] fcSaveProject called with name:', name);
+  const msgEl = document.getElementById('fc-save-msg');
+  function setMsg(text, color){
+    if (!msgEl) return;
+    msgEl.textContent = text;
+    msgEl.style.color = color || 'var(--text2)';
+    msgEl.style.fontWeight = '600';
+  }
+  function clearMsgLater(){ setTimeout(()=>{ if (msgEl){ msgEl.textContent=''; msgEl.style.color='var(--text3)'; msgEl.style.fontWeight='normal'; } }, 4000); }
+
+  if (!window.fcCurrentRun) {
+    setMsg('ÔÜá Run a simulation first ÔÇö click the green ÔûÂ Run 10K simulations button above', 'var(--red,#f56565)');
+    console.warn('[forecast] save blocked: fcCurrentRun is null');
+    return;
+  }
+  if (!name || !name.trim()) {
+    setMsg('ÔÜá Enter a project name first', 'var(--red,#f56565)');
+    return;
+  }
+  setMsg('SavingÔÇª', 'var(--text2)');
+  whenDbReady(async () => {
+    try {
+      const db = window._db;
+      if (!db) throw new Error('Firebase database not initialized');
+      const id = 'proj_' + Date.now();
+      const today = new Date();
+      const dateStr = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
+      const project = {
+        id, name: name.trim(), created: dateStr,
+        params: window.fcCurrentRun.params,
+        summary: window.fcCurrentRun.summary,
+        bands: window.fcCurrentRun.bands,
+        checkpoints: [{date: dateStr, equity: window.fcCurrentRun.params.startEquity, isInitial: true}]
+      };
+      console.log('[forecast] Writing to Firebase path: omega/forecast_projects/' + id);
+      console.log('[forecast] Payload size (chars):', JSON.stringify(project).length);
+      await set(ref(db, 'omega/forecast_projects/' + id), project);
+      console.log('[forecast] Ô£ô Save succeeded');
+      setMsg('Ô£ô Saved as "' + name.trim() + '"', 'var(--green,#00d084)');
+      document.getElementById('fc-proj-name').value = '';
+      clearMsgLater();
+    } catch (err) {
+      console.error('[forecast] Save failed:', err);
+      if (msgEl) {
+        msgEl.textContent = 'Ô£ù Save failed: ' + (err.message || err.code || 'unknown error');
+        msgEl.style.color = 'var(--red,#f56565)';
+      }
+      alert('Save failed: ' + (err.message || err.code || 'unknown error') + '\n\nCheck browser console (F12) for details. Most likely cause: Firebase security rules don\'t allow writes to /omega/forecast_projects/');
+    }
+  });
+};
+
+window.fcDeleteProject = async function(projectId) {
+  if (!confirm('Delete this project? Cannot be undone.')) return;
+  whenDbReady(async () => {
+    await remove(ref(window._db, 'omega/forecast_projects/' + projectId));
+    if (window.fcCurrentProject && window.fcCurrentProject.id === projectId) {
+      window.fcCurrentProject = null;
+      document.getElementById('fc-checkpoint-section').style.display = 'none';
+    }
+  });
+};
+
+window.fcLoadProject = function(projectId) {
+  const proj = window.fcProjects[projectId];
+  if (!proj) return;
+  window.fcCurrentProject = proj;
+  // Load params back into the inputs
+  document.getElementById('fc-equity').value = proj.params.startEquity;
+  setActiveButton('fc-btn', 'data-h', String(proj.params.horizon));
+  setActiveButton('fc-btn', 'data-w', proj.params.window);
+  setActiveButton('fc-btn', 'data-m', proj.params.method);
+  // Restore the bands as the "current run" so the chart can be redrawn from saved data
+  window.fcCurrentRun = {
+    params: proj.params,
+    summary: proj.summary,
+    bands: proj.bands
+  };
+  // Show summary and chart from saved data
+  showResults(window.fcCurrentRun, proj.checkpoints);
+  // Show checkpoint section
+  document.getElementById('fc-checkpoint-section').style.display = 'block';
+  renderCheckpoints(proj.checkpoints);
+  // Re-render projects list to highlight this one
+  renderProjectsList();
+  // Scroll to results
+  document.getElementById('fc-results').scrollIntoView({behavior: 'smooth', block: 'start'});
+};
+
+window.fcAddCheckpoint = async function() {
+  if (!window.fcCurrentProject) { alert('Load a project first'); return; }
+  const date = document.getElementById('fc-cp-date').value;
+  const equity = parseFloat(document.getElementById('fc-cp-equity').value);
+  if (!date || !equity || equity <= 0) { alert('Enter valid date and equity'); return; }
+  whenDbReady(async () => {
+    const db = window._db;
+    const proj = window.fcCurrentProject;
+    const newCheckpoints = [...(proj.checkpoints || []), {date, equity, isInitial: false}]
+      .sort((a,b) => a.date.localeCompare(b.date));
+    await set(ref(db, 'omega/forecast_projects/' + proj.id + '/checkpoints'), newCheckpoints);
+    proj.checkpoints = newCheckpoints;
+    renderCheckpoints(newCheckpoints);
+    showResults(window.fcCurrentRun, newCheckpoints);
+    document.getElementById('fc-cp-equity').value = '';
+  });
+};
+
+/* Auto-update checkpoint from the live Omega daily trade log.
+   Method: percentage-based replay. Takes the project's starting equity, compounds forward
+   using the real AccR% values (DAY[i].rs) from the trade log for dates AFTER the project start.
+   This answers: "If my $X account had received the same AccR% Omega generated, where would I be?" */
+window.fcUpdateFromTrades = async function() {
+  if (!window.fcCurrentProject) { alert('Load a project first'); return; }
+  const proj = window.fcCurrentProject;
+  const startDate = proj.created;       // project creation date (ISO YYYY-MM-DD)
+  const startEquity = proj.params.startEquity;
+  if (!window.DAY || !Array.isArray(window.DAY)) { alert('Trade log not available'); return; }
+
+  // Filter DAY entries strictly AFTER the project start date, using ISO sort
+  // Some DAY entries may have legacy M/D/YYYY format ÔÇö normalize
+  function toISO(d) {
+    if (!d) return null;
+    if (/^\d{4}-\d{2}-\d{2}$/.test(d)) return d;
+    // Try M/D/YYYY
+    const m = d.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if (m) return m[3] + '-' + m[1].padStart(2,'0') + '-' + m[2].padStart(2,'0');
+    return null;
+  }
+  const relevant = window.DAY
+    .map(d => ({ iso: toISO(d.date), rs: d.rs }))
+    .filter(d => d.iso && typeof d.rs === 'number' && d.iso > startDate)
+    .sort((a,b) => a.iso.localeCompare(b.iso));
+
+  if (relevant.length === 0) {
+    alert('No trading days found after project creation date (' + startDate + '). Come back after some trades have happened!');
+    return;
+  }
+
+  // Compound forward using Method A
+  let eq = startEquity;
+  for (const d of relevant) { eq = eq * (1 + d.rs / 100); }
+  const lastDate = relevant[relevant.length - 1].iso;
+  const computedEquity = Math.round(eq * 100) / 100;
+  const daysUsed = relevant.length;
+
+  // Confirm with the user
+  const sumAR = relevant.reduce((s, d) => s + d.rs, 0);
+  const msg = `Replay from ${startDate} ÔåÆ ${lastDate}\n\n`
+    + `Started: $${startEquity.toLocaleString()}\n`
+    + `Trading days applied: ${daysUsed}\n`
+    + `Sum of AccR%: ${sumAR >= 0 ? '+' : ''}${sumAR.toFixed(2)}%\n`
+    + `Computed equity: $${computedEquity.toLocaleString()}\n\n`
+    + `Add this as a checkpoint dated ${lastDate}?`;
+  if (!confirm(msg)) return;
+
+  whenDbReady(async () => {
+    const db = window._db;
+    // Remove any prior auto-generated checkpoint for the same last-date to avoid duplicates
+    const existing = (proj.checkpoints || []).filter(c => !(c.isFromTrades && c.date === lastDate));
+    const newCheckpoints = [...existing, {date: lastDate, equity: computedEquity, isInitial: false, isFromTrades: true}]
+      .sort((a,b) => a.date.localeCompare(b.date));
+    await set(ref(db, 'omega/forecast_projects/' + proj.id + '/checkpoints'), newCheckpoints);
+    proj.checkpoints = newCheckpoints;
+    renderCheckpoints(newCheckpoints);
+    showResults(window.fcCurrentRun, newCheckpoints);
+  });
+};
+
+/* Compute tracking status: given the latest checkpoint and the project's forecast bands,
+   tell the user which percentile band they're tracking in plain language. */
+function computeTrackingStatus(run, checkpoints){
+  if (!run || !run.bands || !checkpoints || checkpoints.length < 2) return null;
+  // Use the most recent checkpoint
+  const sorted = [...checkpoints].sort((a,b) => a.date.localeCompare(b.date));
+  const latest = sorted[sorted.length - 1];
+  const initial = sorted[0];
+  if (!initial || !latest || latest.date === initial.date) return null;
+
+  // How many trading days between project start and the checkpoint?
+  // Use calendar days converted to trading days (252/365 ratio)
+  const calDays = (Date.parse(latest.date) - Date.parse(initial.date)) / 86400000;
+  const tradingDaysElapsed = Math.round(calDays * (252/365));
+  const horizon = run.params.horizon;
+  const idx = Math.min(horizon, Math.max(0, tradingDaysElapsed));
+  if (idx === 0) return null;
+
+  const actual = latest.equity;
+  const p5 = run.bands.p5[idx], p25 = run.bands.p25[idx], p50 = run.bands.p50[idx],
+        p75 = run.bands.p75[idx], p95 = run.bands.p95[idx];
+
+  // Figure out which band
+  let label, color, verdict;
+  if (actual >= p95){ label = 'Above P95'; color = 'var(--green, #00d084)'; verdict = 'Exceptional ÔÇö in the best 5% of simulated outcomes. Past performance tracking at the extreme optimistic tail.'; }
+  else if (actual >= p75){ label = 'P75ÔÇôP95'; color = 'var(--green, #00d084)'; verdict = 'Tracking in the optimistic band (top 25%). Performing better than 3 out of 4 simulated outcomes.'; }
+  else if (actual >= p50){ label = 'P50ÔÇôP75'; color = 'var(--cyan, #22d3ee)'; verdict = 'Tracking above median. On the good side of the expected range.'; }
+  else if (actual >= p25){ label = 'P25ÔÇôP50'; color = 'var(--cyan, #22d3ee)'; verdict = 'Tracking between conservative planning anchor (P25) and median. Normal zone ÔÇö no cause for concern.'; }
+  else if (actual >= p5){ label = 'P5ÔÇôP25'; color = 'var(--amber, #f6ad55)'; verdict = 'Below conservative planning anchor. Performing worse than 75% of simulations. Watch closely.'; }
+  else { label = 'Below P5'; color = 'var(--red, #f56565)'; verdict = 'Worse than the 5th-percentile worst-case scenario. Market/system may be in a regime the forecast could not capture. Consider re-evaluating.'; }
+
+  // Distance from median
+  const pctFromMedian = ((actual - p50) / p50) * 100;
+  return {
+    label, color, verdict,
+    actual, p5, p25, p50, p75, p95,
+    tradingDaysElapsed, idx,
+    pctFromMedian
+  };
+}
+
+window.fcRemoveCheckpoint = async function(idx) {
+  if (!window.fcCurrentProject) return;
+  if (!confirm('Remove this checkpoint?')) return;
+  const proj = window.fcCurrentProject;
+  const newCheckpoints = proj.checkpoints.filter((_, i) => i !== idx);
+  whenDbReady(async () => {
+    await set(ref(window._db, 'omega/forecast_projects/' + proj.id + '/checkpoints'), newCheckpoints);
+    proj.checkpoints = newCheckpoints;
+    renderCheckpoints(newCheckpoints);
+    showResults(window.fcCurrentRun, newCheckpoints);
+  });
+};
+
+function renderProjectsList() {
+  const cont = document.getElementById('fc-projects-list');
+  if (!cont) return;
+  const projects = Object.values(window.fcProjects).sort((a,b) => (b.created||'').localeCompare(a.created||''));
+  if (projects.length === 0) {
+    cont.innerHTML = '<div style="font-size:11px;color:var(--text3);font-style:italic;font-family:\'JetBrains Mono\',monospace">No saved projects yet. Run a simulation and save it.</div>';
+    return;
+  }
+  cont.innerHTML = projects.map(p => {
+    const isLoaded = window.fcCurrentProject && window.fcCurrentProject.id === p.id;
+    const horizonLabel = {21:'1M', 63:'3M', 126:'6M', 252:'1Y'}[p.params.horizon] || (p.params.horizon+'d');
+    const cpCount = (p.checkpoints || []).length;
+    return `<div class="fc-proj-card ${isLoaded?'loaded':''}" onclick="fcLoadProject('${p.id}')">
+      <div class="fc-proj-name">${escapeHTML(p.name)}</div>
+      <div class="fc-proj-meta">
+        Created ${p.created} ┬À $${p.params.startEquity.toLocaleString()} start ┬À ${horizonLabel} ┬À win:${p.params.window} ┬À ${p.params.method}<br>
+        ${cpCount} checkpoint${cpCount!==1?'s':''}
+      </div>
+      <div class="fc-proj-actions">
+        <button onclick="event.stopPropagation();fcLoadProject('${p.id}')">Open</button>
+        <button class="del" onclick="event.stopPropagation();fcDeleteProject('${p.id}')">Delete</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderCheckpoints(checkpoints) {
+  const cont = document.getElementById('fc-cp-list');
+  if (!cont) return;
+  if (!checkpoints || checkpoints.length === 0) { cont.innerHTML = ''; return; }
+  cont.innerHTML = checkpoints.map((c, i) => {
+    const initialBadge = c.isInitial ? '<span style="background:rgba(34,211,238,.15);color:var(--acc,#22d3ee);padding:1px 6px;border-radius:3px;font-size:9px;margin-left:6px">INITIAL</span>' : '';
+    const autoBadge = c.isFromTrades ? '<span style="background:rgba(0,208,132,.15);color:var(--green,#00d084);padding:1px 6px;border-radius:3px;font-size:9px;margin-left:6px">AUTO ┬À FROM TRADES</span>' : '';
+    const delBtn = c.isInitial ? '' : `<button class="del" onclick="fcRemoveCheckpoint(${i})">├ù</button>`;
+    return `<div class="fc-cp-row"><div>${c.date}${initialBadge}${autoBadge}</div><div>$${Number(c.equity).toLocaleString()} ${delBtn}</div></div>`;
+  }).join('');
+}
+
+function escapeHTML(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function setActiveButton(cls, attr, val) {
+  document.querySelectorAll(`.${cls}[${attr}]`).forEach(b => {
+    if (b.getAttribute(attr) === val) b.classList.add('active');
+    else if (b.parentElement && b.parentElement.querySelectorAll(`.${cls}[${attr}]`).length > 0) b.classList.remove('active');
+  });
+}
+
+/* ============= MONTE CARLO ENGINE ============= */
+function getDailySeries() {
+  // Use the existing DAY array from Omega's data
+  if (!window.DAY) return [];
+  return window.DAY.filter(d => d && typeof d.rs === 'number').map(d => ({date: d.date, rs: d.rs}));
+}
+
+function filterDailyByWindow(daily, windowChoice) {
+  if (windowChoice === 'all' || daily.length === 0) return daily;
+  const lastDate = daily[daily.length - 1].date;
+  const [ly, lm, ld] = lastDate.split('-').map(Number);
+  const ref = new Date(ly, lm-1, ld);
+  let cutoff = new Date(ref);
+  if (windowChoice === '12m') cutoff.setFullYear(cutoff.getFullYear()-1);
+  else if (windowChoice === '6m') cutoff.setMonth(cutoff.getMonth()-6);
+  else if (windowChoice === '3m') cutoff.setMonth(cutoff.getMonth()-3);
+  const cutoffStr = cutoff.getFullYear()+'-'+String(cutoff.getMonth()+1).padStart(2,'0')+'-'+String(cutoff.getDate()).padStart(2,'0');
+  return daily.filter(d => d.date >= cutoffStr);
+}
+
+function simulateDayBootstrap(arPool, startEq, horizon, nPaths) {
+  const nPool = arPool.length;
+  const paths = new Float64Array(nPaths * (horizon + 1));
+  for (let p = 0; p < nPaths; p++) {
+    let eq = startEq;
+    paths[p * (horizon+1)] = eq;
+    for (let t = 0; t < horizon; t++) {
+      const r = arPool[Math.floor(Math.random() * nPool)];
+      eq = eq * (1 + r/100);
+      paths[p * (horizon+1) + t + 1] = eq;
+    }
+  }
+  return paths;  // flattened, shape (nPaths, horizon+1)
+}
+
+function simulateBlockBootstrap(arPool, startEq, horizon, nPaths, blockSize=5) {
+  const nPool = arPool.length;
+  const paths = new Float64Array(nPaths * (horizon + 1));
+  for (let p = 0; p < nPaths; p++) {
+    let eq = startEq;
+    paths[p * (horizon+1)] = eq;
+    let t = 0;
+    while (t < horizon) {
+      const start = Math.floor(Math.random() * (nPool - blockSize + 1));
+      const len = Math.min(blockSize, horizon - t);
+      for (let k = 0; k < len; k++) {
+        const r = arPool[start + k];
+        eq = eq * (1 + r/100);
+        paths[p * (horizon+1) + t + k + 1] = eq;
+      }
+      t += len;
+    }
+  }
+  return paths;
+}
+
+function getPath(paths, pIdx, horizon) {
+  // Extract path pIdx as array
+  const out = new Array(horizon+1);
+  for (let t = 0; t <= horizon; t++) out[t] = paths[pIdx * (horizon+1) + t];
+  return out;
+}
+
+function percentile(sorted, p) {
+  const idx = (sorted.length - 1) * p / 100;
+  const lo = Math.floor(idx), hi = Math.ceil(idx);
+  if (lo === hi) return sorted[lo];
+  return sorted[lo] + (sorted[hi] - sorted[lo]) * (idx - lo);
+}
+
+function computeBands(paths, nPaths, horizon) {
+  // For each time step, sort across paths and extract percentiles
+  const bands = {p5:[], p25:[], p50:[], p75:[], p95:[]};
+  for (let t = 0; t <= horizon; t++) {
+    const slice = new Array(nPaths);
+    for (let p = 0; p < nPaths; p++) slice[p] = paths[p * (horizon+1) + t];
+    slice.sort((a,b) => a - b);
+    bands.p5.push(percentile(slice, 5));
+    bands.p25.push(percentile(slice, 25));
+    bands.p50.push(percentile(slice, 50));
+    bands.p75.push(percentile(slice, 75));
+    bands.p95.push(percentile(slice, 95));
+  }
+  return bands;
+}
+
+function computeSummary(paths, nPaths, horizon, startEq) {
+  const finals = new Array(nPaths);
+  const maxDDs = new Array(nPaths);
+  let nNewHigh = 0, nUnderwater = 0, n20=0, n30=0, n50=0;
+  for (let p = 0; p < nPaths; p++) {
+    let peak = startEq, dd = 0, mdd = 0, hadHigh = false;
+    for (let t = 0; t <= horizon; t++) {
+      const eq = paths[p * (horizon+1) + t];
+      if (eq > peak) peak = eq;
+      if (eq > startEq * 1.01) hadHigh = true;
+      const cur_dd = (eq - peak) / peak * 100;
+      if (cur_dd < mdd) mdd = cur_dd;
+    }
+    const final = paths[p * (horizon+1) + horizon];
+    finals[p] = final; maxDDs[p] = mdd;
+    if (hadHigh) nNewHigh++;
+    if (final < startEq) nUnderwater++;
+    if (final < 0.80 * startEq) n20++;
+    if (final < 0.70 * startEq) n30++;
+    if (final < 0.50 * startEq) n50++;
+  }
+  finals.sort((a,b) => a - b);
+  maxDDs.sort((a,b) => a - b);
+  return {
+    p5: percentile(finals, 5),
+    p25: percentile(finals, 25),
+    p50: percentile(finals, 50),
+    p75: percentile(finals, 75),
+    p95: percentile(finals, 95),
+    medianMaxDD: percentile(maxDDs, 50),
+    p95MaxDD: percentile(maxDDs, 5),  // 5th pct because more negative = worse
+    pNewHigh: nNewHigh / nPaths * 100,
+    pUnderwater: nUnderwater / nPaths * 100,
+    p20: n20 / nPaths * 100,
+    p30: n30 / nPaths * 100,
+    p50Loss: n50 / nPaths * 100,
+    finalDistribution: finals,
+  };
+}
+
+/* ============= UI HANDLERS ============= */
+function getCurrentParams() {
+  const startEquity = parseFloat(document.getElementById('fc-equity').value) || 10000;
+  const horizon = parseInt(document.querySelector('.fc-btn[data-h].active').getAttribute('data-h'));
+  const window = document.querySelector('.fc-btn[data-w].active').getAttribute('data-w');
+  const method = document.querySelector('.fc-btn[data-m].active').getAttribute('data-m');
+  return {startEquity, horizon, window, method};
+}
+
+window.fcRunSimulation = function() {
+  const p = getCurrentParams();
+  const allDaily = getDailySeries();
+  if (allDaily.length === 0) { alert('No historical data loaded'); return; }
+  const filtered = filterDailyByWindow(allDaily, p.window);
+  if (filtered.length < 20) { alert('Window too small (' + filtered.length + ' days). Pick a bigger window.'); return; }
+  const arPool = filtered.map(d => d.rs);
+  const N_PATHS = 10000;
+  const t0 = performance.now();
+  const paths = (p.method === 'block')
+    ? simulateBlockBootstrap(arPool, p.startEquity, p.horizon, N_PATHS, 5)
+    : simulateDayBootstrap(arPool, p.startEquity, p.horizon, N_PATHS);
+  const bands = computeBands(paths, N_PATHS, p.horizon);
+  const summary = computeSummary(paths, N_PATHS, p.horizon, p.startEquity);
+  const elapsed = ((performance.now() - t0)/1000).toFixed(2);
+  document.getElementById('fc-runtime').textContent = '10K paths in ' + elapsed + 's ┬À ' + filtered.length + 'd source';
+  window.fcCurrentRun = {
+    params: p,
+    summary: {...summary, finalDistribution: undefined},  // strip large array for save
+    bands,
+    fullSummary: summary
+  };
+  showResults(window.fcCurrentRun, window.fcCurrentProject ? window.fcCurrentProject.checkpoints : null);
+};
+
+function showResults(run, checkpoints) {
+  document.getElementById('fc-warning').style.display = 'block';
+  document.getElementById('fc-results').style.display = 'block';
+  const s = run.fullSummary || run.summary;
+  const p = run.params;
+  // Summary cards
+  const fmtEq = v => '$' + Number(v).toLocaleString(undefined, {maximumFractionDigits: 0});
+  const horizonLabel = {21:'1 month', 63:'3 months', 126:'6 months', 252:'1 year'}[p.horizon] || (p.horizon + ' days');
+  document.getElementById('fc-summary-cards').innerHTML = `
+    <div class="mc"><div class="ml">P5 ÔÇö Worst case</div><div class="mv rc">${fmtEq(s.p5)}</div><div class="ms">5% chance worse ┬À ${horizonLabel}</div></div>
+    <div class="mc"><div class="ml">P25 ÔÇö Conservative</div><div class="mv ac">${fmtEq(s.p25)}</div><div class="ms">25% chance worse ┬À planning anchor</div></div>
+    <div class="mc"><div class="ml">P50 ÔÇö Median</div><div class="mv">${fmtEq(s.p50)}</div><div class="ms">half above, half below</div></div>
+    <div class="mc"><div class="ml">P75 ÔÇö Optimistic</div><div class="mv" style="opacity:.6">${fmtEq(s.p75)}</div><div class="ms">75% chance worse</div></div>
+    <div class="mc"><div class="ml">P95 ÔÇö Best case</div><div class="mv gc" style="opacity:.5">${fmtEq(s.p95)}</div><div class="ms">5% chance better</div></div>
+    <div class="mc"><div class="ml">Median Max DD</div><div class="mv ac">${s.medianMaxDD.toFixed(1)}%</div><div class="ms">P95 worst: ${s.p95MaxDD.toFixed(1)}%</div></div>
+    <div class="mc"><div class="ml">P(new high)</div><div class="mv gc">${s.pNewHigh.toFixed(0)}%</div><div class="ms">during horizon</div></div>
+    <div class="mc"><div class="ml">P(underwater at end)</div><div class="mv ${s.pUnderwater>30?'rc':'ac'}">${s.pUnderwater.toFixed(1)}%</div><div class="ms">below start</div></div>
+  `;
+  // Ruin probability table
+  const ruinRow = (lbl, pct, threshold) => {
+    const color = pct < 1 ? 'var(--green,#00d084)' : pct < 5 ? 'var(--amber,#f6ad55)' : 'var(--red,#f56565)';
+    const interp = pct < 1 ? 'Very unlikely' : pct < 5 ? 'Possible ÔÇö manageable' : pct < 20 ? 'Plausible ÔÇö size down' : 'Material risk ÔÇö reduce size';
+    return `<tr><td style="padding:9px 10px;border-bottom:1px solid var(--border)">${lbl}</td><td style="padding:9px 10px;text-align:right;font-weight:700;color:${color};border-bottom:1px solid var(--border)">${pct.toFixed(2)}%</td><td style="padding:9px 10px;color:var(--text2);font-size:10px;border-bottom:1px solid var(--border)">${interp}</td></tr>`;
+  };
+  document.getElementById('fc-ruin-body').innerHTML =
+    ruinRow('Lose >20% of capital', s.p20, 0.20) +
+    ruinRow('Lose >30% of capital', s.p30, 0.30) +
+    ruinRow('Lose >50% of capital', s.p50Loss, 0.50);
+  // Tracking status (if we have enough checkpoints)
+  const trackEl = document.getElementById('fc-tracking-status');
+  if (trackEl) {
+    const ts = computeTrackingStatus(run, checkpoints);
+    if (ts) {
+      const direction = ts.pctFromMedian >= 0 ? 'above' : 'below';
+      const directionAbs = Math.abs(ts.pctFromMedian).toFixed(1);
+      trackEl.style.display = 'block';
+      trackEl.style.background = 'var(--bg3)';
+      trackEl.style.borderLeft = '3px solid ' + ts.color;
+      trackEl.innerHTML = `
+        <div style="font-size:10px;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px">Real-time tracking ┬À ${ts.tradingDaysElapsed} trading days elapsed</div>
+        <div style="font-size:16px;font-weight:700;color:${ts.color};margin-bottom:4px">${ts.label} ÔÇö ${directionAbs}% ${direction} median</div>
+        <div style="font-size:11px;color:var(--text2);line-height:1.5">${ts.verdict}</div>
+        <div style="margin-top:8px;font-size:10px;color:var(--text3);font-family:'JetBrains Mono',monospace">
+          Real: $${Number(ts.actual).toLocaleString()} ┬À P5: $${Number(ts.p5).toLocaleString()} ┬À P25: $${Number(ts.p25).toLocaleString()} ┬À P50: $${Number(ts.p50).toLocaleString()} ┬À P75: $${Number(ts.p75).toLocaleString()} ┬À P95: $${Number(ts.p95).toLocaleString()}
+        </div>
+      `;
+    } else {
+      trackEl.style.display = 'none';
+    }
+  }
+  // Charts
+  drawFanChart(run, checkpoints);
+  drawHistChart(run);
+}
+
+let fcFanChart = null, fcHistChart = null;
+function drawFanChart(run, checkpoints) {
+  const ctx = document.getElementById('fc-fan-chart');
+  if (!ctx) return;
+  if (fcFanChart) fcFanChart.destroy();
+  const horizon = run.params.horizon;
+  const labels = Array.from({length: horizon+1}, (_, i) => 'd'+i);
+  // Themed colors
+  const isLight = document.body.classList.contains('light');
+  const c = {
+    grid: isLight ? 'rgba(0,0,0,.06)' : 'rgba(255,255,255,.06)',
+    text: isLight ? '#4a5068' : '#a0a9c8',
+  };
+  const datasets = [
+    {label:'P95 (best 5%)', data: run.bands.p95, borderColor:'rgba(0,208,132,.35)', backgroundColor:'rgba(0,208,132,.04)', borderWidth:1, pointRadius:0, fill:'+1', tension:.2},
+    {label:'P75', data: run.bands.p75, borderColor:'rgba(0,208,132,.45)', backgroundColor:'rgba(0,208,132,.06)', borderWidth:1, pointRadius:0, fill:'+1', tension:.2},
+    {label:'P50 ÔÇö median', data: run.bands.p50, borderColor:'#22d3ee', backgroundColor:'rgba(34,211,238,.05)', borderWidth:2, pointRadius:0, fill:'+1', tension:.2, borderDash:[6,3]},
+    {label:'P25 ÔÇö anchor here', data: run.bands.p25, borderColor:'#f6ad55', backgroundColor:'rgba(246,173,85,.10)', borderWidth:2, pointRadius:0, fill:'+1', tension:.2},
+    {label:'P5 ÔÇö worst case', data: run.bands.p5, borderColor:'#f56565', backgroundColor:'rgba(245,101,101,.12)', borderWidth:2.5, pointRadius:0, fill:false, tension:.2},
+  ];
+  // Add checkpoints as scatter overlay if present
+  if (checkpoints && checkpoints.length > 0) {
+    // Map dates to days-from-start
+    const startDate = checkpoints[0].date;
+    const sd = new Date(startDate);
+    const cpData = checkpoints.map(cp => {
+      const d = new Date(cp.date);
+      const days = Math.round((d - sd) / 86400000 / (365/252)); // approx convert calendar days to trading days
+      return {x: 'd'+Math.min(horizon, Math.max(0, days)), y: cp.equity};
+    });
+    datasets.push({
+      label: 'Real account checkpoints',
+      data: cpData, type:'scatter',
+      borderColor:'#a78bfa', backgroundColor:'#a78bfa',
+      pointRadius:6, pointHoverRadius:9, showLine:true, borderWidth:2.5
+    });
+  }
+  fcFanChart = new Chart(ctx.getContext('2d'), {
+    type: 'line', data: { labels, datasets },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      interaction:{mode:'index', intersect:false},
+      plugins:{
+        legend:{position:'top', labels:{boxWidth:10, font:{size:9}, color:c.text}},
+        tooltip:{callbacks:{label: cb => `${cb.dataset.label}: $${Number(cb.parsed.y).toLocaleString(undefined,{maximumFractionDigits:0})}`}}
+      },
+      scales:{
+        x:{grid:{color:c.grid}, ticks:{color:c.text, maxTicksLimit:12, font:{size:9}}},
+        y:{grid:{color:c.grid}, ticks:{color:c.text, callback:v=>'$'+Number(v).toLocaleString(undefined,{notation:'compact'}), font:{size:9}}}
+      }
+    }
+  });
+}
+
+function drawHistChart(run) {
+  const ctx = document.getElementById('fc-hist-chart');
+  if (!ctx) return;
+  if (fcHistChart) fcHistChart.destroy();
+  const finals = run.fullSummary ? run.fullSummary.finalDistribution : null;
+  if (!finals) return;  // saved projects don't have the full distribution
+  // Bin into 30 buckets, log scale on x
+  const sorted = [...finals].sort((a,b) => a-b);
+  const min = sorted[Math.floor(sorted.length*0.01)];  // trim extreme tails for display
+  const max = sorted[Math.floor(sorted.length*0.99)];
+  const nBins = 30;
+  const logMin = Math.log10(Math.max(1, min)), logMax = Math.log10(max);
+  const binWidth = (logMax - logMin) / nBins;
+  const bins = new Array(nBins).fill(0);
+  for (const f of finals) {
+    if (f < min || f > max) continue;
+    const lf = Math.log10(Math.max(1, f));
+    const idx = Math.min(nBins-1, Math.floor((lf - logMin) / binWidth));
+    bins[idx]++;
+  }
+  const labels = bins.map((_, i) => '$' + Number(Math.pow(10, logMin + (i+0.5)*binWidth)).toLocaleString(undefined,{notation:'compact'}));
+  const isLight = document.body.classList.contains('light');
+  const c = { grid: isLight ? 'rgba(0,0,0,.06)' : 'rgba(255,255,255,.06)', text: isLight ? '#4a5068' : '#a0a9c8' };
+  fcHistChart = new Chart(ctx.getContext('2d'), {
+    type: 'bar',
+    data: { labels, datasets: [{label:'Simulations', data: bins, backgroundColor:'rgba(34,211,238,.5)', borderColor:'#22d3ee', borderWidth:1}] },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false}, tooltip:{callbacks:{label:cb=>`${cb.parsed.y} simulations ended near ${cb.label}`}}},
+      scales:{x:{grid:{color:c.grid}, ticks:{color:c.text,maxTicksLimit:10,font:{size:8}}},
+              y:{grid:{color:c.grid}, ticks:{color:c.text,font:{size:9}}, title:{display:true,text:'# of simulations',color:c.text,font:{size:9}}}}
+    }
+  });
+}
+
+/* ============= INIT ============= */
+document.addEventListener('DOMContentLoaded', () => {
+  // Default checkpoint date = today
+  const cpDate = document.getElementById('fc-cp-date');
+  if (cpDate) {
+    const t = new Date();
+    cpDate.value = t.getFullYear() + '-' + String(t.getMonth()+1).padStart(2,'0') + '-' + String(t.getDate()).padStart(2,'0');
+  }
+
+  // Wire button groups
+  document.querySelectorAll('.fc-btn-group').forEach(group => {
+    group.addEventListener('click', e => {
+      const btn = e.target.closest('.fc-btn');
+      if (!btn) return;
+      group.querySelectorAll('.fc-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      // Window warning
+      if (btn.getAttribute('data-w') === '3m') document.getElementById('fc-window-warn').style.display = 'block';
+      else if (btn.getAttribute('data-w')) document.getElementById('fc-window-warn').style.display = 'none';
+    });
+  });
+
+  // Run button
+  const runBtn = document.getElementById('fc-run');
+  if (runBtn) runBtn.addEventListener('click', window.fcRunSimulation);
+
+  // Save button
+  const saveBtn = document.getElementById('fc-save-btn');
+  if (saveBtn) saveBtn.addEventListener('click', () => {
+    const name = document.getElementById('fc-proj-name').value;
+    window.fcSaveProject(name);
+  });
+
+  // Add checkpoint
+  const cpAdd = document.getElementById('fc-cp-add');
+  if (cpAdd) cpAdd.addEventListener('click', window.fcAddCheckpoint);
+
+  // Update from real trades (auto-checkpoint using live trade log)
+  const cpUpd = document.getElementById('fc-cp-update-from-trades');
+  if (cpUpd) cpUpd.addEventListener('click', window.fcUpdateFromTrades);
+
+  // Load saved projects from Firebase
+  window.fcLoadProjects();
+});
+</script>
 </body>
 </html>
