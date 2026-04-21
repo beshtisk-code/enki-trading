@@ -3279,7 +3279,7 @@ function buildFees(){
             <span style="font-size:10px;font-weight:700;color:${isCredit?'var(--green)':'var(--red)'};white-space:nowrap">${isCredit?'+':''}$${amt.toFixed(2)}</span>
           </div>
           ${annotBadge}
-          ${isWithdrawal ? `<div id="fee-annot-${aKey}" style="display:none"></div>` : ''}
+          ${isWithdrawal ? `<div id="fee-annot-${aKey}" style="display:none" onclick="event.stopPropagation()"></div>` : ''}
         </div>`;
         if(hasAnnot) html += `<div style="border-bottom:1px solid var(--border)"></div>`;
       });
@@ -3671,17 +3671,17 @@ window.feeToggleAnnotEditor = function(key, totalDebit){
   const existing = feeAnnotations[key];
   const items = existing ? (existing.items || []) : [];
 
-  let html = `<div style="padding:10px;background:var(--bg3);border-radius:8px;margin:6px 0">`;
+  let html = `<div style="padding:10px;background:var(--bg3);border-radius:8px;margin:6px 0" onclick="event.stopPropagation()">`;
   html += `<div style="font-size:9px;font-family:'JetBrains Mono',monospace;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px">Breakdown for $${totalDebit.toFixed(2)} withdrawal</div>`;
   html += `<div id="fee-annot-lines-${key}">`;
   items.forEach((item, i) => {
     html += feeAnnotLineHTML(key, i, item.label, item.amount);
   });
   html += `</div>`;
-  html += `<div style="display:flex;gap:6px;margin-top:8px">`;
-  html += `<button onclick="feeAddAnnotLine('${key}',${totalDebit})" style="font-size:9px;padding:4px 10px;background:var(--acc,#22d3ee);color:#000;border:none;border-radius:4px;cursor:pointer;font-family:'JetBrains Mono',monospace;font-weight:700">+ Add item</button>`;
-  html += `<button onclick="feeSaveAnnot('${key}',${totalDebit})" style="font-size:9px;padding:4px 10px;background:var(--green);color:#000;border:none;border-radius:4px;cursor:pointer;font-family:'JetBrains Mono',monospace;font-weight:700">Save</button>`;
-  if(items.length > 0) html += `<button onclick="feeClearAnnot('${key}')" style="font-size:9px;padding:4px 10px;background:transparent;border:1px solid var(--red);color:var(--red);border-radius:4px;cursor:pointer;font-family:'JetBrains Mono',monospace">Clear all</button>`;
+  html += `<div style="display:flex;gap:6px;margin-top:8px" onclick="event.stopPropagation()">`;
+  html += `<button onclick="event.stopPropagation();feeAddAnnotLine('${key}',${totalDebit})" style="font-size:9px;padding:4px 10px;background:var(--acc,#22d3ee);color:#000;border:none;border-radius:4px;cursor:pointer;font-family:'JetBrains Mono',monospace;font-weight:700">+ Add item</button>`;
+  html += `<button onclick="event.stopPropagation();feeSaveAnnot('${key}',${totalDebit})" style="font-size:9px;padding:4px 10px;background:var(--green);color:#000;border:none;border-radius:4px;cursor:pointer;font-family:'JetBrains Mono',monospace;font-weight:700">Save</button>`;
+  if(items.length > 0) html += `<button onclick="event.stopPropagation();feeClearAnnot('${key}')" style="font-size:9px;padding:4px 10px;background:transparent;border:1px solid var(--red);color:var(--red);border-radius:4px;cursor:pointer;font-family:'JetBrains Mono',monospace">Clear all</button>`;
   html += `</div>`;
   html += `<div id="fee-annot-msg-${key}" style="font-size:9px;font-family:'JetBrains Mono',monospace;margin-top:6px;min-height:14px"></div>`;
   html += `</div>`;
@@ -3689,15 +3689,17 @@ window.feeToggleAnnotEditor = function(key, totalDebit){
 };
 
 function feeAnnotLineHTML(key, idx, label, amount){
-  return `<div style="display:flex;gap:6px;align-items:center;margin-bottom:4px" id="fee-annot-line-${key}-${idx}">
+  return `<div style="display:flex;gap:6px;align-items:center;margin-bottom:4px" id="fee-annot-line-${key}-${idx}" onclick="event.stopPropagation()">
     <input type="text" value="${label||''}" placeholder="Reason (e.g. Personal, Polygon...)"
+      onclick="event.stopPropagation()" onfocus="event.stopPropagation()"
       style="flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:4px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:10px;padding:4px 8px"
       data-annot-label="${key}" data-idx="${idx}">
     <span style="font-size:10px;color:var(--text3)">$</span>
     <input type="number" value="${amount||''}" placeholder="0.00" step="0.01" min="0"
+      onclick="event.stopPropagation()" onfocus="event.stopPropagation()"
       style="width:90px;background:var(--bg2);border:1px solid var(--border);border-radius:4px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:10px;padding:4px 8px;text-align:right"
       data-annot-amt="${key}" data-idx="${idx}">
-    <button onclick="this.parentElement.remove()" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:14px;padding:0 4px" title="Remove">×</button>
+    <button onclick="event.stopPropagation();this.parentElement.remove()" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:14px;padding:0 4px" title="Remove">×</button>
   </div>`;
 }
 
@@ -3767,7 +3769,7 @@ window.feeDownloadPDF = async function(){
   try {
     const canvas = await html2canvas(feeView, {
       backgroundColor: '#1a1625',
-      scale: 1.5,
+      scale: 3,
       logging: false,
       useCORS: true,
       allowTaint: true
@@ -3776,24 +3778,18 @@ window.feeDownloadPDF = async function(){
     const {jsPDF} = jspdf;
     const imgW = canvas.width;
     const imgH = canvas.height;
-    const pdfW = 297; // A4 landscape width mm
-    const pdfH = 210;
-    const ratio = Math.min(pdfW / imgW, pdfH / imgH) * 0.95;
-    const w = imgW * ratio;
-    const h = imgH * ratio;
-    // Use portrait if content is taller than wide, otherwise landscape
-    const orientation = h > w ? 'p' : 'l';
-    const pdf = new jsPDF({orientation, unit:'mm', format:'a4'});
-    const pageW = pdf.internal.pageSize.getWidth();
-    const pageH = pdf.internal.pageSize.getHeight();
-    // Scale to fit page width
-    const fitW = pageW * 0.95;
+    // Use A3 landscape for readability
+    const pdf = new jsPDF({orientation:'l', unit:'mm', format:'a3'});
+    const pageW = pdf.internal.pageSize.getWidth(); // 420mm
+    const pageH = pdf.internal.pageSize.getHeight(); // 297mm
+    const margin = 8;
+    const fitW = pageW - margin*2;
     const fitH = (imgH / imgW) * fitW;
-    if(fitH <= pageH * 0.95){
-      pdf.addImage(imgData, 'PNG', (pageW-fitW)/2, 5, fitW, fitH);
+    if(fitH <= pageH - margin*2){
+      pdf.addImage(imgData, 'PNG', margin, margin, fitW, fitH);
     } else {
-      // Multi-page: split image vertically
-      const sliceH = (pageH * 0.93) / fitW * imgW; // pixels per page
+      // Multi-page
+      const sliceH = (pageH - margin*2) / fitW * imgW;
       let y = 0;
       let page = 0;
       while(y < imgH){
@@ -3805,7 +3801,7 @@ window.feeDownloadPDF = async function(){
         tmpCanvas.getContext('2d').drawImage(canvas, 0, y, imgW, thisSlice, 0, 0, imgW, thisSlice);
         const sliceData = tmpCanvas.toDataURL('image/png');
         const sliceFitH = (thisSlice / imgW) * fitW;
-        pdf.addImage(sliceData, 'PNG', (pageW-fitW)/2, 5, fitW, sliceFitH);
+        pdf.addImage(sliceData, 'PNG', margin, margin, fitW, sliceFitH);
         y += sliceH;
         page++;
       }
