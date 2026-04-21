@@ -1150,6 +1150,31 @@ function rebuildAllStats(){
   })();
 
   if(typeof buildOvMetrics==='function') buildOvMetrics();
+  broadcastStats();
+}
+
+function broadcastStats(){
+  if(!window._currentUser||!window._set||!window._ref||!window._db) return;
+  const all=allT();
+  if(!all.length) return;
+  const wins=all.filter(t=>t.w).length;
+  const accR=all.reduce((a,t)=>a+(t.ar||0),0);
+  const endEq=DAY.length?DAY[DAY.length-1].equity:3000;
+  const toOrd=s=>{if(!s)return 0;if(s.includes('T'))s=s.slice(0,10);if(s.includes('-')){const[y,m,d]=s.split('-');return parseInt(y)*10000+parseInt(m)*100+parseInt(d);}if(s.includes('/')){const[m,d,y]=s.split('/');return parseInt(y)*10000+parseInt(m)*100+parseInt(d);}return 0;};
+  const sorted=[...all].sort((a,b)=>toOrd(b.dt)-toOrd(a.dt));
+  const last=sorted[0];
+  try{
+    window._set(window._ref(window._db,'alpha/stats'),{
+      trades:all.length, wins:wins,
+      wr:parseFloat((wins/all.length*100).toFixed(1)),
+      accR:parseFloat(accR.toFixed(2)),
+      endEq:parseFloat(endEq.toFixed(2)),
+      lastTrade:last?last.tk+' ('+last.dt+')':'—',
+      lastTicker:last?last.tk:'—',
+      lastDate:last?last.dt:'—',
+      updated:new Date().toISOString()
+    });
+  }catch(e){console.error('broadcastStats:',e);}
 }
 
 // ── Overview metric cards (dynamic) ──
