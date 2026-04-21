@@ -764,11 +764,12 @@ body.light .dot{background:#00a86b;box-shadow:0 0 8px #00a86b}
       <thead><tr>
         <th>Ticker</th><th class="r">Std Locate</th><th class="r">ExLocate</th>
         <th class="r">Overnight</th>
-        <th class="r">Rebates</th><th class="r">Net Cost</th><th class="r">Requests</th><th>Dates</th>
+        <th class="r">Rebates</th><th class="r">Net Cost</th><th class="r">Records</th><th>Recent dates</th>
       </tr></thead>
       <tbody id="fee-ticker-body"></tbody>
     </table>
   </div>
+  <div id="fee-ticker-detail" style="display:none;margin-bottom:18px"></div>
 
   <!-- Raw fee records -->
   <div class="sec">All fee records (filtered)</div>
@@ -3182,6 +3183,7 @@ function buildFees(){
   });
 
   // ── Fee type breakdown ──
+  const ftype = document.getElementById('fee-type-filter')?.value || 'all';
   const byType = {locate_std:0,locate_ex:0,short_interest:0,rebate:0,software:0,bank_fee:0,opra:0,regional_quote:0,tradervue:0,cns:0,withdrawal:0,deposit:0,other:0};
   recs.forEach(r => {
     if(r.type==='rebate') byType.rebate+=r.credit;
@@ -3189,39 +3191,88 @@ function buildFees(){
     else if(byType[r.type]!==undefined) byType[r.type]+=r.debit;
     else byType.other+=r.debit;
   });
-  // Trading fees for doughnut (exclude transfers)
+
   const dLabels = ['Std Locate','ExLocate','Overnight','Rebate','Software','Data Fees','Other'];
   const dVals   = [byType.locate_std, byType.locate_ex, byType.short_interest, -byType.rebate,
                    byType.software, byType.opra+byType.regional_quote+byType.tradervue, byType.cns+byType.other];
   const dColors = ['rgba(34,211,238,.6)','rgba(245,101,101,.7)','rgba(167,139,250,.7)','rgba(0,208,132,.6)',
                    'rgba(246,173,85,.6)','rgba(56,189,248,.5)','rgba(90,78,138,.6)'];
+
   if(feeTypeChart) feeTypeChart.destroy();
-  feeTypeChart = new Chart(document.getElementById('fee-type-chart'), {
-    type:'doughnut',
-    data:{labels:dLabels, datasets:[{data:dVals.map(Math.abs), backgroundColor:dColors, borderWidth:0}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:axC,font:{size:10}}}}}
-  });
-  // Full breakdown list (including transfers)
-  const allTypes = [
-    {l:'Std Locate',v:byType.locate_std,c:dColors[0]},
-    {l:'ExLocate',v:byType.locate_ex,c:dColors[1]},
-    {l:'Overnight (Short Int.)',v:byType.short_interest,c:dColors[2]},
-    {l:'Rebate',v:-byType.rebate,c:dColors[3]},
-    {l:'Software',v:byType.software,c:dColors[4]},
-    {l:'Opra',v:byType.opra,c:'rgba(56,189,248,.5)'},
-    {l:'Regional Quote',v:byType.regional_quote,c:'rgba(56,189,248,.5)'},
-    {l:'Tradervue',v:byType.tradervue,c:'rgba(56,189,248,.5)'},
-    {l:'CNS',v:byType.cns,c:'rgba(90,78,138,.6)'},
-    {l:'Bank Fees',v:byType.bank_fee,c:'rgba(245,158,11,.5)'},
-    {l:'Withdrawals',v:byType.withdrawal,c:'rgba(148,163,184,.5)'},
-    {l:'Deposits',v:-byType.deposit,c:'rgba(74,222,128,.5)'},
-  ].filter(t=>Math.abs(t.v)>0.01);
-  const bd = document.getElementById('fee-type-breakdown');
-  if(bd) bd.innerHTML = allTypes.map(t=>`
-    <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-family:'JetBrains Mono',monospace">
-      <span style="font-size:10px;color:var(--text2)">${t.l}</span>
-      <span style="font-size:11px;font-weight:700;color:${t.c}">${t.v>=0?'$':'-$'}${Math.abs(t.v).toFixed(2)}</span>
-    </div>`).join('');
+  feeTypeChart = null;
+  const chartEl = document.getElementById('fee-type-chart');
+
+  if(ftype === 'all'){
+    // Show doughnut + summary breakdown
+    feeTypeChart = new Chart(chartEl, {
+      type:'doughnut',
+      data:{labels:dLabels, datasets:[{data:dVals.map(Math.abs), backgroundColor:dColors, borderWidth:0}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:axC,font:{size:10}}}}}
+    });
+    const allTypes = [
+      {l:'Std Locate',v:byType.locate_std,c:dColors[0]},
+      {l:'ExLocate',v:byType.locate_ex,c:dColors[1]},
+      {l:'Overnight (Short Int.)',v:byType.short_interest,c:dColors[2]},
+      {l:'Rebate',v:-byType.rebate,c:dColors[3]},
+      {l:'Software',v:byType.software,c:dColors[4]},
+      {l:'Opra',v:byType.opra,c:'rgba(56,189,248,.5)'},
+      {l:'Regional Quote',v:byType.regional_quote,c:'rgba(56,189,248,.5)'},
+      {l:'Tradervue',v:byType.tradervue,c:'rgba(56,189,248,.5)'},
+      {l:'CNS',v:byType.cns,c:'rgba(90,78,138,.6)'},
+      {l:'Bank Fees',v:byType.bank_fee,c:'rgba(245,158,11,.5)'},
+      {l:'Withdrawals',v:byType.withdrawal,c:'rgba(148,163,184,.5)'},
+      {l:'Deposits',v:-byType.deposit,c:'rgba(74,222,128,.5)'},
+    ].filter(t=>Math.abs(t.v)>0.01);
+    const bd = document.getElementById('fee-type-breakdown');
+    if(bd) bd.innerHTML = allTypes.map(t=>`
+      <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-family:'JetBrains Mono',monospace">
+        <span style="font-size:10px;color:var(--text2)">${t.l}</span>
+        <span style="font-size:11px;font-weight:700;color:${t.c}">${t.v>=0?'$':'-$'}${Math.abs(t.v).toFixed(2)}</span>
+      </div>`).join('');
+  } else {
+    // Filtered to specific type — show detailed record list
+    const typeNames = {locate_std:'Stock Locate',locate_ex:'ExLocate',short_interest:'Overnight (Short Interest)',
+      rebate:'Rebates',software:'Software',bank_fee:'Bank Fees',withdrawal:'Withdrawals',deposit:'Deposits',other:'Other'};
+    const typeName = typeNames[ftype] || ftype;
+    const total = recs.reduce((a,r) => a + (r.type==='rebate'||r.type==='deposit' ? r.credit : r.debit), 0);
+
+    // Group by month for the doughnut
+    const byMonth = {};
+    recs.forEach(r => {
+      if(!r.month) return;
+      byMonth[r.month] = (byMonth[r.month]||0) + (r.type==='rebate'||r.type==='deposit' ? r.credit : r.debit);
+    });
+    const mKeys = Object.keys(byMonth).sort();
+    const mColors = mKeys.map((_,i) => `hsla(${200+i*25},70%,60%,.7)`);
+    feeTypeChart = new Chart(chartEl, {
+      type:'doughnut',
+      data:{labels:mKeys, datasets:[{data:mKeys.map(k=>Math.abs(byMonth[k])), backgroundColor:mColors, borderWidth:0}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:axC,font:{size:9}}}}}
+    });
+
+    // Right panel: detailed records
+    const bd = document.getElementById('fee-type-breakdown');
+    if(bd){
+      const sorted = [...recs].sort((a,b)=>b.date.localeCompare(a.date));
+      const isCredit = ftype==='rebate'||ftype==='deposit';
+      let html = `<div style="font-size:11px;font-weight:700;color:var(--text);margin-bottom:8px;font-family:'JetBrains Mono',monospace">${typeName} — $${total.toFixed(2)} total (${recs.length} records)</div>`;
+      html += `<div style="max-height:280px;overflow-y:auto">`;
+      sorted.forEach(r => {
+        const amt = isCredit ? r.credit : r.debit;
+        const ticker = r.ticker ? `<span style="color:var(--acc);font-weight:700;margin-right:6px">${r.ticker}</span>` : '';
+        const comment = r.comment ? `<span style="color:var(--text3);font-size:9px">${r.comment.length>50?r.comment.slice(0,50)+'…':r.comment}</span>` : '';
+        html += `<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid var(--border);font-family:'JetBrains Mono',monospace;gap:6px">
+          <div style="display:flex;align-items:center;gap:6px;min-width:0;overflow:hidden">
+            <span style="font-size:9px;color:var(--text3);white-space:nowrap">${r.date}</span>
+            ${ticker}${comment}
+          </div>
+          <span style="font-size:10px;font-weight:700;color:${isCredit?'var(--green)':'var(--red)'};white-space:nowrap">${isCredit?'+':''}$${amt.toFixed(2)}</span>
+        </div>`;
+      });
+      html += `</div>`;
+      bd.innerHTML = html;
+    }
+  }
 
   // ── Fee records ──
   const recCount = document.getElementById('fee-records-count');
@@ -3270,7 +3321,7 @@ function feeTickerSearch(q){
     .filter(([t])=> !q || t.startsWith(q))
     .sort((a,b)=>b[1].total-a[1].total)
     .slice(0,50);
-  body.innerHTML = all.map(([ticker,v])=>`<tr>
+  body.innerHTML = all.map(([ticker,v])=>`<tr style="cursor:pointer" onclick="feeTickerDrill('${ticker}')" title="Click to see all charges for ${ticker}">
     <td style="font-weight:700;color:var(--acc)">${ticker}</td>
     <td class="r" style="color:var(--text2)">$${v.locate_std.toFixed(2)}</td>
     <td class="r" style="color:var(--red)">$${v.locate_ex.toFixed(2)}</td>
@@ -3280,6 +3331,84 @@ function feeTickerSearch(q){
     <td class="r" style="color:var(--text3)">${v.count}</td>
     <td style="font-size:9px;color:var(--text3);font-family:'JetBrains Mono',monospace">${(v.dates||[]).slice(-3).join(', ')}</td>
   </tr>`).join('');
+  // If exactly 1 result, auto-expand
+  if(all.length === 1) feeTickerDrill(all[0][0]);
+  else document.getElementById('fee-ticker-detail').style.display = 'none';
+}
+
+window.feeTickerDrill = function(ticker){
+  const panel = document.getElementById('fee-ticker-detail');
+  if(!panel) return;
+  // Get ALL fee records for this ticker
+  const recs = FD.fee_records.filter(r => r.ticker === ticker).sort((a,b) => {
+    // Sort by date descending (most recent first)
+    const da = a.date.split('/'), db = b.date.split('/');
+    const sa = (da[2]||'')+(da[0]||'').padStart(2,'0')+(da[1]||'').padStart(2,'0');
+    const sb = (db[2]||'')+(db[0]||'').padStart(2,'0')+(db[1]||'').padStart(2,'0');
+    return sb.localeCompare(sa);
+  });
+
+  if(!recs.length){ panel.style.display='none'; return; }
+  panel.style.display = 'block';
+
+  // Categorize
+  const locates = recs.filter(r=>r.type==='locate_std'||r.type==='locate_ex');
+  const overnight = recs.filter(r=>r.type==='short_interest');
+  const rebates = recs.filter(r=>r.type==='rebate');
+  const totalLocate = locates.reduce((a,r)=>a+r.debit,0);
+  const totalOvernight = overnight.reduce((a,r)=>a+r.debit,0);
+  const totalRebate = rebates.reduce((a,r)=>a+r.credit,0);
+
+  const typeLabel = {locate_std:'Std Locate',locate_ex:'ExLocate',short_interest:'Overnight',rebate:'Rebate'};
+  const typeColor = {locate_std:'var(--text2)',locate_ex:'var(--red)',short_interest:'var(--purple,#a78bfa)',rebate:'var(--green)'};
+
+  let html = `<div class="panel" style="padding:14px 16px">`;
+  html += `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">`;
+  html += `<div style="font-family:'JetBrains Mono',monospace"><span style="font-size:14px;font-weight:700;color:var(--acc)">${ticker}</span> <span style="font-size:11px;color:var(--text3)">— ${recs.length} fee records</span></div>`;
+  html += `<div style="display:flex;gap:12px;font-family:'JetBrains Mono',monospace;font-size:10px">`;
+  if(totalLocate>0) html += `<span style="color:var(--text2)">Locate: <b>$${totalLocate.toFixed(2)}</b></span>`;
+  if(totalOvernight>0) html += `<span style="color:var(--purple,#a78bfa)">Overnight: <b>$${totalOvernight.toFixed(2)}</b></span>`;
+  if(totalRebate>0) html += `<span style="color:var(--green)">Rebate: <b>-$${totalRebate.toFixed(2)}</b></span>`;
+  html += `</div></div>`;
+
+  // Show overnight section first if any (most important for auditing)
+  if(overnight.length > 0){
+    html += `<div style="font-size:9px;font-family:'JetBrains Mono',monospace;color:var(--purple,#a78bfa);letter-spacing:.08em;text-transform:uppercase;margin:10px 0 6px;font-weight:700">▸ Overnight / Short Interest — ${overnight.length} charge${overnight.length>1?'s':''}</div>`;
+    overnight.forEach(r => {
+      html += `<div style="display:flex;justify-content:space-between;padding:5px 8px;border-bottom:1px solid var(--border);font-family:'JetBrains Mono',monospace;background:rgba(167,139,250,.04)">
+        <span style="font-size:10px;color:var(--text2)">${r.date}</span>
+        <span style="font-size:10px;font-weight:700;color:var(--red)">$${r.debit.toFixed(2)}</span>
+      </div>`;
+    });
+    html += `<div style="display:flex;justify-content:flex-end;padding:6px 8px;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;color:var(--purple,#a78bfa)">Total overnight: $${totalOvernight.toFixed(2)}</div>`;
+  }
+
+  // Locate fees
+  if(locates.length > 0){
+    html += `<div style="font-size:9px;font-family:'JetBrains Mono',monospace;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;margin:10px 0 6px;font-weight:700">▸ Locate fees — ${locates.length} record${locates.length>1?'s':''}</div>`;
+    locates.forEach(r => {
+      html += `<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 8px;border-bottom:1px solid var(--border);font-family:'JetBrains Mono',monospace">
+        <div><span style="font-size:10px;color:var(--text3)">${r.date}</span> <span style="font-size:8px;background:var(--bg3);padding:1px 4px;border-radius:3px;margin-left:4px">${typeLabel[r.type]||r.type}</span></div>
+        <span style="font-size:10px;font-weight:700;color:${typeColor[r.type]||'var(--text)'}">$${r.debit.toFixed(2)}</span>
+      </div>`;
+    });
+  }
+
+  // Rebates
+  if(rebates.length > 0){
+    html += `<div style="font-size:9px;font-family:'JetBrains Mono',monospace;color:var(--green);letter-spacing:.08em;text-transform:uppercase;margin:10px 0 6px;font-weight:700">▸ Rebates — ${rebates.length} record${rebates.length>1?'s':''}</div>`;
+    rebates.forEach(r => {
+      html += `<div style="display:flex;justify-content:space-between;padding:4px 8px;border-bottom:1px solid var(--border);font-family:'JetBrains Mono',monospace">
+        <span style="font-size:10px;color:var(--text3)">${r.date}</span>
+        <span style="font-size:10px;font-weight:700;color:var(--green)">+$${r.credit.toFixed(2)}</span>
+      </div>`;
+    });
+  }
+
+  html += `</div>`;
+  panel.innerHTML = html;
+  // Scroll to detail
+  panel.scrollIntoView({behavior:'smooth', block:'nearest'});
 }
 
 
