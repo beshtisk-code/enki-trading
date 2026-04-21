@@ -718,6 +718,7 @@ body.light .dot{background:#00a86b;box-shadow:0 0 8px #00a86b}
         <option value="deposit">Deposits</option>
         <option value="other">Other</option>
       </select>
+      <button onclick="feeDownloadPDF()" style="background:var(--acc,#22d3ee);color:#000;border:none;border-radius:6px;padding:6px 12px;font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;cursor:pointer;white-space:nowrap" title="Download filtered report as PDF">📥 PDF</button>
     </span>
   </div>
 
@@ -3255,19 +3256,32 @@ function buildFees(){
     if(bd){
       const sorted = [...recs].sort((a,b)=>b.date.localeCompare(a.date));
       const isCredit = ftype==='rebate'||ftype==='deposit';
+      const isWithdrawal = ftype==='withdrawal';
       let html = `<div style="font-size:11px;font-weight:700;color:var(--text);margin-bottom:8px;font-family:'JetBrains Mono',monospace">${typeName} — $${total.toFixed(2)} total (${recs.length} records)</div>`;
-      html += `<div style="max-height:280px;overflow-y:auto">`;
+      if(isWithdrawal) html += `<div style="font-size:9px;color:var(--text3);margin-bottom:8px;font-family:'JetBrains Mono',monospace;line-height:1.5">Click any withdrawal to add a breakdown (Personal, Subscriptions, etc.)</div>`;
+      html += `<div style="max-height:400px;overflow-y:auto">`;
       sorted.forEach(r => {
         const amt = isCredit ? r.credit : r.debit;
         const ticker = r.ticker ? `<span style="color:var(--acc);font-weight:700;margin-right:6px">${r.ticker}</span>` : '';
         const comment = r.comment ? `<span style="color:var(--text3);font-size:9px">${r.comment.length>50?r.comment.slice(0,50)+'…':r.comment}</span>` : '';
-        html += `<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid var(--border);font-family:'JetBrains Mono',monospace;gap:6px">
-          <div style="display:flex;align-items:center;gap:6px;min-width:0;overflow:hidden">
-            <span style="font-size:9px;color:var(--text3);white-space:nowrap">${r.date}</span>
-            ${ticker}${comment}
+        const aKey = isWithdrawal ? feeAnnotKey(r) : '';
+        const hasAnnot = isWithdrawal && feeAnnotations[aKey] && feeAnnotations[aKey].items && feeAnnotations[aKey].items.length > 0;
+        const annotBadge = hasAnnot ? feeRenderAnnotBadge(aKey) : '';
+        const clickAttr = isWithdrawal ? ` onclick="feeToggleAnnotEditor('${aKey}',${amt})" style="cursor:pointer"` : '';
+        const editIcon = isWithdrawal ? `<span style="font-size:9px;color:var(--acc);margin-left:4px" title="Click to add/edit breakdown">${hasAnnot?'✎':'+'}</span>` : '';
+
+        html += `<div${clickAttr}>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:${hasAnnot?'none':'1px solid var(--border)'};font-family:'JetBrains Mono',monospace;gap:6px">
+            <div style="display:flex;align-items:center;gap:6px;min-width:0;overflow:hidden">
+              <span style="font-size:9px;color:var(--text3);white-space:nowrap">${r.date}</span>
+              ${ticker}${comment}${editIcon}
+            </div>
+            <span style="font-size:10px;font-weight:700;color:${isCredit?'var(--green)':'var(--red)'};white-space:nowrap">${isCredit?'+':''}$${amt.toFixed(2)}</span>
           </div>
-          <span style="font-size:10px;font-weight:700;color:${isCredit?'var(--green)':'var(--red)'};white-space:nowrap">${isCredit?'+':''}$${amt.toFixed(2)}</span>
+          ${annotBadge}
+          ${isWithdrawal ? `<div id="fee-annot-${aKey}" style="display:none"></div>` : ''}
         </div>`;
+        if(hasAnnot) html += `<div style="border-bottom:1px solid var(--border)"></div>`;
       });
       html += `</div>`;
       bd.innerHTML = html;
@@ -3627,6 +3641,186 @@ function rebuildFDMeta(){
   if(dates.length){ m.period_start=dates[0]; m.period_end=dates[dates.length-1]; }
 }
 
+// ── Withdrawal annotation system ──
+let feeAnnotations = {};
+
+function feeAnnotKey(r){
+  // Stable key from date + debit amount
+  return (r.date||'').replace(/\//g,'') + '_' + (r.debit||0).toFixed(2).replace('.','');
+}
+
+function feeInitAnnotations(){
+  if(typeof window.feeLoadAnnotations === 'function'){
+    window.feeLoadAnnotations(data => {
+      feeAnnotations = data || {};
+      console.log('[fees] Loaded', Object.keys(feeAnnotations).length, 'annotations');
+    });
+  } else {
+    // Module not ready yet, retry
+    setTimeout(feeInitAnnotations, 500);
+  }
+}
+setTimeout(feeInitAnnotations, 1000);
+
+window.feeToggleAnnotEditor = function(key, totalDebit){
+  const el = document.getElementById('fee-annot-' + key);
+  if(!el) return;
+  if(el.style.display === 'block'){ el.style.display = 'none'; return; }
+  el.style.display = 'block';
+
+  const existing = feeAnnotations[key];
+  const items = existing ? (existing.items || []) : [];
+
+  let html = `<div style="padding:10px;background:var(--bg3);border-radius:8px;margin:6px 0">`;
+  html += `<div style="font-size:9px;font-family:'JetBrains Mono',monospace;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px">Breakdown for $${totalDebit.toFixed(2)} withdrawal</div>`;
+  html += `<div id="fee-annot-lines-${key}">`;
+  items.forEach((item, i) => {
+    html += feeAnnotLineHTML(key, i, item.label, item.amount);
+  });
+  html += `</div>`;
+  html += `<div style="display:flex;gap:6px;margin-top:8px">`;
+  html += `<button onclick="feeAddAnnotLine('${key}',${totalDebit})" style="font-size:9px;padding:4px 10px;background:var(--acc,#22d3ee);color:#000;border:none;border-radius:4px;cursor:pointer;font-family:'JetBrains Mono',monospace;font-weight:700">+ Add item</button>`;
+  html += `<button onclick="feeSaveAnnot('${key}',${totalDebit})" style="font-size:9px;padding:4px 10px;background:var(--green);color:#000;border:none;border-radius:4px;cursor:pointer;font-family:'JetBrains Mono',monospace;font-weight:700">Save</button>`;
+  if(items.length > 0) html += `<button onclick="feeClearAnnot('${key}')" style="font-size:9px;padding:4px 10px;background:transparent;border:1px solid var(--red);color:var(--red);border-radius:4px;cursor:pointer;font-family:'JetBrains Mono',monospace">Clear all</button>`;
+  html += `</div>`;
+  html += `<div id="fee-annot-msg-${key}" style="font-size:9px;font-family:'JetBrains Mono',monospace;margin-top:6px;min-height:14px"></div>`;
+  html += `</div>`;
+  el.innerHTML = html;
+};
+
+function feeAnnotLineHTML(key, idx, label, amount){
+  return `<div style="display:flex;gap:6px;align-items:center;margin-bottom:4px" id="fee-annot-line-${key}-${idx}">
+    <input type="text" value="${label||''}" placeholder="Reason (e.g. Personal, Polygon...)"
+      style="flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:4px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:10px;padding:4px 8px"
+      data-annot-label="${key}" data-idx="${idx}">
+    <span style="font-size:10px;color:var(--text3)">$</span>
+    <input type="number" value="${amount||''}" placeholder="0.00" step="0.01" min="0"
+      style="width:90px;background:var(--bg2);border:1px solid var(--border);border-radius:4px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:10px;padding:4px 8px;text-align:right"
+      data-annot-amt="${key}" data-idx="${idx}">
+    <button onclick="this.parentElement.remove()" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:14px;padding:0 4px" title="Remove">×</button>
+  </div>`;
+}
+
+window.feeAddAnnotLine = function(key, totalDebit){
+  const container = document.getElementById('fee-annot-lines-' + key);
+  if(!container) return;
+  const idx = container.children.length;
+  container.insertAdjacentHTML('beforeend', feeAnnotLineHTML(key, idx, '', ''));
+};
+
+window.feeSaveAnnot = async function(key, totalDebit){
+  const msgEl = document.getElementById('fee-annot-msg-' + key);
+  const labels = document.querySelectorAll(`[data-annot-label="${key}"]`);
+  const amts = document.querySelectorAll(`[data-annot-amt="${key}"]`);
+  const items = [];
+  labels.forEach((el, i) => {
+    const label = el.value.trim();
+    const amt = parseFloat(amts[i]?.value) || 0;
+    if(label && amt > 0) items.push({label, amount: Math.round(amt*100)/100});
+  });
+  if(items.length === 0){ if(msgEl) msgEl.textContent = '⚠ Add at least one item'; return; }
+  const sum = items.reduce((a,i)=>a+i.amount, 0);
+  if(Math.abs(sum - totalDebit) > 0.02){
+    if(msgEl){ msgEl.style.color='var(--amber)'; msgEl.textContent = `⚠ Items total $${sum.toFixed(2)} vs withdrawal $${totalDebit.toFixed(2)} — difference: $${Math.abs(sum-totalDebit).toFixed(2)}`; }
+  }
+  const data = {items, total: totalDebit, updated: new Date().toISOString().slice(0,10)};
+  if(typeof window.feeSaveAnnotationFB === 'function'){
+    const ok = await window.feeSaveAnnotationFB(key, data);
+    if(ok){
+      feeAnnotations[key] = data;
+      if(msgEl){ msgEl.style.color='var(--green)'; msgEl.textContent = '✓ Saved'; }
+    } else {
+      if(msgEl){ msgEl.style.color='var(--red)'; msgEl.textContent = '✗ Save failed'; }
+    }
+  }
+};
+
+window.feeClearAnnot = async function(key){
+  if(!confirm('Remove all annotation items for this withdrawal?')) return;
+  if(typeof window.feeDeleteAnnotationFB === 'function'){
+    await window.feeDeleteAnnotationFB(key);
+    delete feeAnnotations[key];
+    document.getElementById('fee-annot-' + key).style.display = 'none';
+  }
+};
+
+function feeRenderAnnotBadge(key){
+  const a = feeAnnotations[key];
+  if(!a || !a.items || a.items.length === 0) return '';
+  return `<div style="margin-top:4px;padding:4px 8px;background:rgba(34,211,238,.06);border-radius:4px;border:1px solid rgba(34,211,238,.15)">` +
+    a.items.map(i => `<div style="display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:9px;padding:2px 0">
+      <span style="color:var(--text2)">${i.label}</span>
+      <span style="color:var(--acc)">$${i.amount.toFixed(2)}</span>
+    </div>`).join('') + `</div>`;
+}
+
+// ── PDF download ──
+window.feeDownloadPDF = async function(){
+  if(typeof html2canvas === 'undefined' || typeof jspdf === 'undefined'){
+    alert('PDF libraries still loading, try again in a moment.'); return;
+  }
+  const feeView = document.getElementById('v-fees');
+  if(!feeView) return;
+  const btn = event.target;
+  btn.textContent = '⏳ Generating...';
+  btn.disabled = true;
+  try {
+    const canvas = await html2canvas(feeView, {
+      backgroundColor: '#1a1625',
+      scale: 1.5,
+      logging: false,
+      useCORS: true,
+      allowTaint: true
+    });
+    const imgData = canvas.toDataURL('image/png');
+    const {jsPDF} = jspdf;
+    const imgW = canvas.width;
+    const imgH = canvas.height;
+    const pdfW = 297; // A4 landscape width mm
+    const pdfH = 210;
+    const ratio = Math.min(pdfW / imgW, pdfH / imgH) * 0.95;
+    const w = imgW * ratio;
+    const h = imgH * ratio;
+    // Use portrait if content is taller than wide, otherwise landscape
+    const orientation = h > w ? 'p' : 'l';
+    const pdf = new jsPDF({orientation, unit:'mm', format:'a4'});
+    const pageW = pdf.internal.pageSize.getWidth();
+    const pageH = pdf.internal.pageSize.getHeight();
+    // Scale to fit page width
+    const fitW = pageW * 0.95;
+    const fitH = (imgH / imgW) * fitW;
+    if(fitH <= pageH * 0.95){
+      pdf.addImage(imgData, 'PNG', (pageW-fitW)/2, 5, fitW, fitH);
+    } else {
+      // Multi-page: split image vertically
+      const sliceH = (pageH * 0.93) / fitW * imgW; // pixels per page
+      let y = 0;
+      let page = 0;
+      while(y < imgH){
+        if(page > 0) pdf.addPage();
+        const tmpCanvas = document.createElement('canvas');
+        tmpCanvas.width = imgW;
+        const thisSlice = Math.min(sliceH, imgH - y);
+        tmpCanvas.height = thisSlice;
+        tmpCanvas.getContext('2d').drawImage(canvas, 0, y, imgW, thisSlice, 0, 0, imgW, thisSlice);
+        const sliceData = tmpCanvas.toDataURL('image/png');
+        const sliceFitH = (thisSlice / imgW) * fitW;
+        pdf.addImage(sliceData, 'PNG', (pageW-fitW)/2, 5, fitW, sliceFitH);
+        y += sliceH;
+        page++;
+      }
+    }
+    const from = document.getElementById('fee-from')?.value || 'all';
+    const to = document.getElementById('fee-to')?.value || 'all';
+    pdf.save(`Alpha_FeeMonitor_${from}_to_${to}.pdf`);
+  } catch(e){
+    console.error('PDF generation error:', e);
+    alert('PDF generation failed: ' + e.message);
+  }
+  btn.textContent = '📥 PDF';
+  btn.disabled = false;
+};
+
 // ── Tab switching ──
 document.querySelectorAll('.mtab').forEach(tab=>{
   tab.addEventListener('click',()=>{
@@ -3681,7 +3875,7 @@ window.onAuthReady = function(user) {
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getDatabase, ref, get, set, push, onValue }
+import { getDatabase, ref, get, set, push, remove, onValue }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
 const firebaseConfig = {
@@ -3818,8 +4012,34 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   };
 
+  // ── Fee annotation Firebase functions ──
+  const FEE_ANNOT_PATH = 'alpha/fee_annotations';
+
+  window.feeLoadAnnotations = function(callback) {
+    onValue(ref(db, FEE_ANNOT_PATH), snap => {
+      const data = snap.val() || {};
+      callback(data);
+    });
+  };
+
+  window.feeSaveAnnotationFB = async function(key, data) {
+    try {
+      await set(ref(db, FEE_ANNOT_PATH + '/' + key), data);
+      return true;
+    } catch(e) { console.error('feeSaveAnnotation error:', e); return false; }
+  };
+
+  window.feeDeleteAnnotationFB = async function(key) {
+    try {
+      await remove(ref(db, FEE_ANNOT_PATH + '/' + key));
+      return true;
+    } catch(e) { console.error('feeDeleteAnnotation error:', e); return false; }
+  };
+
 </script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </body>
 </html>
