@@ -3242,19 +3242,26 @@ function buildFeeOvBox(){
   const box = document.getElementById('fee-ov-box');
   if(!box || !FD || !FD.meta) return;
   const m = FD.meta;
+  if(!m.median_trade_fee_pct && !m.total_locate && !m.total_comm){
+    box.innerHTML = `<div style="font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--text3);padding:12px">Fee data not yet uploaded · use Fee Monitor tab to import broker files</div>`;
+    return;
+  }
   const pct = m.overall_fee_pct || 0;
+  const medPct = m.median_trade_fee_pct || 0;
+  const totLoc = m.total_locate || 0;
+  const totComm = m.total_comm || 0;
   const col = pct<=20?'var(--green)':pct<=30?'var(--amber)':'var(--red)';
-  const medCol = m.median_trade_fee_pct<=15?'var(--green)':m.median_trade_fee_pct<=20?'var(--amber)':'var(--red)';
+  const medCol = medPct<=15?'var(--green)':medPct<=20?'var(--amber)':'var(--red)';
   box.innerHTML = `
     <div class="haid" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
       <div>
         <div style="font-size:9px;font-family:'JetBrains Mono',monospace;color:var(--text3);letter-spacing:.07em;text-transform:uppercase;margin-bottom:4px">Median fee per trade (actual)</div>
-        <div style="font-size:22px;font-weight:700;font-family:'JetBrains Mono',monospace;color:${medCol}">${m.median_trade_fee_pct.toFixed(1)}%</div>
+        <div style="font-size:22px;font-weight:700;font-family:'JetBrains Mono',monospace;color:${medCol}">${medPct.toFixed(1)}%</div>
         <div style="font-size:9px;font-family:'JetBrains Mono',monospace;color:var(--text3);margin-top:2px">vs 20% assumption · half of trades cost less than this</div>
       </div>
       <div style="display:flex;flex-direction:column;gap:4px;text-align:right">
-        <div style="font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--text3)">Total locate: <span style="color:var(--red)">$${m.total_locate.toFixed(0)}</span></div>
-        <div style="font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--text3)">Commission: <span style="color:var(--amber)">$${m.total_comm.toFixed(0)}</span></div>
+        <div style="font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--text3)">Total locate: <span style="color:var(--red)">$${totLoc.toFixed(0)}</span></div>
+        <div style="font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--text3)">Commission: <span style="color:var(--amber)">$${totComm.toFixed(0)}</span></div>
         <div style="font-size:9px;margin-top:2px"><a onclick="document.querySelector('[data-v=fees]').click()" style="color:var(--acc);cursor:pointer;font-family:'JetBrains Mono',monospace">→ Fee Monitor</a></div>
       </div>
     </div>`;
