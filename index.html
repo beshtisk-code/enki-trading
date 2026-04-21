@@ -6,135 +6,112 @@
 <title>Enki Trading</title>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
-/* DEFAULT THEME = LIGHT */
-:root{
-  --bg:#f5f5f8; --card-bg:#ffffff; --card-bg-alt:#f0f0f5;
-  --border:rgba(0,0,0,.08); --border-hover:rgba(0,0,0,.15);
-  --text:#1a1d2e; --text-muted:#4a5068; --text-dim:#8a90a5;
-  --green:#059669; --amber:#d97706; --purple:#7c3aed; --cyan:#0891b2; --red:#dc2626;
-  --portfolio-grad-1:#ffffff; --portfolio-grad-2:#f3eefe; --portfolio-grad-3:#ffffff;
-  --overlay-bg:#f5f5f8;
-  --auth-card-bg:#ffffff;
-  --user-badge-bg:rgba(0,0,0,.04);
-  --user-badge-border:rgba(0,0,0,.08);
-  --user-email-color:#4a5068;
-  --logout-color:#8a90a5;
-  --shadow-color:rgba(0,0,0,.08);
-  --shadow-color-hover-green:rgba(5,150,105,.18);
-  --shadow-color-hover-alpha:rgba(217,119,6,.18);
-  --shadow-color-hover-purple:rgba(124,58,237,.20);
-}
-body.dark{
-  --bg:#0d0a1e; --card-bg:#160e38; --card-bg-alt:#1e1545;
-  --border:rgba(255,255,255,.08); --border-hover:rgba(255,255,255,.15);
-  --text:#e2e0ff; --text-muted:#9d8fd4; --text-dim:#5a4e8a;
-  --green:#00d084; --amber:#fbbf24; --purple:#a78bfa; --cyan:#22d3ee; --red:#f56565;
-  --portfolio-grad-1:#160e38; --portfolio-grad-2:#1a1144; --portfolio-grad-3:#160e38;
-  --overlay-bg:#0d0a1e;
-  --auth-card-bg:#160e38;
-  --user-badge-bg:rgba(255,255,255,.05);
-  --user-badge-border:rgba(255,255,255,.08);
-  --user-email-color:#9d8fd4;
-  --logout-color:#5a4e8a;
-  --shadow-color:rgba(0,0,0,.6);
-  --shadow-color-hover-green:rgba(0,208,132,.08);
-  --shadow-color-hover-alpha:rgba(251,191,36,.12);
-  --shadow-color-hover-purple:rgba(167,139,250,.15);
-}
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px;transition:background .2s,color .2s}
-.logo{font-size:13px;font-family:'JetBrains Mono',monospace;color:var(--text-dim);letter-spacing:.2em;text-transform:uppercase;margin-bottom:14px}
+body{font-family:'Syne',sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px;transition:background .2s,color .2s}
+/* ── Light (default) ── */
+body{background:#f0eef6;color:#1a1a2e}
+.logo{color:#8a7fb8}
+h1 span{color:#00b870}
+.tagline{color:#8a7fb8}
+.card{background:#fff;border:1px solid rgba(0,0,0,.07);color:#1a1a2e}
+.card:hover{border-color:rgba(0,180,112,.4);box-shadow:0 12px 40px rgba(0,180,112,.08)}
+.card.full:hover{border-color:rgba(120,80,220,.3);box-shadow:0 12px 40px rgba(120,80,220,.06)}
+.card-sub{color:#8a7fb8}
+.cs-l{color:#8a7fb8}
+.cs-v.loading{color:#b0a8d0}
+.tag-live{color:#00b870;background:rgba(0,180,112,.08);border-color:rgba(0,180,112,.2)}
+.tag-live::before{background:#00b870;box-shadow:0 0 6px #00b870}
+.last-trade{color:#8a7fb8}
+.footer{color:#c0b8e0}
+.theme-btn{color:#8a7fb8;border-color:rgba(0,0,0,.1);background:#fff}
+.theme-btn:hover{border-color:#8a7fb8}
+.auth-box{background:#fff;border-color:rgba(0,0,0,.1)}
+.auth-logo,.auth-sub,.auth-lbl{color:#8a7fb8}
+.auth-title{color:#1a1a2e}
+.auth-inp{background:#f5f3fa;border-color:rgba(0,0,0,.1);color:#1a1a2e}
+.auth-footer{color:#c0b8e0}
+.user-badge{background:rgba(0,0,0,.04);border-color:rgba(0,0,0,.08)}
+.user-email{color:#6a6290}
+.logout-btn{color:#8a7fb8}
+/* ── Dark ── */
+body.dark{background:#0d0a1e;color:#e2e0ff}
+body.dark .logo{color:#5a4e8a}
+body.dark h1 span{color:#00d084}
+body.dark .tagline{color:#5a4e8a}
+body.dark .card{background:#160e38;border-color:rgba(255,255,255,.08);color:#e2e0ff}
+body.dark .card:hover{border-color:rgba(0,208,132,.35);box-shadow:0 12px 40px rgba(0,208,132,.08)}
+body.dark .card.full:hover{border-color:rgba(167,139,250,.4);box-shadow:0 12px 40px rgba(167,139,250,.1)}
+body.dark .card-sub{color:#5a4e8a}
+body.dark .cs-l{color:#5a4e8a}
+body.dark .cs-v.loading{color:#5a4e8a}
+body.dark .tag-live{color:#00d084;background:rgba(0,208,132,.1);border-color:rgba(0,208,132,.25)}
+body.dark .tag-live::before{background:#00d084;box-shadow:0 0 6px #00d084}
+body.dark .last-trade{color:#5a4e8a}
+body.dark .footer{color:#2d2550}
+body.dark .theme-btn{color:#5a4e8a;border-color:rgba(255,255,255,.08);background:#160e38}
+body.dark .theme-btn:hover{border-color:#5a4e8a}
+body.dark .auth-box{background:#160e38;border-color:rgba(255,255,255,.1)}
+body.dark .auth-logo,body.dark .auth-sub,body.dark .auth-lbl{color:#5a4e8a}
+body.dark .auth-title{color:#e2e0ff}
+body.dark .auth-inp{background:#1e1545;border-color:rgba(255,255,255,.12);color:#e2e0ff}
+body.dark .auth-footer{color:#2d2550}
+body.dark .user-badge{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.08)}
+body.dark .user-email{color:#9d8fd4}
+body.dark .logout-btn{color:#5a4e8a}
+/* ── Layout ── */
+.logo{font-size:13px;font-family:'JetBrains Mono',monospace;letter-spacing:.2em;text-transform:uppercase;margin-bottom:14px}
 h1{font-size:42px;font-weight:800;letter-spacing:-.8px;margin-bottom:8px;text-align:center}
-h1 span{color:var(--green)}
-.tagline{font-size:12px;font-family:'JetBrains Mono',monospace;color:var(--text-dim);letter-spacing:.1em;margin-bottom:56px;text-align:center}
-.systems{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;width:100%;max-width:860px}
-.card{background:var(--card-bg);border:1px solid var(--border);border-radius:16px;padding:28px 28px 24px;cursor:pointer;transition:all .2s;text-decoration:none;display:block;color:var(--text)}
-.card:hover{transform:translateY(-3px);border-color:var(--green);box-shadow:0 12px 40px var(--shadow-color-hover-green)}
-.card.disabled{cursor:default;opacity:.45}
-.card.disabled:hover{transform:none;border-color:var(--border);box-shadow:none}
-.card.alpha:hover{border-color:var(--amber);box-shadow:0 12px 40px var(--shadow-color-hover-alpha)}
-.card.portfolio{grid-column:1 / -1;background:linear-gradient(135deg,var(--portfolio-grad-1) 0%,var(--portfolio-grad-2) 50%,var(--portfolio-grad-3) 100%)}
-.card.portfolio:hover{border-color:var(--purple);box-shadow:0 12px 40px var(--shadow-color-hover-purple)}
-@media (max-width:600px){.systems{grid-template-columns:1fr}.card.portfolio{grid-column:1}}
+.tagline{font-size:12px;font-family:'JetBrains Mono',monospace;letter-spacing:.1em;margin-bottom:56px;text-align:center}
+.systems{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;width:100%;max-width:860px}
+.card{border-radius:16px;padding:28px 28px 24px;cursor:pointer;transition:all .2s;text-decoration:none;display:block}
+.card.full{grid-column:1/-1}
 .card-icon{font-size:28px;margin-bottom:14px}
-.card-name{font-size:18px;font-weight:800;margin-bottom:4px;color:var(--text)}
-.card-sub{font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--text-dim);letter-spacing:.08em;text-transform:uppercase;margin-bottom:16px}
+.card-name{font-size:18px;font-weight:800;margin-bottom:4px}
+.card-sub{font-size:10px;font-family:'JetBrains Mono',monospace;letter-spacing:.08em;text-transform:uppercase;margin-bottom:16px}
 .card-stats{display:flex;gap:20px;flex-wrap:wrap}
 .cs{display:flex;flex-direction:column;gap:2px}
-.cs-l{font-size:8px;font-family:'JetBrains Mono',monospace;color:var(--text-dim);letter-spacing:.07em;text-transform:uppercase}
+.cs-l{font-size:8px;font-family:'JetBrains Mono',monospace;letter-spacing:.07em;text-transform:uppercase}
 .cs-v{font-size:13px;font-weight:700;font-family:'JetBrains Mono',monospace}
-.tag-live{display:inline-flex;align-items:center;gap:5px;font-size:9px;font-family:'JetBrains Mono',monospace;color:var(--green);background:color-mix(in srgb, var(--green) 12%, transparent);border:1px solid color-mix(in srgb, var(--green) 30%, transparent);padding:3px 10px;border-radius:12px;margin-bottom:14px}
-.tag-live::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);animation:pulse 2s infinite}
-.tag-live-alpha{display:inline-flex;align-items:center;gap:5px;font-size:9px;font-family:'JetBrains Mono',monospace;color:var(--amber);background:color-mix(in srgb, var(--amber) 12%, transparent);border:1px solid color-mix(in srgb, var(--amber) 30%, transparent);padding:3px 10px;border-radius:12px;margin-bottom:14px}
-.tag-live-alpha::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--amber);box-shadow:0 0 6px var(--amber);animation:pulse 2s infinite}
-.tag-live-port{display:inline-flex;align-items:center;gap:5px;font-size:9px;font-family:'JetBrains Mono',monospace;color:var(--purple);background:color-mix(in srgb, var(--purple) 12%, transparent);border:1px solid color-mix(in srgb, var(--purple) 30%, transparent);padding:3px 10px;border-radius:12px;margin-bottom:14px}
-.tag-live-port::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--purple);box-shadow:0 0 6px var(--purple);animation:pulse 2s infinite}
+.cs-v.loading{font-style:italic;font-weight:400}
+.last-trade{font-size:10px;font-family:'JetBrains Mono',monospace;margin-top:12px;letter-spacing:.04em}
+.tag-live{display:inline-flex;align-items:center;gap:5px;font-size:9px;font-family:'JetBrains Mono',monospace;padding:3px 10px;border-radius:12px;margin-bottom:14px;border:1px solid}
+.tag-live::before{content:'';width:6px;height:6px;border-radius:50%;animation:pulse 2s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
-.footer{margin-top:48px;font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--text-dim);letter-spacing:.06em;opacity:.5}
-
-/* Theme toggle button (top-right of main UI) */
-#theme-btn{position:fixed;top:16px;left:16px;z-index:100;display:inline-flex;align-items:center;gap:6px;font-size:11px;font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--text);background:var(--card-bg);border:1px solid var(--border-hover);padding:6px 12px;border-radius:8px;cursor:pointer;letter-spacing:.04em;transition:all .15s}
-#theme-btn:hover{border-color:var(--purple);color:var(--purple)}
-
-/* ── Auth overlay ── */
-#auth-overlay{
-  position:fixed;inset:0;background:var(--overlay-bg);z-index:9999;
-  display:flex;align-items:center;justify-content:center;
-  font-family:'Syne',sans-serif;
-  transition:opacity .3s;
-}
-#auth-overlay.hidden{opacity:0;pointer-events:none;}
-.auth-box{
-  background:var(--auth-card-bg);border:1px solid var(--border-hover);
-  border-radius:20px;padding:40px 44px;width:100%;max-width:400px;
-  box-shadow:0 24px 80px var(--shadow-color);
-}
-.auth-logo{font-size:11px;font-family:'JetBrains Mono',monospace;
-  color:var(--text-dim);letter-spacing:.18em;text-transform:uppercase;margin-bottom:10px;}
-.auth-title{font-size:26px;font-weight:800;margin-bottom:4px;color:var(--text);}
-.auth-title span{color:var(--green);}
-.auth-sub{font-size:11px;font-family:'JetBrains Mono',monospace;
-  color:var(--text-dim);letter-spacing:.06em;margin-bottom:28px;}
-.auth-lbl{font-size:9px;font-family:'JetBrains Mono',monospace;
-  color:var(--text-dim);letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px;}
-.auth-inp{width:100%;background:var(--card-bg-alt);border:1px solid var(--border-hover);
-  border-radius:9px;padding:11px 14px;color:var(--text);
-  font-family:'JetBrains Mono',monospace;font-size:13px;outline:none;
-  transition:border-color .15s;margin-bottom:14px;}
-.auth-inp:focus{border-color:var(--green);}
-.auth-btn{width:100%;background:var(--green);color:#fff;border:none;
-  border-radius:9px;padding:12px;font-family:'JetBrains Mono',monospace;
-  font-size:13px;font-weight:700;cursor:pointer;letter-spacing:.04em;
-  transition:opacity .15s;margin-top:4px;}
-body.dark .auth-btn{color:#000}
-.auth-btn:hover{opacity:.85;}
-.auth-btn:disabled{opacity:.4;cursor:default;}
-.auth-err{font-size:11px;font-family:'JetBrains Mono',monospace;
-  color:var(--red);background:color-mix(in srgb, var(--red) 10%, transparent);
-  border:1px solid color-mix(in srgb, var(--red) 25%, transparent);
-  border-radius:7px;padding:8px 12px;margin-bottom:14px;display:none;}
-.auth-err.show{display:block;}
-.auth-footer{font-size:9px;font-family:'JetBrains Mono',monospace;
-  color:var(--text-dim);text-align:center;margin-top:20px;letter-spacing:.06em;opacity:.6}
-/* User badge */
-.user-badge{display:flex;align-items:center;gap:8px;
-  background:var(--user-badge-bg);border:1px solid var(--user-badge-border);
-  border-radius:20px;padding:4px 12px 4px 8px;font-family:'JetBrains Mono',monospace;}
-.user-avatar{width:22px;height:22px;border-radius:50%;background:var(--green);
-  display:flex;align-items:center;justify-content:center;
-  font-size:10px;font-weight:700;color:#fff;flex-shrink:0;}
-body.dark .user-avatar{color:#000}
-.user-email{font-size:10px;color:var(--user-email-color);max-width:160px;
-  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.logout-btn{font-size:9px;color:var(--logout-color);background:transparent;border:none;
-  cursor:pointer;font-family:'JetBrains Mono',monospace;padding:0;
-  letter-spacing:.04em;}
-.logout-btn:hover{color:var(--red);}
+.footer{margin-top:48px;font-size:10px;font-family:'JetBrains Mono',monospace;letter-spacing:.06em}
+.theme-btn{position:fixed;top:16px;left:16px;display:inline-flex;align-items:center;gap:5px;font-size:11px;font-family:'JetBrains Mono',monospace;font-weight:600;border:1px solid;padding:5px 12px;border-radius:8px;cursor:pointer;transition:all .15s;z-index:10}
+/* Auth */
+#auth-overlay{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;transition:opacity .3s}
+body:not(.dark) #auth-overlay{background:#f0eef6}
+body.dark #auth-overlay{background:#0d0a1e}
+#auth-overlay.hidden{opacity:0;pointer-events:none}
+.auth-box{border:1px solid;border-radius:20px;padding:40px 44px;width:100%;max-width:400px;box-shadow:0 24px 80px rgba(0,0,0,.15)}
+.auth-logo{font-size:11px;font-family:'JetBrains Mono',monospace;letter-spacing:.18em;text-transform:uppercase;margin-bottom:10px}
+.auth-title{font-size:26px;font-weight:800;margin-bottom:4px}
+.auth-title span{color:#00d084}
+.auth-sub{font-size:11px;font-family:'JetBrains Mono',monospace;letter-spacing:.06em;margin-bottom:28px}
+.auth-lbl{font-size:9px;font-family:'JetBrains Mono',monospace;letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px}
+.auth-inp{width:100%;border:1px solid;border-radius:9px;padding:11px 14px;font-family:'JetBrains Mono',monospace;font-size:13px;outline:none;transition:border-color .15s;margin-bottom:14px}
+.auth-inp:focus{border-color:#00d084}
+.auth-btn{width:100%;background:#00d084;color:#000;border:none;border-radius:9px;padding:12px;font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;cursor:pointer;letter-spacing:.04em;transition:opacity .15s;margin-top:4px}
+.auth-btn:hover{opacity:.85}
+.auth-btn:disabled{opacity:.4;cursor:default}
+.auth-err{font-size:11px;font-family:'JetBrains Mono',monospace;color:#f56565;background:rgba(245,101,101,.1);border:1px solid rgba(245,101,101,.2);border-radius:7px;padding:8px 12px;margin-bottom:14px;display:none}
+.auth-err.show{display:block}
+.auth-footer{font-size:9px;font-family:'JetBrains Mono',monospace;text-align:center;margin-top:20px;letter-spacing:.06em}
+.user-badge{display:flex;align-items:center;gap:8px;border:1px solid;border-radius:20px;padding:4px 12px 4px 8px;font-family:'JetBrains Mono',monospace}
+.user-avatar{width:22px;height:22px;border-radius:50%;background:#00d084;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#000;flex-shrink:0}
+.user-email{font-size:10px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.logout-btn{font-size:9px;background:transparent;border:none;cursor:pointer;font-family:'JetBrains Mono',monospace;padding:0;letter-spacing:.04em}
+.logout-btn:hover{color:#f56565}
 </style>
 </head>
 <body>
+<script>
+// Default light. Only go dark if explicitly saved.
+try{if(localStorage.getItem('hub_theme')==='dark')document.body.classList.add('dark');}catch(e){}
+</script>
 
-<button id="theme-btn" onclick="toggleHubTheme()">🌙 Dark</button>
+<button class="theme-btn" id="theme-btn" onclick="toggleTheme()">🌙 Dark</button>
 
 <!-- Auth overlay -->
 <div id="auth-overlay">
@@ -158,17 +135,16 @@ body.dark .user-avatar{color:#000}
 
 <div class="systems">
 
-  <!-- Portfolio (spans both columns, top) -->
-  <a class="card portfolio" href="./portfolio/">
-    <div class="tag-live-port">LIVE</div>
+  <!-- Portfolio -->
+  <a class="card full" href="./portfolio/">
+    <div class="tag-live">LIVE</div>
     <div class="card-icon">◆</div>
     <div class="card-name">Portfolio View</div>
     <div class="card-sub">Alpha + Omega combined · Correlation · Risk metrics · Diversification</div>
     <div class="card-stats">
-      <div class="cs"><div class="cs-l">Total trades</div><div class="cs-v" style="color:var(--purple)">1,699</div></div>
-      <div class="cs"><div class="cs-l">Combined WR</div><div class="cs-v" style="color:var(--green)">79.3%</div></div>
-      <div class="cs"><div class="cs-l">Combined AccR</div><div class="cs-v" style="color:var(--amber)">3,094+</div></div>
-      <div class="cs"><div class="cs-l">Daily correlation</div><div class="cs-v" style="color:var(--cyan)">0.65</div></div>
+      <div class="cs"><div class="cs-l">Total trades</div><div class="cs-v loading" id="p-trades">—</div></div>
+      <div class="cs"><div class="cs-l">Combined WR</div><div class="cs-v loading" id="p-wr">—</div></div>
+      <div class="cs"><div class="cs-l">Combined AccR</div><div class="cs-v loading" id="p-accr">—</div></div>
     </div>
   </a>
 
@@ -177,25 +153,27 @@ body.dark .user-avatar{color:#000}
     <div class="tag-live">LIVE</div>
     <div class="card-icon">Ω</div>
     <div class="card-name">Omega System</div>
-    <div class="card-sub">US Smallcap · Short bias · Apr 2024 –</div>
+    <div class="card-sub">US Smallcap · Short bias · Intraday</div>
     <div class="card-stats">
-      <div class="cs"><div class="cs-l">Trades</div><div class="cs-v" style="color:var(--cyan)">820</div></div>
-      <div class="cs"><div class="cs-l">Win rate</div><div class="cs-v" style="color:var(--green)">76.6%</div></div>
-      <div class="cs"><div class="cs-l">Ad. R total</div><div class="cs-v" style="color:var(--amber)">1,373+</div></div>
+      <div class="cs"><div class="cs-l">Trades</div><div class="cs-v loading" id="o-trades" style="color:#22d3ee">—</div></div>
+      <div class="cs"><div class="cs-l">Win rate</div><div class="cs-v loading" id="o-wr" style="color:#00d084">—</div></div>
+      <div class="cs"><div class="cs-l">Ad. R total</div><div class="cs-v loading" id="o-accr" style="color:#fbbf24">—</div></div>
     </div>
+    <div class="last-trade" id="o-last"></div>
   </a>
 
   <!-- Alpha -->
-  <a class="card alpha" href="./alpha/">
-    <div class="tag-live-alpha">LIVE</div>
+  <a class="card" href="./alpha/">
+    <div class="tag-live">LIVE</div>
     <div class="card-icon">α</div>
     <div class="card-name">Alpha System</div>
-    <div class="card-sub">US Smallcap · Short bias · Jul 2023 –</div>
+    <div class="card-sub">US Smallcap · Short bias · Swing</div>
     <div class="card-stats">
-      <div class="cs"><div class="cs-l">Trades</div><div class="cs-v" style="color:var(--cyan)">881</div></div>
-      <div class="cs"><div class="cs-l">Win rate</div><div class="cs-v" style="color:var(--green)">81.3%</div></div>
-      <div class="cs"><div class="cs-l">Ad. R total</div><div class="cs-v" style="color:var(--amber)">1,845+</div></div>
+      <div class="cs"><div class="cs-l">Trades</div><div class="cs-v loading" id="a-trades" style="color:#22d3ee">—</div></div>
+      <div class="cs"><div class="cs-l">Win rate</div><div class="cs-v loading" id="a-wr" style="color:#fbbf24">—</div></div>
+      <div class="cs"><div class="cs-l">Ad. R total</div><div class="cs-v loading" id="a-accr" style="color:#fbbf24">—</div></div>
     </div>
+    <div class="last-trade" id="a-last"></div>
   </a>
 
 </div>
@@ -204,25 +182,64 @@ body.dark .user-avatar{color:#000}
 <div class="footer">ENKI TRADING · PRIVATE · ALL RIGHTS RESERVED</div>
 
 <script>
-/* Theme toggle */
-function toggleHubTheme(){
+/* ── Theme toggle ── */
+function toggleTheme(){
   document.body.classList.toggle('dark');
-  const isDark = document.body.classList.contains('dark');
-  document.getElementById('theme-btn').textContent = isDark ? '☀ Light' : '🌙 Dark';
-  try{ localStorage.setItem('hub_theme', isDark ? 'dark' : 'light'); }catch(e){}
+  const isDark=document.body.classList.contains('dark');
+  document.getElementById('theme-btn').textContent=isDark?'☀ Light':'🌙 Dark';
+  try{localStorage.setItem('hub_theme',isDark?'dark':'light');}catch(e){}
 }
-try{
-  const saved = localStorage.getItem('hub_theme');
-  if (saved === 'dark'){
-    document.body.classList.add('dark');
-    document.addEventListener('DOMContentLoaded',()=>{document.getElementById('theme-btn').textContent='☀ Light';});
+document.addEventListener('DOMContentLoaded',()=>{
+  const b=document.getElementById('theme-btn');
+  if(b) b.textContent=document.body.classList.contains('dark')?'☀ Light':'🌙 Dark';
+});
+
+/* ── Hub stats rendering ── */
+let omegaStats=null, alphaStats=null;
+
+function fmtAccR(v){ return Math.round(v).toLocaleString()+'+'; }
+
+function renderCard(prefix, stats){
+  const t=document.getElementById(prefix+'-trades');
+  const w=document.getElementById(prefix+'-wr');
+  const a=document.getElementById(prefix+'-accr');
+  const l=document.getElementById(prefix+'-last');
+  if(!stats){
+    [t,w,a].forEach(el=>{if(el){el.textContent='—';el.classList.add('loading');}});
+    if(l) l.textContent='';
+    return;
   }
-}catch(e){}
+  if(t){t.textContent=stats.trades.toLocaleString();t.classList.remove('loading');}
+  if(w){w.textContent=stats.wr+'%';w.classList.remove('loading');}
+  if(a){a.textContent=fmtAccR(stats.accR);a.classList.remove('loading');}
+  if(l && stats.lastTicker) l.textContent='Last: '+stats.lastTicker+' · '+stats.lastDate;
+}
+
+function renderPortfolio(){
+  const t=document.getElementById('p-trades');
+  const w=document.getElementById('p-wr');
+  const a=document.getElementById('p-accr');
+  if(!omegaStats||!alphaStats){
+    [t,w,a].forEach(el=>{if(el){el.textContent='—';el.classList.add('loading');}});
+    return;
+  }
+  const totalTrades=omegaStats.trades+alphaStats.trades;
+  const totalWins=omegaStats.wins+alphaStats.wins;
+  const combinedWR=parseFloat((totalWins/totalTrades*100).toFixed(1));
+  const combinedAccR=omegaStats.accR+alphaStats.accR;
+  if(t){t.textContent=totalTrades.toLocaleString();t.classList.remove('loading');}
+  if(w){w.textContent=combinedWR+'%';w.classList.remove('loading');}
+  if(a){a.textContent=fmtAccR(combinedAccR);a.classList.remove('loading');}
+}
 </script>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getDatabase, ref, onValue }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
 const firebaseConfig = {
   apiKey: "AIzaSyDaSqgXaxUO1AVJFHjmGJtbQfO_YCWf4WU",
   authDomain: "trading-system-enki.firebaseapp.com",
@@ -232,33 +249,62 @@ const firebaseConfig = {
   messagingSenderId: "410422069967",
   appId: "1:410422069967:web:d1218e4615d7b36ffec5ba"
 };
-const app = initializeApp(firebaseConfig);
+
+const app  = initializeApp(firebaseConfig);
 const auth = getAuth(app);
+const db   = getDatabase(app);
+
 onAuthStateChanged(auth, user => {
-  if (user){
-    document.getElementById('auth-overlay').classList.add('hidden');
-    setTimeout(()=>{const o=document.getElementById('auth-overlay'); if(o)o.style.display='none';}, 300);
-    const badge = document.getElementById('user-badge-wrap');
-    const initials = user.email.split('@')[0].slice(0,2).toUpperCase();
-    badge.innerHTML = `<div class="user-badge"><div class="user-avatar">${initials}</div><span class="user-email">${user.email}</span><button class="logout-btn" onclick="authSignOut()">sign out</button></div>`;
-    badge.style.display = 'flex';
+  if (user) {
+    hideOverlay();
+    showUserBadge(user.email);
+    onValue(ref(db, 'omega/stats'), snap => {
+      omegaStats = snap.val();
+      renderCard('o', omegaStats);
+      renderPortfolio();
+    });
+    onValue(ref(db, 'alpha/stats'), snap => {
+      alphaStats = snap.val();
+      renderCard('a', alphaStats);
+      renderPortfolio();
+    });
   } else {
-    document.getElementById('auth-overlay').classList.remove('hidden');
-    document.getElementById('auth-overlay').style.display = 'flex';
+    showOverlay();
   }
 });
-window.authSignIn = async function(){
+
+window.authSignIn = async function() {
   const email = document.getElementById('auth-email').value.trim();
-  const pass = document.getElementById('auth-pass').value;
-  if (!email || !pass){ showAuthError('Enter email and password'); return; }
+  const pass  = document.getElementById('auth-pass').value;
+  const btn   = document.getElementById('auth-btn');
+  if (!email || !pass) { showAuthError('Please enter email and password.'); return; }
+  btn.disabled = true; btn.textContent = 'Signing in...';
   try { await signInWithEmailAndPassword(auth, email, pass); }
-  catch(e){ showAuthError('Sign in failed. ' + (e.code || '')); }
+  catch(e) {
+    showAuthError({
+      'auth/user-not-found':'Email not found.','auth/wrong-password':'Incorrect password.',
+      'auth/invalid-email':'Invalid email.','auth/too-many-requests':'Too many attempts.',
+      'auth/invalid-credential':'Incorrect email or password.'
+    }[e.code] || 'Sign in failed.');
+    btn.disabled = false; btn.textContent = 'Sign in →';
+  }
 };
 window.authSignOut = async function(){ await signOut(auth); };
-function showAuthError(msg){ const el = document.getElementById('auth-err'); if (el){ el.textContent = msg; el.classList.add('show'); } }
-document.addEventListener('DOMContentLoaded', () => {
-  const pass = document.getElementById('auth-pass');
-  if (pass) pass.addEventListener('keydown', e => { if (e.key === 'Enter') window.authSignIn(); });
+
+function showOverlay(){ const o=document.getElementById('auth-overlay'); if(o){o.classList.remove('hidden');o.style.display='flex';} }
+function hideOverlay(){ const o=document.getElementById('auth-overlay'); if(o){o.classList.add('hidden');setTimeout(()=>o.style.display='none',300);} }
+function showAuthError(msg){ const el=document.getElementById('auth-err'); if(el){el.textContent=msg;el.classList.add('show');} }
+function showUserBadge(email){
+  const badge=document.getElementById('user-badge-wrap'); if(!badge) return;
+  const initials=email.split('@')[0].slice(0,2).toUpperCase();
+  badge.innerHTML=`<div class="user-badge"><div class="user-avatar">${initials}</div><span class="user-email">${email}</span><button class="logout-btn" onclick="authSignOut()">sign out</button></div>`;
+  badge.style.display='flex';
+}
+document.addEventListener('DOMContentLoaded',()=>{
+  const pass=document.getElementById('auth-pass');
+  if(pass) pass.addEventListener('keydown',e=>{if(e.key==='Enter')window.authSignIn();});
+  const email=document.getElementById('auth-email');
+  if(email) email.addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('auth-pass')?.focus();});
 });
 </script>
 
