@@ -1081,6 +1081,13 @@ function dateRangePreset(preset){
 // ── Rebuild stats from merged AT+newTrades after Firebase sync ──
 function rebuildAllStats(){
   const all = allT();
+  // Ensure every trade has ym — Firebase trades may lack it
+  all.forEach(t=>{
+    if(!t.ym && t.dt){
+      if(t.dt.includes('-')){ t.ym=t.dt.slice(0,7); }
+      else if(t.dt.includes('/')){ const[m,d,y]=t.dt.split('/'); t.ym=y+'-'+m.padStart(2,'0'); }
+    }
+  });
 
   // SS
   const ssNew = {};
