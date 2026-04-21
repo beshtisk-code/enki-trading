@@ -3448,6 +3448,8 @@ document.querySelectorAll('.mtab').forEach(tab=>{
     document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));
     tab.classList.add('on');
     document.getElementById('v-'+tab.dataset.v).classList.add('on');
+    if(tab.dataset.v==='overview'){buildOvMetrics();buildOvTable();buildHaid();buildHeatmap();buildAllocMonitor();buildAllocPhases();buildFeeOvBox();}
+    if(tab.dataset.v==='monthly') buildMonthly();
     if(tab.dataset.v==='log') initTL();
     if(tab.dataset.v==='categories') buildCat();
     if(tab.dataset.v==='setups') rebuildSetupCards();
