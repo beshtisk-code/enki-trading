@@ -25,6 +25,14 @@
   --ch-rr:#22D3EE;--ch-rr-fill:rgba(34,211,238,.12);
   --ch-sma:#94A3B8;--ch-grid:rgba(255,255,255,.06);--ch-axis:#94A3B8;
   --ch-card:#151521;
+  /* Font + size tokens (overview) */
+  --mono:'JetBrains Mono',ui-monospace,'SF Mono',Menlo,monospace;
+  --sans:'Inter Tight','Inter',system-ui,sans-serif;
+  --fs-10:10px;--fs-11:11px;--fs-12:12px;--fs-13:13px;--fs-14:14px;
+  --fs-16:16px;--fs-20:20px;--fs-28:28px;--fs-36:36px;
+  --r-sm:2px;--r-md:3px;--r-lg:4px;
+  --green-bg:rgba(79,214,156,.14);--red-bg:rgba(255,122,134,.15);--amber-bg:rgba(245,187,99,.14);
+  --bg4:#463f5e;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;min-height:100vh}
@@ -203,6 +211,13 @@ body.light{
   --ch-rr:#0891B2;--ch-rr-fill:rgba(8,145,178,.08);
   --ch-sma:#64748B;--ch-grid:rgba(15,23,42,.06);--ch-axis:#64748B;
   --ch-card:#ffffff;
+  --green-bg:rgba(15,157,98,.12);--red-bg:rgba(212,51,74,.10);--amber-bg:rgba(185,122,12,.12);
+  --bg4:#e3ddef;
+  --mono:'JetBrains Mono',ui-monospace,'SF Mono',Menlo,monospace;
+  --sans:'Inter Tight','Inter',system-ui,sans-serif;
+  --fs-10:10px;--fs-11:11px;--fs-12:12px;--fs-13:13px;--fs-14:14px;
+  --fs-16:16px;--fs-20:20px;--fs-28:28px;--fs-36:36px;
+  --r-sm:2px;--r-md:3px;--r-lg:4px;
   background:#f5f3fb;color:#1a1726;
 }
 body.light .sticky-top{background:#f5f3fb}
@@ -339,6 +354,149 @@ body.light .dot{background:#00a86b;box-shadow:0 0 8px #00a86b}
   cursor:pointer;font-family:'JetBrains Mono',monospace;padding:0;
   letter-spacing:.04em;}
 .logout-btn:hover{color:var(--red);}
+
+/* ═══ ALPHA OVERVIEW — spec-compliant layout ═══ */
+.app-bar{display:flex;align-items:center;gap:14px;padding:8px 20px;background:var(--bg2);border-bottom:1px solid var(--border);font-family:var(--mono);font-size:var(--fs-11);min-height:40px;flex-wrap:wrap}
+.ab-brand{display:flex;align-items:baseline;gap:10px}
+.ab-brand-logo{font-family:var(--sans);font-size:18px;font-weight:700;letter-spacing:-.4px;color:var(--acc)}
+.ab-brand-logo b{color:var(--text);font-weight:700}
+.ab-brand-meta{font-size:var(--fs-10);color:var(--text3);letter-spacing:.4px;display:flex;align-items:center;gap:8px}
+.ab-brand-meta b{color:var(--text2);font-weight:600}
+.sr-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 5px var(--green);margin-right:3px}
+.ab-spacer{flex:1}
+.ov-pill{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:3px;font-size:var(--fs-10);letter-spacing:.3px;font-weight:600;background:var(--bg3);color:var(--text2);border:1px solid var(--border);cursor:pointer;font-family:var(--mono)}
+.ov-pill:hover{background:var(--bg4);color:var(--text)}
+.ov-pill-link{background:transparent;border:1px dashed var(--border)}
+.ov-pill-omega{color:var(--purple);border-color:var(--purple)}
+.ov-pill-alert{background:var(--amber-bg);color:var(--amber);border-color:transparent}
+.ov-pill-ctx{color:var(--text);background:var(--bg3);font-weight:700}
+.user-chip2{display:flex;align-items:center;gap:6px;font-size:var(--fs-10);color:var(--text2);font-family:var(--mono)}
+.user-avatar2{width:22px;height:22px;border-radius:50%;background:var(--green);color:#0f2d1f;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700}
+.zoom-ctrl2{display:inline-flex;align-items:center;border:1px solid var(--border);border-radius:3px;background:var(--bg3)}
+.zoom-ctrl2 button{background:transparent;border:none;color:var(--text2);padding:3px 7px;cursor:pointer;font-family:var(--mono);font-size:var(--fs-11)}
+.zoom-ctrl2 button:hover{color:var(--text)}
+.zoom-ctrl2 span{padding:3px 5px;font-size:var(--fs-10);color:var(--text);min-width:34px;text-align:center}
+.theme-toggle2{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:3px;background:var(--bg3);border:1px solid var(--border);font-size:var(--fs-10);color:var(--text2);cursor:pointer;font-weight:600;font-family:var(--mono)}
+.theme-toggle2:hover{color:var(--text)}
+.toggle-group2{display:inline-flex;border:1px solid var(--border);border-radius:3px;overflow:hidden;background:var(--bg3)}
+.toggle-group2 button{background:transparent;border:none;color:var(--text3);padding:4px 9px;font-size:var(--fs-10);font-weight:600;font-family:var(--mono);letter-spacing:.3px;cursor:pointer}
+.toggle-group2 button.active{background:var(--green);color:var(--bg)}
+.toggle-group2 button:not(.active):hover{color:var(--text);background:var(--bg4)}
+/* Dropdown */
+.dropdown-wrap{position:relative;display:inline-flex}
+.dropdown-btn2{display:inline-flex;align-items:center;gap:5px;font-size:var(--fs-11);color:var(--text);font-weight:600;cursor:pointer;padding:2px 7px;border-radius:3px;background:transparent;border:none;font-family:var(--mono)}
+.dropdown-btn2:hover{background:var(--bg3)}
+.dropdown-btn2 .caret{color:var(--text3);font-size:9px}
+.dropdown-panel2{position:absolute;top:100%;left:0;margin-top:4px;min-width:200px;background:var(--bg2);border:1px solid var(--border);border-radius:4px;box-shadow:0 12px 32px rgba(0,0,0,.4);z-index:25;overflow:hidden}
+.dropdown-opt2{padding:7px 12px;font-size:var(--fs-11);color:var(--text2);cursor:pointer;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;font-family:var(--mono)}
+.dropdown-opt2:last-child{border-bottom:none}
+.dropdown-opt2:hover{background:var(--bg3);color:var(--text)}
+.dropdown-opt2.sel{background:var(--acc-bg);color:var(--acc)}
+.dropdown-opt2 .opt-ct{color:var(--text3);font-size:var(--fs-10)}
+/* KPI row */
+.kpi-row2{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:12px}
+.kpi2{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-md);padding:12px 14px;display:flex;flex-direction:column;gap:4px}
+.kpi2-k{font-size:var(--fs-10);color:var(--text3);letter-spacing:.7px;font-weight:600;text-transform:uppercase;font-family:var(--mono)}
+.kpi2-v{font-size:24px;font-weight:700;letter-spacing:-.4px;font-family:var(--mono);font-variant-numeric:tabular-nums;color:var(--text)}
+.kpi2-sub{font-size:var(--fs-10);color:var(--text3);font-family:var(--mono)}
+/* Last trade strip */
+.lt-strip{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-md);padding:10px 14px;display:flex;align-items:baseline;gap:14px;margin-bottom:12px;font-family:var(--mono)}
+.lt-strip .lt-k{font-size:var(--fs-10);color:var(--text3);letter-spacing:.7px;font-weight:600}
+.lt-strip .lt-chip{background:var(--acc-bg);color:var(--acc);padding:2px 8px;border-radius:3px;font-size:var(--fs-11);font-weight:700;cursor:pointer}
+.lt-strip .lt-chip:hover{filter:brightness(1.1)}
+/* Callout row */
+.callout-row2{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+.callout2{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-md);padding:11px 14px;display:flex;flex-direction:column;gap:3px;font-family:var(--mono)}
+.callout2.clickable{cursor:pointer}.callout2.clickable:hover{background:var(--bg3);border-color:var(--border2)}
+.callout2-k{font-size:var(--fs-10);color:var(--text3);letter-spacing:.7px;font-weight:600;text-transform:uppercase}
+.callout2-v{font-size:18px;font-weight:700;font-variant-numeric:tabular-nums}
+.callout2-sub{font-size:var(--fs-10);color:var(--text3)}
+/* Sections */
+.sect2{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-md);margin-bottom:16px;overflow:hidden}
+.sect2-head{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border);background:linear-gradient(to bottom,rgba(255,255,255,.015),transparent);cursor:pointer;user-select:none;font-family:var(--mono)}
+.sect2-caret{width:12px;color:var(--text3);font-size:10px;transition:transform .15s}
+.sect2.collapsed .sect2-caret{transform:rotate(-90deg)}
+.sect2-eye{font-size:var(--fs-11);font-weight:700;letter-spacing:.8px;color:var(--text)}
+.sect2-sub{font-size:var(--fs-10);color:var(--text3);letter-spacing:.3px;margin-left:auto}
+.sect2.collapsed .sect2-body{display:none}
+/* Performance metric tiles */
+.mtile-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0}
+.mtile2{padding:14px 16px;border-right:1px solid var(--border);display:flex;flex-direction:column;gap:4px;font-family:var(--mono)}
+.mtile2:last-child{border-right:none}
+.mtile2-k{font-size:var(--fs-10);color:var(--text3);letter-spacing:.5px}
+.mtile2-v{font-size:20px;font-weight:700;font-variant-numeric:tabular-nums}
+.mtile2-sub{font-size:var(--fs-10);color:var(--text3)}
+/* Setup table */
+.setup-tbl2{width:100%;border-collapse:collapse;font-size:var(--fs-11);font-family:var(--mono)}
+.setup-tbl2 thead th{text-align:left;padding:8px 12px;font-size:var(--fs-10);color:var(--text3);font-weight:600;letter-spacing:.6px;border-bottom:1px solid var(--border)}
+.setup-tbl2 thead th.num{text-align:right;font-variant-numeric:tabular-nums}
+.setup-tbl2 tbody td{padding:8px 12px;border-bottom:1px solid var(--border);color:var(--text);font-variant-numeric:tabular-nums}
+.setup-tbl2 tbody tr:last-child td{border-bottom:none}
+.setup-tbl2 tbody tr{cursor:pointer}
+.setup-tbl2 tbody tr:hover{background:var(--bg3)}
+.setup-tbl2 tbody tr.sel-row{background:var(--acc-bg);box-shadow:inset 3px 0 0 var(--acc)}
+.wr-bar-cell2{display:flex;align-items:center;gap:8px;min-width:140px}
+.wr-bar2{flex:1;height:5px;background:var(--bg3);border-radius:2px;overflow:hidden;min-width:60px}
+.wr-bar2-fill{height:100%;border-radius:2px}
+.wr-bar2-pct{font-size:var(--fs-10);color:var(--text2);min-width:34px;text-align:right}
+/* Median fee block */
+.mf-grid{display:grid;grid-template-columns:1.3fr 1fr;gap:0}
+.mf-left2{padding:14px 16px;border-right:1px solid var(--border);font-family:var(--mono)}
+.mf-pct2{font-size:var(--fs-36);font-weight:700;color:var(--green)}
+.mf-sub2{font-size:var(--fs-11);color:var(--text2);margin-top:2px}
+.mf-caveat2{font-size:var(--fs-10);color:var(--text3);margin-top:4px}
+.mf-right2{padding:12px 16px;display:flex;flex-direction:column;gap:8px;justify-content:center;font-family:var(--mono)}
+.mf-kv2{display:flex;justify-content:space-between;font-size:var(--fs-11)}
+.mf-kv2>span:first-child{color:var(--text3);font-size:var(--fs-10);letter-spacing:.4px}
+.mf-kv2>span:last-child{color:var(--text);font-weight:600}
+.mf-kv2.hl>span:last-child{color:var(--amber);background:var(--amber-bg);padding:1px 6px;border-radius:2px}
+.mf-link2{display:inline-flex;align-items:center;gap:6px;font-size:var(--fs-11);color:var(--acc);text-decoration:none;margin-top:4px;cursor:pointer}
+.mf-link2:hover{text-decoration:underline}
+/* Risk allocation monitor */
+.rm2{padding:14px 16px;display:flex;flex-direction:column;gap:12px;font-family:var(--mono)}
+.rm2-meta{font-size:var(--fs-11);color:var(--text2);display:flex;justify-content:space-between;align-items:center}
+.rm2-chip{padding:2px 8px;border-radius:3px;font-size:var(--fs-10);font-weight:700;letter-spacing:.5px}
+.rm2-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.rm2-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r-md);padding:12px 14px}
+.rm2-k{font-size:var(--fs-10);color:var(--text3);letter-spacing:.7px;font-weight:600;text-transform:uppercase}
+.rm2-v{font-size:24px;font-weight:700;font-variant-numeric:tabular-nums;margin-top:4px}
+.rm2-sub{font-size:var(--fs-10);color:var(--text3);margin-top:2px}
+/* Drawer */
+.ov-scrim{position:fixed;inset:0;background:rgba(0,0,0,.45);opacity:0;pointer-events:none;transition:opacity .18s;z-index:60}
+.ov-scrim.open{opacity:1;pointer-events:auto}
+.ov-drawer{position:fixed;top:0;right:0;bottom:0;width:440px;background:var(--bg2);border-left:1px solid var(--border);transform:translateX(100%);transition:transform .2s ease;z-index:61;overflow-y:auto;box-shadow:-16px 0 48px rgba(0,0,0,.35)}
+.ov-drawer.open{transform:translateX(0)}
+.ov-drawer-head{padding:16px 18px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:flex-start;position:sticky;top:0;background:var(--bg2);z-index:2;font-family:var(--mono)}
+.ov-drawer-eye{font-size:var(--fs-10);color:var(--text3);letter-spacing:.8px;font-weight:600}
+.ov-drawer-title{font-size:20px;font-weight:700;margin-top:2px;color:var(--text)}
+.ov-drawer-sub{font-size:var(--fs-11);color:var(--text2);margin-top:3px}
+.ov-drawer-close{width:28px;height:28px;border-radius:3px;background:var(--bg3);border:1px solid var(--border);display:inline-flex;align-items:center;justify-content:center;color:var(--text2);cursor:pointer;font-size:14px}
+.ov-drawer-close:hover{color:var(--text)}
+.ov-drawer-body{padding:14px 18px;font-family:var(--mono)}
+.ov-drawer-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px}
+.ov-ds{background:var(--bg3);border:1px solid var(--border);border-radius:3px;padding:10px 12px}
+.ov-ds-k{font-size:var(--fs-10);color:var(--text3);letter-spacing:.5px}
+.ov-ds-v{font-size:18px;font-weight:700;margin-top:3px;font-variant-numeric:tabular-nums}
+.ov-drawer-sect{font-size:var(--fs-10);color:var(--text3);letter-spacing:.8px;font-weight:600;padding:14px 0 8px;border-top:1px solid var(--border)}
+.ov-drawer-list{display:flex;flex-direction:column}
+.ov-dl-row{display:grid;grid-template-columns:70px 1fr auto auto;gap:10px;align-items:center;padding:7px 0;border-bottom:1px dashed var(--border);font-size:var(--fs-11)}
+.ov-dl-row:last-child{border-bottom:none}
+/* Light mode overrides for overview */
+body.light .app-bar{background:#fff;border-color:#d9d3e6}
+body.light .kpi2{background:#fff;border-color:#d9d3e6}
+body.light .lt-strip{background:#fff;border-color:#d9d3e6}
+body.light .callout2{background:#fff;border-color:#d9d3e6}
+body.light .sect2{background:#fff;border-color:#d9d3e6}
+body.light .sect2-head{background:linear-gradient(to bottom,rgba(107,63,217,.03),transparent);border-color:#d9d3e6}
+body.light .ov-drawer{background:#fff;border-color:#d9d3e6}
+body.light .ov-drawer-head{background:#fff}
+body.light .dropdown-panel2{background:#fff;border-color:#d9d3e6;box-shadow:0 12px 32px rgba(0,0,0,.15)}
+body.light .dropdown-opt2{border-color:#d9d3e6}
+body.light .ov-ds{background:#eeeaf5;border-color:#d9d3e6}
+body.light .rm2-card{background:#eeeaf5;border-color:#d9d3e6}
+/* Overview toast */
+.ov-toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--bg3);color:var(--text2);padding:8px 16px;border-radius:6px;font-size:var(--fs-11);font-family:var(--mono);z-index:100;opacity:0;transition:opacity .3s;pointer-events:none;border:1px solid var(--border)}
+.ov-toast.show{opacity:1}
 </style>
 </head>
 <body>
@@ -366,31 +524,42 @@ body.light .dot{background:#00a86b;box-shadow:0 0 8px #00a86b}
   </div>
 </div>
 
-<div class="sticky-top"><div class="hdr">
-  <div>
-    <h1><span>Alpha</span> System</h1>
-    <div class="sub"><span class="dot"></span><span id="hdr-sub-text">881 TRADES · 7/10/2023 – 4/10/2026 · $3K → $9.79B</span></div>
+<div class="sticky-top">
+<!-- ═══ APP BAR (§1) ═══ -->
+<div class="app-bar" id="app-bar">
+  <div class="ab-brand">
+    <span class="ab-brand-logo">Alpha<b>System</b></span>
+    <span class="ab-brand-meta">
+      <span class="sr-dot"></span>
+      <span class="dropdown-wrap" id="sym-dropdown-wrap">
+        <button class="dropdown-btn2" id="sym-dropdown-btn" onclick="toggleSymDropdown()">
+          <b id="hdr-trade-count">891 TRADES</b><span class="caret">▾</span>
+        </button>
+        <div class="dropdown-panel2" id="sym-dropdown-panel" style="display:none"></div>
+      </span>
+      <span id="hdr-sub-text" style="color:var(--text3)">7/10/2023 – 4/21/2026</span>
+      <span style="color:var(--text3)">·</span>
+      <span id="hdr-eq-text" style="color:var(--text3)">$3K → $16.2B</span>
+    </span>
   </div>
-  <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-    <a class="nav-btn hub" href="../" title="Back to hub">⌂ Hub</a>
-    <a class="nav-btn xsys" href="../omega/" title="Switch to Omega">→ Omega</a>
-    <span class="sma-pill sma-above-plus">ABOVE+ 20-SMA</span>
-    <span class="badge">⚡ New alloc: Apr 13 2026+</span>
-    <div id="user-badge-wrap" style="display:none"></div>
-  <div class="ui-controls">
-    <!-- Size controls -->
-    <div class="scale-controls">
-      <button class="scale-btn" onclick="changeScale(-1)" title="Smaller">−</button>
-      <span class="scale-label" id="scale-lbl">100%</span>
-      <button class="scale-btn" onclick="changeScale(1)" title="Larger">+</button>
-    </div>
-    <!-- Theme toggle -->
-    <button class="ui-btn" id="theme-btn" onclick="toggleTheme()">☀ Light</button>
-    <!-- R mode toggle -->
-    <div class="r-toggle"><button class="r-tog-btn" id="tog-net" onclick="setViewMode('net')">Pre Ad. R</button><button class="r-tog-btn active" id="tog-acc" onclick="setViewMode('acc')">Ad. R</button></div>
+  <span class="ab-spacer"></span>
+  <a class="ov-pill ov-pill-link" href="../">↷ Hub</a>
+  <a class="ov-pill ov-pill-omega" href="../omega/">↔ Omega</a>
+  <span class="ov-pill ov-pill-ctx" id="sma-pill-bar">ABOVE+ 20-SMA</span>
+  <span class="ov-pill ov-pill-alert">🔔 New alloc: Apr 13 2026</span>
+  <div id="user-badge-wrap" style="display:none"></div>
+  <div class="zoom-ctrl2">
+    <button onclick="changeScale(-1)">−</button>
+    <span id="scale-lbl">100%</span>
+    <button onclick="changeScale(1)">+</button>
   </div>
+  <button class="theme-toggle2" id="theme-btn" onclick="toggleTheme()">◐ Dark</button>
+  <div class="toggle-group2">
+    <button id="tog-net" onclick="setViewMode('net')">Pre Al R</button>
+    <button id="tog-acc" class="active" onclick="setViewMode('acc')">Al R</button>
   </div>
 </div>
+<!-- ═══ TAB BAR (§2) ═══ -->
 <div class="main-tabs">
   <button class="mtab on" data-v="overview">Overview</button>
   <button class="mtab" data-v="setups">By Setup</button>
@@ -404,91 +573,87 @@ body.light .dot{background:#00a86b;box-shadow:0 0 8px #00a86b}
 </div>
 </div><!-- /sticky-top -->
 <div class="view on" id="v-overview">
-  <div class="mg" id="ov-metrics"></div>
-  <div class="mg4" id="ov-metrics2"></div>
-
-  <!-- How am I doing -->
-  <div class="haid">
-    <div class="haid-title">📊 Performance Metrics</div>
-    <div class="haid-grid" id="haid-content">
-      <div class="haid-c"><div class="haid-l">Loading...</div></div>
+  <div style="padding:16px 20px;max-width:1680px;margin:0 auto">
+    <!-- §3 KPI Row -->
+    <div class="kpi-row2" id="ov-kpi-row"></div>
+    <!-- §4 Last Trade Strip -->
+    <div class="lt-strip" id="ov-lt-strip">
+      <span class="lt-k">LAST TRADE LOGGED</span>
+      <span class="lt-chip" id="ov-lt-chip">—</span>
     </div>
-  </div>
+    <!-- §5 Callout Row -->
+    <div class="callout-row2" id="ov-callout-row"></div>
 
-  <div class="sec">Performance by setup</div>
-  <div class="panel"><table><thead><tr>
-    <th>Setup</th><th class="r">Trades</th><th class="r">Win rate</th>
-    <th class="r" id="ov-th-mean">Mean R</th><th class="r" id="ov-th-total">Total R</th>
-    <th class="r">PF</th><th class="r">Kelly</th>
-    <th class="r">Avg W</th><th class="r">Avg L</th>
-  </tr></thead><tbody id="ov-setup-body"></tbody></table></div>
-
-
-  <!-- Allocation Monitor -->
-  <!-- Fee % overview card -->
-  <div id="fee-ov-box" style="margin-bottom:14px"></div>
-
-  <div class="sec">Risk allocation monitor <span style="font-size:10px;color:var(--text3);font-family:'JetBrains Mono',monospace;font-weight:400;margin-left:6px">New vs Old · since Apr 13 2026</span></div>
-  <div class="panel" style="padding:14px 16px;margin-bottom:18px" id="alloc-monitor-panel">
-    <div id="alloc-monitor-content">
-      <div style="font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--text3);text-align:center;padding:12px 0">
-        No trades yet since Apr 13 2026 — add new trades to start monitoring
+    <!-- §7 Performance Metrics -->
+    <div class="sect2" id="sect-perf">
+      <div class="sect2-head" onclick="ovToggleSect('sect-perf')">
+        <span class="sect2-caret">▼</span>
+        <span class="sect2-eye">PERFORMANCE METRICS</span>
+        <span class="sect2-sub">last 21 trading days</span>
       </div>
-    </div>
-  </div>
-
-
-  <!-- Allocation Phases Reference -->
-  <div class="sec">Risk allocation history
-    <span style="font-size:10px;color:var(--text3);font-family:'JetBrains Mono',monospace;font-weight:400;margin-left:6px">
-      Alloc V1 · Alloc V2 · future phases
-    </span>
-  </div>
-  <div class="panel" style="padding:0;margin-bottom:18px" id="alloc-phases-panel">
-
-    <!-- V1 accordion -->
-    <div class="ap-item" id="ap-v1">
-      <div class="ap-hdr" onclick="apToggle('v1')">
-        <div style="display:flex;align-items:center;gap:10px">
-          <span style="font-size:10px;font-weight:700;font-family:'JetBrains Mono',monospace;
-            background:rgba(245,187,99,.15);color:var(--amber);border:1px solid rgba(245,187,99,.3);
-            border-radius:5px;padding:2px 8px">Alloc V1</span>
-          <span style="font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--text2)">Jan 2024 – Apr 12 2026</span>
-        </div>
-        <span class="ap-arrow" id="ap-arrow-v1" style="color:var(--text3);font-size:10px">▼</span>
-      </div>
-      <div class="ap-body" id="ap-body-v1" style="display:none">
-        <div class="ap-setup-grid">
-          ${apRenderPhase(PHASES.v1)}
-        </div>
+      <div class="sect2-body">
+        <div class="mtile-grid" id="haid-content"></div>
       </div>
     </div>
 
-    <!-- V2 accordion -->
-    <div class="ap-item" id="ap-v2">
-      <div class="ap-hdr" onclick="apToggle('v2')">
-        <div style="display:flex;align-items:center;gap:10px">
-          <span style="font-size:10px;font-weight:700;font-family:'JetBrains Mono',monospace;
-            background:rgba(79,214,156,.12);color:var(--green);border:1px solid rgba(79,214,156,.25);
-            border-radius:5px;padding:2px 8px">Alloc V2</span>
-          <span style="font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--text2)">Apr 13 2026 – ongoing</span>
-          <span style="font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--green);
-            background:rgba(79,214,156,.08);border:1px solid rgba(79,214,156,.2);
-            border-radius:4px;padding:1px 6px">ACTIVE</span>
-        </div>
-        <span class="ap-arrow" id="ap-arrow-v2" style="color:var(--text3);font-size:10px">▼</span>
+    <!-- §8 Performance by Setup -->
+    <div class="sect2" id="sect-setup">
+      <div class="sect2-head" onclick="ovToggleSect('sect-setup')">
+        <span class="sect2-caret">▼</span>
+        <span class="sect2-eye">PERFORMANCE BY SETUP</span>
+        <span class="sect2-sub">click a row for breakdown</span>
       </div>
-      <div class="ap-body" id="ap-body-v2" style="display:none">
-        <div class="ap-setup-grid">
-          ${apRenderPhase(PHASES.v2)}
-        </div>
+      <div class="sect2-body">
+        <table class="setup-tbl2"><thead><tr>
+          <th>Setup</th><th class="num">Trades</th><th>Win rate</th>
+          <th class="num" id="ov-th-mean">Mean Ad. R</th>
+          <th class="num" id="ov-th-total">Total Ad. R</th>
+          <th class="num">PF</th><th class="num">Kelly</th>
+          <th class="num">Avg W</th><th class="num">Avg L</th>
+        </tr></thead><tbody id="ov-setup-body"></tbody></table>
       </div>
     </div>
 
-  </div>
+    <!-- §10 Median Fee per Trade -->
+    <div class="sect2" id="sect-fee">
+      <div class="sect2-head" onclick="ovToggleSect('sect-fee')">
+        <span class="sect2-caret">▼</span>
+        <span class="sect2-eye">MEDIAN FEE PER TRADE (ACTUAL)</span>
+      </div>
+      <div class="sect2-body" id="fee-ov-box"></div>
+    </div>
 
-  <div class="sec">Monthly net R heatmap</div>
-  <div class="panel" style="padding:12px 14px"><div id="heatmap"></div></div>
+    <!-- §11 Risk Allocation Monitor -->
+    <div class="sect2" id="sect-alloc">
+      <div class="sect2-head" onclick="ovToggleSect('sect-alloc')">
+        <span class="sect2-caret">▼</span>
+        <span class="sect2-eye">RISK ALLOCATION MONITOR</span>
+        <span class="sect2-sub">new vs old · since Apr 13 2026</span>
+      </div>
+      <div class="sect2-body" id="alloc-monitor-panel">
+        <div id="alloc-monitor-content"></div>
+      </div>
+    </div>
+
+    <!-- Allocation Phases Reference -->
+    <div class="sect2" id="sect-phases">
+      <div class="sect2-head" onclick="ovToggleSect('sect-phases')">
+        <span class="sect2-caret">▼</span>
+        <span class="sect2-eye">RISK ALLOCATION HISTORY</span>
+        <span class="sect2-sub">V1 · V2 · future phases</span>
+      </div>
+      <div class="sect2-body" id="alloc-phases-panel"></div>
+    </div>
+
+    <!-- Heatmap -->
+    <div class="sect2" id="sect-heatmap">
+      <div class="sect2-head" onclick="ovToggleSect('sect-heatmap')">
+        <span class="sect2-caret">▼</span>
+        <span class="sect2-eye">MONTHLY NET R HEATMAP</span>
+      </div>
+      <div class="sect2-body" style="padding:12px 14px"><div id="heatmap"></div></div>
+    </div>
+  </div>
 </div>
 <div class="view" id="v-setups">
   <div class="dr-bar" id="setup-dr">
@@ -985,13 +1150,18 @@ function changeScale(dir){
 // ── Theme toggle ──
 let isDark=false;
 function toggleTheme(){
+  // Check if user is on overview tab
+  const activeTab=document.querySelector('.mtab.on');
+  const onOverview=activeTab&&activeTab.dataset.v==='overview';
   isDark=!isDark;
   document.body.classList.toggle('light',!isDark);
-  // Also toggle auth overlay bg
   const overlay=document.getElementById('auth-overlay');
   if(overlay) overlay.style.background=isDark?'#0d0a1e':'#f0f2f7';
   const btn=document.getElementById('theme-btn');
-  if(btn) btn.textContent=isDark?'☀ Light':'☾ Dark';
+  if(btn) btn.textContent=isDark?'◐ Dark':'☀ Light';
+  if(!onOverview && !isDark){
+    ovShowToast('Light mode is Overview-only for now');
+  }
   try{localStorage.setItem('enkiTheme',isDark?'dark':'light');}catch(e){}
 }
 
@@ -1005,11 +1175,11 @@ function toggleTheme(){
     // DEFAULT: light. Only apply dark if user explicitly saved 'dark'.
     if(th==='dark'){
       isDark=true;
-      const btn=document.getElementById('theme-btn');if(btn)btn.textContent='☀ Light';
+      const btn=document.getElementById('theme-btn');if(btn)btn.textContent='◐ Dark';
     } else {
       isDark=false;
       document.body.classList.add('light');
-      const btn=document.getElementById('theme-btn');if(btn)btn.textContent='☾ Dark';
+      const btn=document.getElementById('theme-btn');if(btn)btn.textContent='☀ Light';
     }
   }catch(e){
     document.body.classList.add('light');
@@ -1064,6 +1234,111 @@ function sig(s){
 function wrBar(wr){
   const c=wr>=85?'var(--green)':wr>=75?'#63b3ed':wr>=65?'var(--amber)':'var(--red)';
   return `<div class="bw"><div class="bb"><div class="bf" style="width:${wr}%;background:${c}"></div></div><span style="font-size:10px;color:${c};font-weight:700">${wr}%</span></div>`;
+}
+
+// ═══ Overview: Drawer + Dropdown + Section toggle ═══
+let _ovSelSetup=null;
+
+function ovToggleSect(id){
+  const el=document.getElementById(id);
+  if(el) el.classList.toggle('collapsed');
+}
+
+// Drawer
+function ovOpenDrawer(eyebrow,title,sub,bodyHtml){
+  document.getElementById('ov-drawer-eye').textContent=eyebrow;
+  document.getElementById('ov-drawer-title').textContent=title;
+  document.getElementById('ov-drawer-sub').textContent=sub||'';
+  document.getElementById('ov-drawer-body').innerHTML=bodyHtml;
+  document.getElementById('ov-scrim').classList.add('open');
+  document.getElementById('ov-drawer').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function ovCloseDrawer(){
+  document.getElementById('ov-scrim').classList.remove('open');
+  document.getElementById('ov-drawer').classList.remove('open');
+  document.body.style.overflow='';
+  _ovSelSetup=null;
+  buildOvTable(); // deselect row
+}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){
+  ovCloseDrawer();
+  const dd=document.getElementById('sym-dropdown-panel');
+  if(dd) dd.style.display='none';
+}});
+
+function ovOpenSetupDrawer(setupId){
+  const st=SS[setupId];
+  if(!st) return;
+  _ovSelSetup=setupId;
+  buildOvTable(); // highlight row
+  const rv_val=rv(st.tn,st.tar);
+  const rm_val=rv(st.mn,st.tar/st.n);
+  let html='<div class="ov-drawer-stats">';
+  html+=ovDStat('Total Ad. R',(rv_val>=0?'+':'\u2212')+Math.abs(rv_val).toFixed(1),rv_val>=0?'var(--green)':'var(--red)');
+  html+=ovDStat('Mean Ad. R',(rm_val>=0?'+':'\u2212')+Math.abs(rm_val).toFixed(2),rm_val>=0?'var(--green)':'var(--red)');
+  html+=ovDStat('Profit Factor',st.pf.toFixed(2)+'×');
+  html+=ovDStat('Kelly %',st.kelly.toFixed(1)+'%');
+  html+=ovDStat('Avg R',(st.aw>=0?'+':'\u2212')+Math.abs(st.aw).toFixed(3)+'R',st.aw>=0?'var(--green)':'var(--red)');
+  html+=ovDStat('Trades',st.n);
+  html+='</div>';
+  // Recent trades for this setup
+  const all=allT().filter(t=>t.s===setupId).sort((a,b)=>{
+    const da=a.dt||'',db=b.dt||'';
+    return db.localeCompare(da);
+  }).slice(0,8);
+  html+='<div class="ov-drawer-sect">RECENT TRADES (this setup)</div>';
+  html+='<div class="ov-drawer-list">';
+  all.forEach(t=>{
+    const r=rv(t.rn,t.ar);
+    html+=`<div class="ov-dl-row"><span style="color:var(--text3)">${t.dt}</span><span style="font-weight:600">${t.tk}</span><span style="color:${r>=0?'var(--green)':'var(--red)'};text-align:right;font-variant-numeric:tabular-nums">${r>=0?'+':'\u2212'}${Math.abs(r).toFixed(2)}R</span><span style="color:var(--text2)">${t.c||''}</span></div>`;
+  });
+  html+='</div>';
+  ovOpenDrawer('PERFORMANCE BY SETUP','Setup '+setupId,st.n+' trades · '+st.wr+'% win rate',html);
+}
+
+function ovOpenTradeDrawer(t){
+  if(!t) return;
+  const r=rv(t.rn,t.ar);
+  let html='<div class="ov-drawer-stats">';
+  html+=ovDStat('Net R',(r>=0?'+':'\u2212')+Math.abs(r).toFixed(2)+'R',r>=0?'var(--green)':'var(--red)');
+  html+=ovDStat('Setup',t.s||t.c||'\u2014');
+  html+=ovDStat('Category',t.c||'\u2014');
+  html+=ovDStat('Stop hit',t.sh?'Yes':'No');
+  html+='</div>';
+  ovOpenDrawer('LAST TRADE LOGGED',t.tk||'\u2014',t.dt+' · '+(t.s||''),html);
+}
+
+function ovDStat(k,v,color){
+  return `<div class="ov-ds"><div class="ov-ds-k">${k}</div><div class="ov-ds-v" style="color:${color||'var(--text)'}">${v}</div></div>`;
+}
+
+// Symbol dropdown
+function toggleSymDropdown(){
+  const panel=document.getElementById('sym-dropdown-panel');
+  if(!panel) return;
+  if(panel.style.display==='none'){
+    panel.style.display='block';
+    // Populate (for now just show total — can extend later)
+    const all=allT();
+    panel.innerHTML=`<div class="dropdown-opt2 sel" onclick="closeSymDropdown()"><span>ALL TRADES</span><span class="opt-ct">${all.length.toLocaleString()}</span></div>`;
+  } else {
+    panel.style.display='none';
+  }
+}
+function closeSymDropdown(){document.getElementById('sym-dropdown-panel').style.display='none';}
+document.addEventListener('mousedown',e=>{
+  const wrap=document.getElementById('sym-dropdown-wrap');
+  if(wrap&&!wrap.contains(e.target)){const p=document.getElementById('sym-dropdown-panel');if(p)p.style.display='none';}
+});
+
+// Toast
+function ovShowToast(msg){
+  const el=document.getElementById('ov-toast');
+  if(!el) return;
+  el.textContent=msg;
+  el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),2500);
 }
 function smaC(p){return p==='AbovePlus'?'sma-above-plus':p==='Above'?'sma-above':'sma-below'}
 function smaL(p){return p==='AbovePlus'?'ABOVE+':p==='Above'?'ABOVE':'BELOW'}
@@ -1179,12 +1454,11 @@ function rebuildAllStats(){
 
 // ── Overview metric cards (dynamic) ──
 function buildOvMetrics(){
-  const el=document.getElementById('ov-metrics');
-  if(!el) return;
   const all=allT();
-  if(!all.length){ el.innerHTML=''; return; }
+  if(!all.length) return;
   const wins=all.filter(t=>t.w).length, losses=all.length-wins;
   const netR=all.reduce((a,t)=>a+(t.rn||0),0);
+  const accR=all.reduce((a,t)=>a+(t.ar||0),0);
   const wr=(wins/all.length*100).toFixed(1);
   const toOrdinal=s=>{
     if(!s) return 0;
@@ -1196,34 +1470,61 @@ function buildOvMetrics(){
   const ordToStr=o=>{ const y=Math.floor(o/10000),m=Math.floor((o%10000)/100),d=o%100; return m+'/'+d+'/'+y; };
   const ordinals=all.map(t=>toOrdinal(t.dt)).filter(Boolean);
   const minOrd=ordinals.length?Math.min(...ordinals):0, maxOrd=ordinals.length?Math.max(...ordinals):0;
-  const dRange=ordinals.length?ordToStr(minOrd)+' – '+ordToStr(maxOrd):'—';
+  const dRange=ordinals.length?ordToStr(minOrd)+' \u2013 '+ordToStr(maxOrd):'\u2014';
   const sorted=[...all].sort((a,b)=>toOrdinal(b.dt)-toOrdinal(a.dt));
   const lastT=sorted[0];
-  const lastStr=lastT?lastT.tk+' ('+lastT.dt+')':'—';
-  const maxDD=DAY.length?Math.min(...DAY.map(d=>d.dd||0)).toFixed(2):'—';
+  const maxDD=DAY.length?Math.min(...DAY.map(d=>d.dd||0)).toFixed(2):'\u2014';
   const endEq=DAY.length?DAY[DAY.length-1].equity:0;
   const fmtEq=endEq>=1e9?'$'+(endEq/1e9).toFixed(1)+'B':endEq>=1e6?'$'+(endEq/1e6).toFixed(1)+'M':endEq>=1e3?'$'+(endEq/1e3).toFixed(1)+'K':'$'+endEq.toFixed(0);
+  const totalRv=rv(netR,accR);
+
+  // Update app bar meta
+  const hdrCt=document.getElementById('hdr-trade-count');
+  if(hdrCt) hdrCt.textContent=all.length+' TRADES';
   const hdrSub=document.getElementById('hdr-sub-text');
-  if(hdrSub) hdrSub.textContent=all.length+' TRADES · '+dRange+' · $3K → '+fmtEq;
-  el.innerHTML=[
-    {l:'Total trades',v:all.length,s:dRange,vc:'cc'},
-    {l:'Win rate',v:wr+'%',s:wins+'W / '+losses+'L',vc:'gc'},
-    {l:'Total net R',v:(netR>=0?'+':'')+netR.toFixed(3)+'R',s:'30% fees, SH capped',vc:'gc'},
-    {l:'End equity',v:fmtEq,s:'started $3,000',vc:'gold'},
-    {l:'Max drawdown',v:maxDD+'%',s:'from peak',vc:'rc'},
-  ].map(m=>`<div class="mc"><div class="ml">${m.l}</div><div class="mv ${m.vc}">${m.v}</div><div class="ms">${m.s}</div></div>`).join('')
-  +`<div class="mc" style="grid-column:1/-1;border-top:1px solid var(--border);padding-top:8px;margin-top:4px"><div class="ml">Last trade logged</div><div style="font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--acc);font-weight:700">${lastStr}</div></div>`;
-  const el2=document.getElementById('ov-metrics2');
-  if(el2){
-    const negMo=ML.filter(k=>MO[k]&&MO[k].net<0).length, posMo=ML.length-negMo;
-    const bestS=SO.reduce((b,s)=>SS[s]&&SS[s].tar>(SS[b]?.tar||0)?s:b,SO[0]);
-    const worstS=SO.reduce((b,s)=>SS[s]&&SS[s].n>=5&&SS[s].pf<(SS[b]?.pf||99)?s:b,SO[0]);
-    const bestSt=SS[bestS]||{}, worstSt=SS[worstS]||{};
-    el2.innerHTML=
-      `<div class="mc"><div class="ml">Best setup</div><div class="mv" style="font-size:14px;color:var(--acc)">${bestS}</div><div class="ms">WR ${bestSt.wr}% · PF ${(bestSt.pf||0).toFixed(2)}×</div></div>`+
-      `<div class="mc"><div class="ml">Worst bucket</div><div class="mv" style="font-size:14px;color:var(--red)">${worstS}</div><div class="ms">PF ${(worstSt.pf||0).toFixed(2)}× — negative EV</div></div>`+
-      `<div class="mc"><div class="ml">Neg months</div><div class="mv ac">${negMo} / ${ML.length}</div><div class="ms">${posMo} profitable</div></div>`+
-      `<div class="mc"><div class="ml">20-SMA position</div><div class="mv" id="sma-ov-val">—</div><div class="ms">running R vs 20-day SMA</div></div>`;
+  if(hdrSub) hdrSub.textContent=dRange;
+  const hdrEq=document.getElementById('hdr-eq-text');
+  if(hdrEq) hdrEq.textContent='$3K \u2192 '+fmtEq;
+  // SMA pill in app bar
+  if(DAY.length){
+    const last=DAY[DAY.length-1];
+    const pill=document.getElementById('sma-pill-bar');
+    if(pill){pill.className='ov-pill ov-pill-ctx sma-pill '+smaC(last.pos);pill.textContent=smaL(last.pos)+' 20-SMA';}
+  }
+
+  // §3 KPI Row
+  const kpiEl=document.getElementById('ov-kpi-row');
+  if(kpiEl) kpiEl.innerHTML=[
+    {k:'TOTAL TRADES',v:all.length.toLocaleString(),sub:dRange,vc:'var(--text)'},
+    {k:'WIN RATE',v:wr+'%',sub:wins+'W / '+losses+'L',vc:'var(--green)'},
+    {k:'TOTAL NET R',v:(totalRv>=0?'+':'\u2212')+Math.abs(totalRv).toFixed(3)+'R',sub:'30% fees, SH capped',vc:totalRv>=0?'var(--green)':'var(--red)'},
+    {k:'END EQUITY',v:fmtEq,sub:'started $3,000',vc:'var(--acc)'},
+    {k:'MAX DRAWDOWN',v:'\u2212'+Math.abs(parseFloat(maxDD)).toFixed(2)+'%',sub:'from peak',vc:'var(--red)'},
+  ].map(m=>`<div class="kpi2"><div class="kpi2-k">${m.k}</div><div class="kpi2-v" style="color:${m.vc}">${m.v}</div><div class="kpi2-sub">${m.sub}</div></div>`).join('');
+
+  // §4 Last trade strip
+  const ltChip=document.getElementById('ov-lt-chip');
+  if(ltChip && lastT){
+    ltChip.textContent=lastT.tk+' ('+lastT.dt+')';
+    ltChip.onclick=()=>ovOpenTradeDrawer(lastT);
+  }
+
+  // §5 Callout row
+  const negMo=ML.filter(k=>MO[k]&&MO[k].net<0).length, posMo=ML.length-negMo;
+  const bestS=SO.reduce((b,s)=>SS[s]&&SS[s].tar>(SS[b]?.tar||0)?s:b,SO[0]);
+  const worstS=SO.reduce((b,s)=>SS[s]&&SS[s].n>=5&&SS[s].pf<(SS[b]?.pf||99)?s:b,SO[0]);
+  const bestSt=SS[bestS]||{}, worstSt=SS[worstS]||{};
+  const coEl=document.getElementById('ov-callout-row');
+  if(coEl) coEl.innerHTML=
+    `<div class="callout2 clickable" onclick="ovOpenSetupDrawer('${bestS}')"><span class="callout2-k">BEST SETUP</span><span class="callout2-v" style="color:var(--green)">${bestS}</span><span class="callout2-sub">WR ${bestSt.wr||0}% · PF ${(bestSt.pf||0).toFixed(2)}×</span></div>`+
+    `<div class="callout2 clickable" onclick="ovOpenSetupDrawer('${worstS}')"><span class="callout2-k">WORST BUCKET</span><span class="callout2-v" style="color:var(--red)">${worstS}</span><span class="callout2-sub">PF ${(worstSt.pf||0).toFixed(2)}×</span></div>`+
+    `<div class="callout2"><span class="callout2-k">NEG MONTHS</span><span class="callout2-v">${negMo} <span style="color:var(--text3);font-size:13px">/ ${ML.length}</span></span><span class="callout2-sub">${posMo} profitable</span></div>`+
+    `<div class="callout2"><span class="callout2-k">20-SMA POSITION</span><span class="callout2-v" id="sma-ov-val">\u2014</span><span class="callout2-sub">running R on 20-day SMA</span></div>`;
+  // Update SMA callout
+  if(DAY.length){
+    const last=DAY[DAY.length-1];
+    const sEl=document.getElementById('sma-ov-val');
+    if(sEl) sEl.innerHTML=`<span class="sma-pill ${smaC(last.pos)}" style="font-size:11px">${smaL(last.pos)}</span>`;
   }
 }
 
@@ -1321,33 +1622,33 @@ function buildHaid(){
   const el=document.getElementById('haid-content');
   if(!el) return;
   el.innerHTML=`
-    <div class="haid-c">
-      <div class="haid-l">This month (${curYm})</div>
-      <div class="haid-v" style="color:${rv(cmNet,cmAcc)>=0?'var(--green)':'var(--red)'}">${rv(cmNet,cmAcc)>=0?'+':''}${rv(cmNet,cmAcc).toFixed(viewMode==='acc'?1:2)} <span style="font-size:10px;font-weight:400">${rvLabel()}</span></div>
-      <div class="haid-s" style="opacity:.6">${viewMode==='acc'?cmNet.toFixed(3)+'R net':''}</div>
-      <div class="haid-s">${cmS?cmS.n:0} trades · WR ${cmS?cmS.wr:'—'}%</div>
+    <div class="mtile2">
+      <div class="mtile2-k">This month (${curYm})</div>
+      <div class="mtile2-v" style="color:${rv(cmNet,cmAcc)>=0?'var(--green)':'var(--red)'}">${rv(cmNet,cmAcc)>=0?'+':''}${rv(cmNet,cmAcc).toFixed(viewMode==='acc'?1:2)} <span style="font-size:10px;font-weight:400">${rvLabel()}</span></div>
+      <div class="mtile2-sub" style="opacity:.6">${viewMode==='acc'?cmNet.toFixed(3)+'R net':''}</div>
+      <div class="mtile2-sub">${cmS?cmS.n:0} trades · WR ${cmS?cmS.wr:'—'}%</div>
     </div>
-    <div class="haid-c">
-      <div class="haid-l">Last month, same ${dayOfMonth} days</div>
-      <div class="haid-v" style="color:${lmS?rv(lmS.tn,lmAcc)>=0?'var(--green)':'var(--red)':'var(--text3)'}">
+    <div class="mtile2">
+      <div class="mtile2-k">Last month, same ${dayOfMonth} days</div>
+      <div class="mtile2-v" style="color:${lmS?rv(lmS.tn,lmAcc)>=0?'var(--green)':'var(--red)':'var(--text3)'}">
         ${lmS?`${rv(lmS.tn,lmAcc)>=0?'+':''}${rv(lmS.tn,lmAcc).toFixed(viewMode==='acc'?1:2)} ${rvLabel()}`:'no data'}
       </div>
-      <div class="haid-s" style="opacity:.6">${(lmS&&viewMode==='acc')?lmS.tn.toFixed(3)+'R net':''}</div>
-      <div class="haid-s">This month is ${(()=>{if(!lmS)return'n/a';const d=cmNet-(lmS?lmS.tn:0);return (d>=0?'<span style="color:var(--green)">+':'<span style="color:var(--red)">') +d.toFixed(2)+'R ahead</span>'})()}</div>
+      <div class="mtile2-sub" style="opacity:.6">${(lmS&&viewMode==='acc')?lmS.tn.toFixed(3)+'R net':''}</div>
+      <div class="mtile2-sub">This month is ${(()=>{if(!lmS)return'n/a';const d=cmNet-(lmS?lmS.tn:0);return (d>=0?'<span style="color:var(--green)">+':'<span style="color:var(--red)">') +d.toFixed(2)+'R ahead</span>'})()}</div>
     </div>
-    <div class="haid-c">
-      <div class="haid-l">April last year, same ${dayOfMonth} days</div>
-      <div class="haid-v" style="color:${lyS?lyS.tn>=0?'var(--green)':'var(--red)':'var(--text3)'}">
+    <div class="mtile2">
+      <div class="mtile2-k">April last year, same ${dayOfMonth} days</div>
+      <div class="mtile2-v" style="color:${lyS?lyS.tn>=0?'var(--green)':'var(--red)':'var(--text3)'}">
         ${lyS?`${lyS.tn>=0?'+':''}${lyS.tn.toFixed(2)}R`:'no data'}
       </div>
-      <div class="haid-s">${(()=>{if(!lyS)return'<span style="color:var(--text3)">no data last yr</span>';const d=cmNet-(lyS?lyS.tn:0);return (d>=0?'<span style="color:var(--green)">+':'<span style="color:var(--red)">')+d.toFixed(2)+'R vs last year</span>';})()}</div>
+      <div class="mtile2-sub">${(()=>{if(!lyS)return'<span style="color:var(--text3)">no data last yr</span>';const d=cmNet-(lyS?lyS.tn:0);return (d>=0?'<span style="color:var(--green)">+':'<span style="color:var(--red)">')+d.toFixed(2)+'R vs last year</span>';})()}</div>
     </div>
-    <div class="haid-c">
-      <div class="haid-l">vs your monthly average</div>
-      <div class="haid-v" style="color:${cmVsAvg>=0?'var(--green)':'var(--red)'}">
+    <div class="mtile2">
+      <div class="mtile2-k">vs your monthly average</div>
+      <div class="mtile2-v" style="color:${cmVsAvg>=0?'var(--green)':'var(--red)'}">
         ${cmVsAvg>=0?'+':''}${cmVsAvg.toFixed(2)}R vs avg
       </div>
-      <div class="haid-s">Avg mo ${avgMo.toFixed(1)}R · Q ${avgQ.toFixed(1)}R · 6M ${avgH.toFixed(1)}R</div>
+      <div class="mtile2-sub">Avg mo ${avgMo.toFixed(1)}R · Q ${avgQ.toFixed(1)}R · 6M ${avgH.toFixed(1)}R</div>
     </div>
   `;
 }
@@ -1355,16 +1656,7 @@ function buildHaid(){
 // ── Overview ──
 (function(){
   buildOvTable();
-
   setTimeout(buildHeatmap, 50);
-  const last=DAY[DAY.length-1];
-  if(last){
-    const el=document.getElementById('sma-ov-val');
-    if(el) el.innerHTML=`<span class="sma-pill ${smaC(last.pos)}" style="font-size:11px">${smaL(last.pos)}</span>`;
-  }
-
-  buildHeatmap();
-
   setTimeout(buildHaid,100);
 })();
 
@@ -1746,19 +2038,23 @@ document.querySelectorAll('[data-cf2]').forEach(b=>{
 function buildOvTable(){
   const body=document.getElementById('ov-setup-body');
   if(!body) return;
+  const barColors={T:'var(--acc)',A:'var(--amber)',D2:'var(--amber)',Op100:'var(--green)',AtmShelf:'var(--purple)',S1n:'var(--red)'};
   body.innerHTML=SO.filter(s=>SS[s]).map(s=>{
     const st=SS[s];
     const rv_val=rv(st.tn,st.tar);
     const rm_val=rv(st.mn,st.tar/st.n);
-    return `<tr>
-      <td style="font-weight:700;color:var(--acc)">${s}</td><td class="r">${st.n}</td>
-      <td class="r">${wrBar(st.wr)}</td>
-      <td class="r" style="color:${rm_val>=0?'var(--green)':'var(--red)'}">${rm_val>=0?'+':''}${f(rm_val,viewMode==='acc'?1:3)}${viewMode==='acc'?'':'R'}</td>
-      <td class="r" style="font-weight:700;color:${rv_val>=0?'var(--green)':'var(--red)'}">${rv_val>=0?'+':''}${f(rv_val,viewMode==='acc'?1:2)}${viewMode==='acc'?'':'R'}</td>
-      <td class="r" style="color:${pfC(st.pf)}">${st.pf>=33?'33+':f(st.pf,2)}×</td>
-      <td class="r" style="color:${st.kelly<0?'var(--red)':st.kelly>=40?'var(--green)':'var(--amber)'}">${f(st.kelly,1)}%</td>
-      <td class="r" style="color:var(--green)">+${f(st.aw,3)}R</td>
-      <td class="r" style="color:var(--red)">${f(st.al,3)}R</td>
+    const bc=barColors[s]||'var(--text3)';
+    const sel=_ovSelSetup===s?'sel-row':'';
+    return `<tr class="${sel}" onclick="ovOpenSetupDrawer('${s}')" title="Click for ${s} breakdown">
+      <td style="font-weight:700;color:var(--acc)">${s}</td>
+      <td class="num">${st.n}</td>
+      <td><div class="wr-bar-cell2"><div class="wr-bar2"><div class="wr-bar2-fill" style="width:${st.wr}%;background:${bc}"></div></div><span class="wr-bar2-pct" style="color:${bc}">${st.wr}%</span></div></td>
+      <td class="num" style="color:${rm_val>=0?'var(--green)':'var(--red)'}">${rm_val>=0?'+':'\u2212'}${f(Math.abs(rm_val),viewMode==='acc'?1:3)}${viewMode==='acc'?'':'R'}</td>
+      <td class="num" style="font-weight:700;color:${rv_val>=0?'var(--green)':'var(--red)'}">${rv_val>=0?'+':'\u2212'}${f(Math.abs(rv_val),viewMode==='acc'?1:2)}${viewMode==='acc'?'':'R'}</td>
+      <td class="num" style="color:${pfC(st.pf)}">${st.pf>=33?'33+':f(st.pf,2)}×</td>
+      <td class="num" style="color:${st.kelly<0?'var(--red)':st.kelly>=40?'var(--green)':'var(--amber)'}">${f(st.kelly,1)}%</td>
+      <td class="num" style="color:var(--green)">+${f(st.aw,3)}R</td>
+      <td class="num" style="color:var(--red)">${f(st.al,3)}R</td>
     </tr>`;
   }).join('');
 }
@@ -3084,11 +3380,40 @@ function apToggle(id){
 
 // Build phase content on load (called after auth)
 function buildAllocPhases(){
-  // Render V1 body
-  const v1body = document.getElementById('ap-body-v1');
-  if(v1body) v1body.innerHTML = '<div class="ap-setup-grid">' + apRenderPhase(PHASES.v1) + '</div>';
-  const v2body = document.getElementById('ap-body-v2');
-  if(v2body) v2body.innerHTML = '<div class="ap-setup-grid">' + apRenderPhase(PHASES.v2) + '</div>';
+  const panel = document.getElementById('alloc-phases-panel');
+  if(!panel) return;
+  panel.innerHTML = `
+    <div class="ap-item" id="ap-v1">
+      <div class="ap-hdr" onclick="apToggle('v1')">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-size:10px;font-weight:700;font-family:var(--mono);
+            background:var(--amber-bg);color:var(--amber);border:1px solid rgba(245,187,99,.3);
+            border-radius:5px;padding:2px 8px">Alloc V1</span>
+          <span style="font-size:11px;font-family:var(--mono);color:var(--text2)">Jan 2024 – Apr 12 2026</span>
+        </div>
+        <span class="ap-arrow" id="ap-arrow-v1" style="color:var(--text3);font-size:10px">▼</span>
+      </div>
+      <div class="ap-body" id="ap-body-v1" style="display:none">
+        <div class="ap-setup-grid">${apRenderPhase(PHASES.v1)}</div>
+      </div>
+    </div>
+    <div class="ap-item" id="ap-v2">
+      <div class="ap-hdr" onclick="apToggle('v2')">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-size:10px;font-weight:700;font-family:var(--mono);
+            background:var(--green-bg);color:var(--green);border:1px solid rgba(79,214,156,.25);
+            border-radius:5px;padding:2px 8px">Alloc V2</span>
+          <span style="font-size:11px;font-family:var(--mono);color:var(--text2)">Apr 13 2026 – ongoing</span>
+          <span style="font-size:10px;font-family:var(--mono);color:var(--green);
+            background:rgba(79,214,156,.08);border:1px solid rgba(79,214,156,.2);
+            border-radius:4px;padding:1px 6px">ACTIVE</span>
+        </div>
+        <span class="ap-arrow" id="ap-arrow-v2" style="color:var(--text3);font-size:10px">▼</span>
+      </div>
+      <div class="ap-body" id="ap-body-v2" style="display:none">
+        <div class="ap-setup-grid">${apRenderPhase(PHASES.v2)}</div>
+      </div>
+    </div>`;
 }
 
 
@@ -3348,20 +3673,18 @@ function buildFeeOvBox(){
   const box = document.getElementById('fee-ov-box');
   if(!box || !FD || !FD.meta) return;
   const m = FD.meta;
-  const pct = m.overall_fee_pct || 0;
-  const col = pct<=FD.meta.assumption_pct?'var(--green)':pct<=FD.meta.assumption_pct*1.5?'var(--amber)':'var(--red)';
   const medCol = m.median_trade_fee_pct<=FD.meta.assumption_pct*0.75?'var(--green)':m.median_trade_fee_pct<=FD.meta.assumption_pct?'var(--amber)':'var(--red)';
   box.innerHTML = `
-    <div class="haid" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
-      <div>
-        <div style="font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--text3);letter-spacing:.07em;text-transform:uppercase;margin-bottom:4px">Median fee per trade (actual)</div>
-        <div style="font-size:22px;font-weight:700;font-family:'JetBrains Mono',monospace;color:${medCol}">${m.median_trade_fee_pct.toFixed(1)}%</div>
-        <div style="font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--text3);margin-top:2px">vs ${FD.meta.assumption_pct}% assumption · half of trades cost less than this</div>
+    <div class="mf-grid">
+      <div class="mf-left2">
+        <div class="mf-pct2" style="color:${medCol}">${m.median_trade_fee_pct.toFixed(1)}%</div>
+        <div class="mf-sub2">vs ${FD.meta.assumption_pct}% assumption · half of trades cost less than this</div>
+        <div class="mf-caveat2">Median per-trade fee across all ${m.total_trades} logged fills.</div>
       </div>
-      <div style="display:flex;flex-direction:column;gap:4px;text-align:right">
-        <div style="font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--text3)">Total locate: <span style="color:var(--red)">$${m.total_locate.toFixed(0)}</span></div>
-        <div style="font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--text3)">Commission: <span style="color:var(--amber)">$${m.total_comm.toFixed(0)}</span></div>
-        <div style="font-size:10px;margin-top:2px"><a onclick="document.querySelector('[data-v=fees]').click()" style="color:var(--acc);cursor:pointer;font-family:'JetBrains Mono',monospace">→ Fee Monitor</a></div>
+      <div class="mf-right2">
+        <div class="mf-kv2"><span>Total Locate</span><span>$${m.total_locate.toFixed(0)}</span></div>
+        <div class="mf-kv2 hl"><span>Commission</span><span>$${m.total_comm.toFixed(0)}</span></div>
+        <span class="mf-link2" onclick="document.querySelector('[data-v=fees]').click()">→ Fee Monitor</span>
       </div>
     </div>`;
 }
@@ -4077,5 +4400,20 @@ document.addEventListener('DOMContentLoaded', () => {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<!-- ═══ DRAWER (§9) ═══ -->
+<div class="ov-scrim" id="ov-scrim" onclick="ovCloseDrawer()"></div>
+<div class="ov-drawer" id="ov-drawer">
+  <div class="ov-drawer-head">
+    <div>
+      <div class="ov-drawer-eye" id="ov-drawer-eye"></div>
+      <div class="ov-drawer-title" id="ov-drawer-title"></div>
+      <div class="ov-drawer-sub" id="ov-drawer-sub"></div>
+    </div>
+    <button class="ov-drawer-close" onclick="ovCloseDrawer()">✕</button>
+  </div>
+  <div class="ov-drawer-body" id="ov-drawer-body"></div>
+</div>
+<div class="ov-toast" id="ov-toast"></div>
 </body>
 </html>
