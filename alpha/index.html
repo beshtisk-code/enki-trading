@@ -630,7 +630,7 @@ body.light .rm2-card{background:#eeeaf5;border-color:#d9d3e6}
         <span class="sect2-eye">RISK ALLOCATION MONITOR</span>
         <span class="sect2-sub">new vs old · since Apr 13 2026</span>
       </div>
-      <div class="sect2-body" id="alloc-monitor-panel">
+      <div class="sect2-body" id="alloc-monitor-panel" style="padding:14px 18px">
         <div id="alloc-monitor-content"></div>
       </div>
     </div>
@@ -3672,18 +3672,28 @@ function buildFees(){
 function buildFeeOvBox(){
   const box = document.getElementById('fee-ov-box');
   if(!box || !FD || !FD.meta) return;
-  const m = FD.meta;
-  const medCol = m.median_trade_fee_pct<=FD.meta.assumption_pct*0.75?'var(--green)':m.median_trade_fee_pct<=FD.meta.assumption_pct?'var(--amber)':'var(--red)';
+  /* Compute dynamically from fee_records + trade_records — same logic as Fee Monitor */
+  const feeOnly = (FD.fee_records||[]).filter(r=>['locate_std','locate_ex','prop','rebate','short_interest'].includes(r.type));
+  const netLocate = feeOnly.filter(r=>['locate_std','locate_ex'].includes(r.type)).reduce((a,r)=>a+r.debit,0)
+                  - feeOnly.filter(r=>r.type==='rebate').reduce((a,r)=>a+r.credit,0);
+  const overnightCost = feeOnly.filter(r=>r.type==='short_interest').reduce((a,r)=>a+r.debit,0);
+  const commTotal = (FD.trade_records||[]).reduce((a,r)=>a+r.comm,0);
+  const grossTotal = (FD.trade_records||[]).reduce((a,r)=>a+r.gross,0);
+  const totalAllFees = netLocate + overnightCost + commTotal;
+  const feePct = grossTotal ? Math.abs(totalAllFees/grossTotal*100) : 0;
+  const nTrades = (FD.trade_records||[]).length;
+  const assumption = FD.meta.assumption_pct;
+  const feeCol = feePct<=assumption*0.75?'var(--green)':feePct<=assumption?'var(--amber)':'var(--red)';
   box.innerHTML = `
     <div class="mf-grid">
       <div class="mf-left2">
-        <div class="mf-pct2" style="color:${medCol}">${m.median_trade_fee_pct.toFixed(1)}%</div>
-        <div class="mf-sub2">vs ${FD.meta.assumption_pct}% assumption · half of trades cost less than this</div>
-        <div class="mf-caveat2">Median per-trade fee across all ${m.total_trades} logged fills.</div>
+        <div class="mf-pct2" style="color:${feeCol}">${feePct.toFixed(1)}%</div>
+        <div class="mf-sub2">vs ${assumption}% assumption · total fees / gross revenue</div>
+        <div class="mf-caveat2">Computed from ${nTrades} logged fills.</div>
       </div>
       <div class="mf-right2">
-        <div class="mf-kv2"><span>Total Locate</span><span>$${m.total_locate.toFixed(0)}</span></div>
-        <div class="mf-kv2 hl"><span>Commission</span><span>$${m.total_comm.toFixed(0)}</span></div>
+        <div class="mf-kv2"><span>Net Locate</span><span>$${netLocate.toFixed(0)}</span></div>
+        <div class="mf-kv2 hl"><span>Commission</span><span>$${commTotal.toFixed(0)}</span></div>
         <span class="mf-link2" onclick="document.querySelector('[data-v=fees]').click()">→ Fee Monitor</span>
       </div>
     </div>`;
