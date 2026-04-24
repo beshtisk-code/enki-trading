@@ -167,6 +167,44 @@ body{background:var(--bg);color:var(--text);transition:background .2s,color .2s}
 /* ── Stub tab ── */
 .tab-stub{text-align:center;padding:80px 20px;color:var(--text3);font-family:var(--mono);font-size:12px}
 .tab-stub b{display:block;font-size:14px;color:var(--text2);margin-bottom:8px}
+/* ── Worst 10 / Attribution tables ── */
+.w10-table,.setup-table,.movers-table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:11px}
+.w10-table th,.setup-table th,.movers-table th{text-align:left;font-size:9.5px;color:var(--text3);letter-spacing:.8px;font-weight:600;padding:8px;border-bottom:1px solid var(--border);text-transform:uppercase}
+.w10-table th.r,.setup-table th.r,.movers-table th.r{text-align:right}
+.w10-table td,.setup-table td,.movers-table td{padding:10px 8px;border-bottom:1px solid var(--border)}
+.w10-table tr:hover,.setup-table tr:hover,.movers-table tr:hover{background:var(--bg3)}
+/* ── Attribution bar ── */
+.attr-bar{display:flex;height:14px;width:160px;border-radius:2px;overflow:hidden;background:var(--bg3)}
+.attr-fill{height:100%}
+/* ── VS bars ── */
+.vs-bars{display:flex;height:16px;width:200px;gap:2px}
+.vs-left,.vs-right{background:var(--bg3);height:100%;position:relative;flex:1}
+.vs-left{display:flex;justify-content:flex-end;border-radius:2px 0 0 2px}
+.vs-right{border-radius:0 2px 2px 0}
+.vs-fill{height:100%}
+/* ── System tag ── */
+.sys-tag{font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.5px;padding:3px 8px;border-radius:3px;display:inline-block}
+.tag-alpha{background:var(--alpha-bg);color:var(--alpha);border:1px solid var(--alpha)}
+.tag-omega{background:var(--omega-bg);color:var(--omega);border:1px solid var(--omega)}
+/* ── Heatmap ── */
+.hm-grid{display:flex;flex-direction:column;gap:2px;min-width:900px}
+.hm-row{display:grid;grid-template-columns:80px repeat(16,1fr);gap:2px}
+.hm-label{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--text2);display:flex;align-items:center;padding:0 8px}
+.hm-cell{aspect-ratio:1.4;display:flex;align-items:center;justify-content:center;border-radius:2px;border:1px solid var(--border);transition:transform .12s;font-family:var(--mono);font-size:10px;font-weight:700}
+.hm-cell:hover{transform:scale(1.08);z-index:1;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.hm-axis{display:grid;grid-template-columns:80px repeat(16,1fr);gap:2px}
+.hm-ax{font-family:var(--mono);font-size:8px;color:var(--text3);text-align:center;padding:4px 0}
+.heatmap-wrap{overflow-x:auto}
+/* ── UW bar ── */
+.uw-bar{display:inline-block;width:80px;height:8px;background:var(--bg3);border-radius:1px;vertical-align:middle;overflow:hidden}
+.uw-fill{height:100%}
+/* ── Risk contribution ── */
+.rc-row-card{padding:14px 16px;border-radius:5px;background:var(--bg3);border:1px solid var(--border);margin-bottom:12px}
+.rc-row-card.rc-a{border-left:4px solid var(--alpha)}
+.rc-row-card.rc-o{border-left:4px solid var(--omega)}
+.rc-metric{display:grid;grid-template-columns:140px 1fr 60px;gap:12px;align-items:center;padding:4px 0}
+.rc-bar-track{height:10px;background:var(--bg4);border-radius:2px;overflow:hidden}
+.rc-fill{height:100%}
 /* ── Responsive ── */
 @media(max-width:760px){.pf-grid-2,.pf-grid-3{grid-template-columns:1fr}.pf-title{font-size:28px}}
 </style>
@@ -251,24 +289,37 @@ body{background:var(--bg);color:var(--text);transition:background .2s,color .2s}
 <div id="sec-cond-corr"></div>
 </div>
 
-<!-- TAB: Performance (stub) -->
+<!-- TAB: Performance -->
 <div class="tab-pane" id="tab-performance" style="display:none">
-<div class="tab-stub"><b>Performance</b>Rolling correlation · Cumulative equity · Drawdown overlay · Rolling expectancy · Time underwater<br>Coming in the next iteration.</div>
+<div id="sec-rolling-corr"></div>
+<div id="sec-cum-equity"></div>
+<div id="sec-drawdown"></div>
+<div class="pf-grid-2">
+<div id="sec-expectancy"></div>
+<div id="sec-underwater"></div>
+</div>
 </div>
 
-<!-- TAB: Risk (stub) -->
+<!-- TAB: Risk -->
 <div class="tab-pane" id="tab-risk" style="display:none">
-<div class="tab-stub"><b>Risk</b>Worst 10 days · Risk contribution · Correlation matrix · Conditional correlation<br>Coming in the next iteration.</div>
+<div id="sec-worst10"></div>
+<div id="sec-risk-contrib"></div>
+<div class="pf-grid-2">
+<div id="sec-corr-risk"></div>
+<div id="sec-condcorr-risk"></div>
+</div>
 </div>
 
-<!-- TAB: Attribution (stub) -->
+<!-- TAB: Attribution -->
 <div class="tab-pane" id="tab-attribution" style="display:none">
-<div class="tab-stub"><b>Attribution</b>By-setup head-to-head · Biggest movers<br>Coming in the next iteration.</div>
+<div id="sec-setup-compare"></div>
+<div id="sec-biggest-movers"></div>
 </div>
 
-<!-- TAB: Calendar (stub) -->
+<!-- TAB: Calendar -->
 <div class="tab-pane" id="tab-calendar" style="display:none">
-<div class="tab-stub"><b>Calendar</b>Monthly R heatmap · Monthly net R bars<br>Coming in the next iteration.</div>
+<div id="sec-heatmap"></div>
+<div id="sec-monthly-bars"></div>
 </div>
 
 <!-- Meta footer -->
@@ -417,12 +468,31 @@ function renderAll(){
   if(!PD)return;
   const data=getFilteredData();if(!data)return;
   renderHero(data);
+  // Overview
   renderSystemCards(data);
   renderRiskMetrics(data);
   renderEquityChart(data);
   renderCorrelation(data);
   renderDayOverlap(data);
   renderCondCorr(data);
+  // Performance
+  try{renderRollingCorr(data)}catch(e){console.error('renderRollingCorr:',e)}
+  try{renderCumEquity(data)}catch(e){console.error('renderCumEquity:',e)}
+  try{renderDrawdown(data)}catch(e){console.error('renderDrawdown:',e)}
+  try{renderExpectancy()}catch(e){console.error('renderExpectancy:',e)}
+  try{renderUnderwater()}catch(e){console.error('renderUnderwater:',e)}
+  // Risk
+  try{renderWorst10()}catch(e){console.error('renderWorst10:',e)}
+  try{renderRiskContrib()}catch(e){console.error('renderRiskContrib:',e)}
+  try{renderCorrRisk(data)}catch(e){console.error('renderCorrRisk:',e)}
+  try{renderCondCorrRisk(data)}catch(e){console.error('renderCondCorrRisk:',e)}
+  // Attribution
+  try{renderSetupCompare(data)}catch(e){console.error('renderSetupCompare:',e)}
+  try{renderBiggestMovers(data)}catch(e){console.error('renderBiggestMovers:',e)}
+  // Calendar
+  try{renderHeatmap()}catch(e){console.error('renderHeatmap:',e)}
+  try{renderMonthlyBars()}catch(e){console.error('renderMonthlyBars:',e)}
+  // Meta
   renderMeta(data);
 }
 
@@ -647,6 +717,384 @@ function renderCondCorr(data){
       <td style="${interpStyle(r.interp)}">${r.interp}</td>
     </tr>`).join('')}</tbody></table>
   </div>`;
+}
+
+// ══════ PERFORMANCE TAB ══════
+
+let rollCorrChart=null, cumEqChart=null, ddChart=null, expChart=null;
+
+function renderRollingCorr(data){
+  const rc=PD.rolling_corr_full;
+  const labels=PD.daily.map(d=>d.date);
+  const step=Math.max(1,Math.floor(labels.length/8));
+  const xL=labels.map((l,i)=>i%step===0?l.slice(0,7):'');
+  const isLight=document.body.classList.contains('theme-indigo-light');
+  const gridC=isLight?'rgba(60,45,110,0.10)':'rgba(201,178,255,0.12)';
+  const txtC=isLight?'#716a8a':'#a39cc0';
+  const avg=rc.filter(v=>v!==null);
+  const avgVal=avg.length?mean(avg):0;
+  const cur=avg.length?avg[avg.length-1]:0;
+  document.getElementById('sec-rolling-corr').innerHTML=`
+  <div class="pf-panel">
+    <div class="pf-panel-head"><div><div class="panel-eye">06 \u00B7 ROLLING 30-DAY CORRELATION</div><div class="panel-title">How Alpha/Omega co-move over time</div></div></div>
+    <div class="chart-wrap"><canvas id="rc-canvas"></canvas></div>
+    <div class="pf-explain"><b>Avg ${avgVal.toFixed(2)}</b> \u00B7 current ${cur.toFixed(2)}${cur>0.7?' \u2014 concentration risk':cur<0.3?' \u2014 strong diversification':''}</div>
+  </div>`;
+  if(rollCorrChart){rollCorrChart.destroy();rollCorrChart=null}
+  const ctx=document.getElementById('rc-canvas');if(!ctx)return;
+  rollCorrChart=new Chart(ctx,{type:'line',data:{labels:xL,datasets:[
+    {data:rc,borderColor:getComputedStyle(document.body).getPropertyValue('--cross').trim(),backgroundColor:isLight?'rgba(14,143,168,0.12)':'rgba(109,228,240,0.14)',fill:true,borderWidth:2.5,pointRadius:0,tension:.3,spanGaps:true}
+  ]},options:{responsive:true,maintainAspectRatio:false,scales:{
+    x:{grid:{color:gridC,drawTicks:false},ticks:{color:txtC,font:{family:'JetBrains Mono',size:10},maxRotation:0}},
+    y:{min:-0.3,max:1.1,grid:{color:gridC,drawTicks:false},ticks:{color:txtC,font:{family:'JetBrains Mono',size:10}}}
+  },plugins:{legend:{display:false}}}});
+}
+
+function renderCumEquity(data){
+  const{daily}=data;
+  let eq=5000;const labels=[],vals=[];
+  for(const d of daily){eq*=(1+d.p/100);labels.push(d.date);vals.push(Math.round(eq))}
+  const step=Math.max(1,Math.floor(labels.length/8));
+  const xL=labels.map((l,i)=>i%step===0?l.slice(0,7):'');
+  const isLight=document.body.classList.contains('theme-indigo-light');
+  const gridC=isLight?'rgba(60,45,110,0.10)':'rgba(201,178,255,0.12)';
+  const txtC=isLight?'#716a8a':'#a39cc0';
+  document.getElementById('sec-cum-equity').innerHTML=`
+  <div class="pf-panel">
+    <div class="pf-panel-head"><div><div class="panel-eye">07 \u00B7 CUMULATIVE ACCOUNT EQUITY</div><div class="panel-title">$5k \u2192 ${fmtEq(eq)} \u00B7 compounded both systems</div></div><span class="panel-r"><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--cross);margin-right:4px;vertical-align:middle"></span>Combined</span></div>
+    <div class="chart-wrap"><canvas id="ce-canvas"></canvas></div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:12px;padding-top:10px;border-top:1px dashed var(--border)">
+      <div><span class="sst-k">STARTING</span><div class="sst-v">$5,000</div></div>
+      <div><span class="sst-k">ENDING</span><div class="sst-v" style="color:var(--cross)">${fmtEq(eq)}</div></div>
+      <div><span class="sst-k">COMPOUNDED</span><div class="sst-v">${fmt(eq/5000,0)}\u00D7</div></div>
+      <div><span class="sst-k">CAGR</span><div class="sst-v">${daily.length>30?fmt(((eq/5000)**(365/(daily.length*1.4))-1)*100,0):'—'}%</div></div>
+    </div>
+  </div>`;
+  if(cumEqChart){cumEqChart.destroy();cumEqChart=null}
+  const ctx=document.getElementById('ce-canvas');if(!ctx)return;
+  cumEqChart=new Chart(ctx,{type:'line',data:{labels:xL,datasets:[
+    {data:vals,borderColor:getComputedStyle(document.body).getPropertyValue('--cross').trim(),backgroundColor:isLight?'rgba(14,143,168,0.14)':'rgba(109,228,240,0.14)',fill:true,borderWidth:2.5,pointRadius:0,tension:.3}
+  ]},options:{responsive:true,maintainAspectRatio:false,scales:{
+    x:{grid:{color:gridC,drawTicks:false},ticks:{color:txtC,font:{family:'JetBrains Mono',size:10},maxRotation:0}},
+    y:{grid:{color:gridC,drawTicks:false},ticks:{color:txtC,font:{family:'JetBrains Mono',size:10},callback:v=>fmtEq(v)}}
+  },plugins:{legend:{display:false}}}});
+}
+
+function renderDrawdown(data){
+  const{daily}=data;
+  function ddSeries(side){let eq=3000,peak=3000;return daily.map(d=>{eq*=(1+d[side]/100);if(eq>peak)peak=eq;return rd((eq-peak)/peak*100,2)})}
+  const aDD=ddSeries('a'),oDD=ddSeries('o'),pDD=ddSeries('p');
+  const labels=daily.map(d=>d.date);
+  const step=Math.max(1,Math.floor(labels.length/8));
+  const xL=labels.map((l,i)=>i%step===0?l.slice(0,7):'');
+  const isLight=document.body.classList.contains('theme-indigo-light');
+  const gridC=isLight?'rgba(60,45,110,0.10)':'rgba(201,178,255,0.12)';
+  const txtC=isLight?'#716a8a':'#a39cc0';
+  const aMax=Math.min(...aDD),oMax=Math.min(...oDD),pMax=Math.min(...pDD);
+  document.getElementById('sec-drawdown').innerHTML=`
+  <div class="pf-panel">
+    <div class="pf-panel-head"><div><div class="panel-eye">08 \u00B7 DRAWDOWN OVERLAY</div><div class="panel-title">Alpha vs Omega vs Combined \u00B7 underwater chart</div></div></div>
+    <div class="chart-wrap"><canvas id="dd-canvas"></canvas></div>
+    <div style="display:flex;justify-content:space-around;margin-top:12px;padding:10px 12px;background:var(--bg3);border-radius:3px;font-family:var(--mono);font-size:11px;color:var(--text2)">
+      <div><span style="display:inline-block;width:10px;height:3px;background:var(--alpha);margin-right:6px;vertical-align:middle"></span>Alpha max ${fmtPct(aMax)}</div>
+      <div><span style="display:inline-block;width:10px;height:3px;background:var(--omega);margin-right:6px;vertical-align:middle"></span>Omega max ${fmtPct(oMax)}</div>
+      <div><span style="display:inline-block;width:10px;height:3px;background:var(--cross);margin-right:6px;vertical-align:middle"></span>Combined max ${fmtPct(pMax)}</div>
+    </div>
+  </div>`;
+  if(ddChart){ddChart.destroy();ddChart=null}
+  const ctx=document.getElementById('dd-canvas');if(!ctx)return;
+  ddChart=new Chart(ctx,{type:'line',data:{labels:xL,datasets:[
+    {label:'Alpha',data:aDD,borderColor:getComputedStyle(document.body).getPropertyValue('--alpha').trim(),borderWidth:2,borderDash:[4,2],pointRadius:0,tension:.3,fill:false},
+    {label:'Omega',data:oDD,borderColor:getComputedStyle(document.body).getPropertyValue('--omega').trim(),borderWidth:2,borderDash:[4,2],pointRadius:0,tension:.3,fill:false},
+    {label:'Combined',data:pDD,borderColor:getComputedStyle(document.body).getPropertyValue('--cross').trim(),borderWidth:2.5,pointRadius:0,tension:.3,fill:false}
+  ]},options:{responsive:true,maintainAspectRatio:false,scales:{
+    x:{grid:{color:gridC,drawTicks:false},ticks:{color:txtC,font:{family:'JetBrains Mono',size:10},maxRotation:0}},
+    y:{grid:{color:gridC,drawTicks:false},ticks:{color:txtC,font:{family:'JetBrains Mono',size:10},callback:v=>v+'%'}}
+  },plugins:{legend:{display:false}}}});
+}
+
+function renderExpectancy(){
+  const aE=PD.rolling_full.alpha,oE=PD.rolling_full.omega;
+  const isLight=document.body.classList.contains('theme-indigo-light');
+  const gridC=isLight?'rgba(60,45,110,0.10)':'rgba(201,178,255,0.12)';
+  const txtC=isLight?'#716a8a':'#a39cc0';
+  const aLast=aE.series.filter(v=>v!==null);
+  const oLast=oE.series.filter(v=>v!==null);
+  const aCur=aLast.length?aLast[aLast.length-1]:0;
+  const oCur=oLast.length?oLast[oLast.length-1]:0;
+  // Simple visualization as stats panel (chart would need shared x-axis with trade indices)
+  document.getElementById('sec-expectancy').innerHTML=`
+  <div class="pf-panel">
+    <div class="pf-panel-head"><div><div class="panel-eye">09 \u00B7 SYSTEM HEALTH</div><div class="panel-title">Rolling 25-trade expectancy</div></div><span class="panel-r">R per trade</span></div>
+    <div style="padding:20px 0">
+      <div style="display:flex;gap:12px;margin-top:12px">
+        <div style="padding:8px 12px;border-radius:3px;font-family:var(--mono);font-size:11px;font-weight:600;border:1px solid var(--alpha);color:var(--alpha);background:var(--alpha-bg)">\u03B1 ${aCur.toFixed(3)}R \u00B7 ${aCur>=0.2?'healthy':'weak'}</div>
+        <div style="padding:8px 12px;border-radius:3px;font-family:var(--mono);font-size:11px;font-weight:600;border:1px solid var(--omega);color:var(--omega);background:var(--omega-bg)">\u03A9 ${oCur.toFixed(3)}R \u00B7 ${oCur>=0.2?'healthy':'weak'}</div>
+      </div>
+      <div style="margin-top:12px;font-family:var(--mono);font-size:10px;color:var(--text3)">Mean: \u03B1 ${aE.mean.toFixed(4)}R \u00B7 \u03A9 ${oE.mean.toFixed(4)}R</div>
+    </div>
+  </div>`;
+}
+
+function renderUnderwater(){
+  // Compute months in drawdown for each system
+  function uwStats(daily,side){
+    let eq=3000,peak=3000,inDD=0,curDD=0,longest=0,runs=[];let cur=0;
+    for(const d of daily){
+      eq*=(1+d[side]/100);
+      if(eq>=peak){peak=eq;if(cur>0){runs.push(cur);cur=0}}
+      else{cur++}
+    }
+    if(cur>0)runs.push(cur);
+    const totalDays=daily.length;
+    const ddDays=runs.reduce((s,r)=>s+r,0);
+    const longestRun=runs.length?Math.max(...runs):0;
+    const avgRun=runs.length?mean(runs):0;
+    // Convert to approximate months
+    return{current:Math.round(cur/21),longest:Math.round(longestRun/21),avg:Math.round(avgRun/21),pct:totalDays?Math.round(ddDays/totalDays*100):0};
+  }
+  const aUW=uwStats(PD.daily,'a'),oUW=uwStats(PD.daily,'o'),pUW=uwStats(PD.daily,'p');
+  document.getElementById('sec-underwater').innerHTML=`
+  <div class="pf-panel">
+    <div class="pf-panel-head"><div><div class="panel-eye">10 \u00B7 TIME UNDERWATER</div><div class="panel-title">Months spent in drawdown</div></div></div>
+    <table class="w10-table"><thead><tr><th>SYSTEM</th><th class="r">CURRENT</th><th class="r">LONGEST</th><th class="r">AVG</th><th>% TIME</th></tr></thead>
+    <tbody>
+      <tr><td><span class="sys-tag tag-alpha">\u03B1 Alpha</span></td><td style="text-align:right">${aUW.current} mo</td><td style="text-align:right">${aUW.longest} mo</td><td style="text-align:right">${aUW.avg} mo</td><td><span class="uw-bar"><span class="uw-fill" style="width:${aUW.pct}%;background:var(--alpha)"></span></span> ${aUW.pct}%</td></tr>
+      <tr><td><span class="sys-tag tag-omega">\u03A9 Omega</span></td><td style="text-align:right">${oUW.current} mo</td><td style="text-align:right">${oUW.longest} mo</td><td style="text-align:right">${oUW.avg} mo</td><td><span class="uw-bar"><span class="uw-fill" style="width:${oUW.pct}%;background:var(--omega)"></span></span> ${oUW.pct}%</td></tr>
+      <tr><td>\u2295 Combined</td><td style="text-align:right">${pUW.current} mo</td><td style="text-align:right">${pUW.longest} mo</td><td style="text-align:right">${pUW.avg} mo</td><td><span class="uw-bar"><span class="uw-fill" style="width:${pUW.pct}%;background:var(--cross)"></span></span> ${pUW.pct}%</td></tr>
+    </tbody></table>
+  </div>`;
+}
+
+// ══════ RISK TAB ══════
+
+function renderWorst10(){
+  const w10=PD.worst10_full;
+  // Merge alpha and omega worst days, sort by net
+  const allDates=new Set([...w10.alpha.map(r=>r.date),...w10.omega.map(r=>r.date)]);
+  const merged=[];
+  for(const dt of allDates){
+    const a=w10.alpha.find(r=>r.date===dt);
+    const o=w10.omega.find(r=>r.date===dt);
+    const aR=a?a.daily_ar:0, oR=o?o.daily_ar:0;
+    const tickers=[];
+    if(a&&a.worst_ticker)tickers.push(a.worst_ticker);
+    if(o&&o.worst_ticker&&!tickers.includes(o.worst_ticker))tickers.push(o.worst_ticker);
+    merged.push({date:dt,aR:rd(aR,1),oR:rd(oR,1),net:rd(aR+oR,1),tickers});
+  }
+  merged.sort((a,b)=>a.net-b.net);
+  const top10=merged.slice(0,10);
+  const maxAbs=Math.max(...top10.map(r=>Math.max(Math.abs(r.aR),Math.abs(r.oR))))||1;
+  document.getElementById('sec-worst10').innerHTML=`
+  <div class="pf-panel">
+    <div class="pf-panel-head"><div><div class="panel-eye">11 \u00B7 WORST 10 DAYS \u00B7 TICKER ATTRIBUTION</div><div class="panel-title">Largest R losses sorted by Alpha damage</div></div></div>
+    <table class="w10-table"><thead><tr><th>DATE</th><th class="r">\u03B1 ALPHA R</th><th class="r">\u03A9 OMEGA R</th><th class="r">NET R</th><th>TICKERS</th><th>ATTRIBUTION</th></tr></thead>
+    <tbody>${top10.map(r=>{
+      const aPct=Math.abs(r.aR)/maxAbs*100;
+      const oPct=Math.abs(r.oR)/maxAbs*100;
+      return`<tr>
+        <td style="color:var(--text3)">${r.date}</td>
+        <td style="text-align:right;color:var(--alpha)">${fmtR(r.aR,1)}R</td>
+        <td style="text-align:right;color:var(--omega)">${fmtR(r.oR,1)}R</td>
+        <td style="text-align:right;font-weight:700;color:var(--red)">${fmtR(r.net,1)}R</td>
+        <td>${r.tickers.slice(0,3).join(', ')}</td>
+        <td><div class="attr-bar"><div class="attr-fill" style="width:${aPct}%;background:var(--alpha)"></div><div class="attr-fill" style="width:${oPct}%;background:var(--omega)"></div></div></td>
+      </tr>`}).join('')}</tbody></table>
+  </div>`;
+}
+
+function renderRiskContrib(){
+  const rc=PD.risk_contrib_full;
+  document.getElementById('sec-risk-contrib').innerHTML=`
+  <div class="pf-panel">
+    <div class="pf-panel-head"><div><div class="panel-eye">12 \u00B7 RISK CONTRIBUTION</div><div class="panel-title">Volatility vs VaR share at equal weight</div></div></div>
+    <div class="rc-row-card rc-a">
+      <div class="risk-head"><span class="risk-glyph" style="color:var(--alpha)">\u03B1</span><span class="risk-name">Alpha</span><span style="margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--text3)">weight 50%</span></div>
+      <div class="rc-metric"><span style="font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:.6px;font-weight:600">VOL CONTRIBUTION</span><div class="rc-bar-track"><div class="rc-fill" style="width:${rc.alpha.risk_pct}%;background:var(--alpha)"></div></div><span style="font-family:var(--mono);font-size:13px;font-weight:700;text-align:right">${rc.alpha.risk_pct}%</span></div>
+    </div>
+    <div class="rc-row-card rc-o">
+      <div class="risk-head"><span class="risk-glyph" style="color:var(--omega)">\u03A9</span><span class="risk-name">Omega</span><span style="margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--text3)">weight 50%</span></div>
+      <div class="rc-metric"><span style="font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:.6px;font-weight:600">VOL CONTRIBUTION</span><div class="rc-bar-track"><div class="rc-fill" style="width:${rc.omega.risk_pct}%;background:var(--omega)"></div></div><span style="font-family:var(--mono);font-size:13px;font-weight:700;text-align:right">${rc.omega.risk_pct}%</span></div>
+    </div>
+    <div class="pf-explain">At equal 50/50 capital allocation, <b>Alpha contributes ${rc.alpha.risk_pct}%</b> of portfolio volatility. ${rc.alpha.risk_pct>55?'Consider rebalancing toward Omega to equalize risk.':'Risk is roughly balanced.'}</div>
+  </div>`;
+}
+
+function renderCorrRisk(data){
+  // Reuse correlation matrix logic for Risk tab
+  const{daily}=data;
+  const both=daily.filter(d=>d.a!==0&&d.o!==0);
+  const c=both.length>=5?rd(corr(both.map(d=>d.a),both.map(d=>d.o)),2):0;
+  document.getElementById('sec-corr-risk').innerHTML=`
+  <div class="pf-panel">
+    <div class="pf-panel-head"><div><div class="panel-eye">13 \u00B7 CORRELATION MATRIX</div><div class="panel-title">Daily R correlation \u00B7 Pearson</div></div></div>
+    <div class="corr-grid">
+      <div class="corr-lbl"></div><div class="corr-lbl" style="justify-content:center;font-weight:700">Alpha</div><div class="corr-lbl" style="justify-content:center;font-weight:700">Omega</div>
+      <div class="corr-lbl" style="font-weight:700">Alpha</div>
+      <div class="corr-cell" style="background:var(--alpha-bg)"><span class="corr-val" style="color:var(--alpha)">1.00</span><span class="corr-badge">self</span></div>
+      <div class="corr-cell" style="background:var(--cross-bg)"><span class="corr-val" style="color:var(--cross)">${c.toFixed(2)}</span><span class="corr-badge">shared</span></div>
+      <div class="corr-lbl" style="font-weight:700">Omega</div>
+      <div class="corr-cell" style="background:var(--cross-bg)"><span class="corr-val" style="color:var(--cross)">${c.toFixed(2)}</span><span class="corr-badge">shared</span></div>
+      <div class="corr-cell" style="background:var(--omega-bg)"><span class="corr-val" style="color:var(--omega)">1.00</span><span class="corr-badge">self</span></div>
+    </div>
+  </div>`;
+}
+
+function renderCondCorrRisk(data){
+  // Reuse conditional correlation for Risk tab
+  const{daily}=data;
+  const both=daily.filter(d=>d.a!==0&&d.o!==0);
+  function cc(arr){return arr.length>=5?rd(corr(arr.map(d=>d.a),arr.map(d=>d.o)),2):0}
+  const blend=both.map(d=>({...d,bl:(d.a+d.o)/2}));
+  const neg=blend.filter(d=>d.bl<0);
+  const bothDown=both.filter(d=>d.a<0&&d.o<0);
+  const sorted=[...blend].sort((a,b)=>a.bl-b.bl);
+  const d10=Math.max(1,Math.floor(sorted.length/10));
+  const worst=sorted.slice(0,d10),best=sorted.slice(-d10);
+  const rows=[
+    {cond:'All both-traded',days:both.length,c:cc(both),interp:'moderate \u2014 shared drivers'},
+    {cond:'Negative blend days',days:neg.length,c:cc(neg),interp:cc(neg)<0.25?'low correlation':'moderate'},
+    {cond:'Both systems down',days:bothDown.length,c:cc(bothDown),interp:'moderate'},
+    {cond:'Worst decile',days:worst.length,c:cc(worst),interp:Math.abs(cc(worst))<0.15?'uncorrelated':'moderate'},
+    {cond:'Best decile',days:best.length,c:cc(best),interp:Math.abs(cc(best))<0.15?'uncorrelated':'moderate'},
+  ];
+  function pillStyle(v){if(v>=0.5)return'background:var(--alpha-bg);color:var(--alpha)';if(v>=0.25)return'color:var(--text2);background:var(--bg4)';if(v>=0)return'background:var(--cross-bg);color:var(--cross)';return'background:var(--omega-bg);color:var(--omega)'}
+  document.getElementById('sec-condcorr-risk').innerHTML=`
+  <div class="pf-panel">
+    <div class="pf-panel-head"><div><div class="panel-eye">14 \u00B7 CONDITIONAL CORRELATION</div><div class="panel-title">Correlation by regime</div></div></div>
+    <table class="cc-table"><thead><tr><th>CONDITION</th><th class="r">DAYS</th><th class="r">CORR</th><th>INTERPRETATION</th></tr></thead>
+    <tbody>${rows.map(r=>`<tr><td>${r.cond}</td><td style="text-align:right">${r.days}</td><td style="text-align:right"><span class="corr-pill" style="${pillStyle(r.c)}">${r.c>=0?'+':''}${r.c.toFixed(2)}</span></td><td style="color:var(--text2)">${r.interp}</td></tr>`).join('')}</tbody></table>
+  </div>`;
+}
+
+// ══════ ATTRIBUTION TAB ══════
+
+function renderSetupCompare(data){
+  const{aTrades,oTrades}=data;
+  const setups=new Set([...aTrades.map(t=>t.s),...oTrades.map(t=>t.s)]);
+  const rows=[];
+  for(const s of setups){
+    const aT=aTrades.filter(t=>t.s===s),oT=oTrades.filter(t=>t.s===s);
+    const aR=aT.reduce((sum,t)=>sum+(t.ar||0),0);
+    const oR=oT.reduce((sum,t)=>sum+(t.ar||0),0);
+    rows.push({setup:s,aN:aT.length,oN:oT.length,aR:rd(aR,1),oR:rd(oR,1),diff:rd(aR-oR,1)});
+  }
+  rows.sort((a,b)=>(b.aR+b.oR)-(a.aR+a.oR));
+  const maxR=Math.max(...rows.map(r=>Math.max(Math.abs(r.aR),Math.abs(r.oR))))||1;
+  document.getElementById('sec-setup-compare').innerHTML=`
+  <div class="pf-panel">
+    <div class="pf-panel-head"><div><div class="panel-eye">15 \u00B7 BY SETUP \u00B7 ALPHA VS OMEGA</div><div class="panel-title">Which system performs better at which setup</div></div><span class="panel-r">R totals \u00B7 lifetime</span></div>
+    <table class="setup-table"><thead><tr><th>SETUP</th><th class="r">\u03B1 TRADES</th><th class="r">\u03B1 TOTAL R</th><th>COMPARISON</th><th class="r">\u03A9 TOTAL R</th><th class="r">\u03A9 TRADES</th><th>WINNER</th></tr></thead>
+    <tbody>${rows.map(r=>{
+      const aPct=Math.abs(r.aR)/maxR*100;
+      const oPct=Math.abs(r.oR)/maxR*100;
+      const winner=r.aR>=r.oR?'\u03B1':'Ω';
+      const winDiff=Math.abs(r.diff);
+      const winTag=r.aR>=r.oR?`<span class="sys-tag tag-alpha">\u03B1 +${fmt(winDiff,0)}R</span>`:`<span class="sys-tag tag-omega">\u03A9 +${fmt(winDiff,0)}R</span>`;
+      return`<tr>
+        <td style="font-weight:700;font-size:12px">${r.setup}</td>
+        <td style="text-align:right">${r.aN}</td>
+        <td style="text-align:right;color:var(--alpha);font-weight:700">${fmtR(r.aR,1)}R</td>
+        <td><div class="vs-bars"><div class="vs-left"><div class="vs-fill" style="width:${aPct}%;background:var(--alpha);float:right"></div></div><div class="vs-right"><div class="vs-fill" style="width:${oPct}%;background:var(--omega)"></div></div></div></td>
+        <td style="text-align:right;color:var(--omega);font-weight:700">${fmtR(r.oR,1)}R</td>
+        <td style="text-align:right">${r.oN}</td>
+        <td>${winTag}</td>
+      </tr>`}).join('')}</tbody></table>
+  </div>`;
+}
+
+function renderBiggestMovers(data){
+  const{aTrades,oTrades}=data;
+  const all=[...aTrades.map(t=>({...t,sys:'alpha'})),...oTrades.map(t=>({...t,sys:'omega'}))];
+  all.sort((a,b)=>b.ar-a.ar);
+  const best=all.slice(0,5);
+  const worst=[...all].sort((a,b)=>a.ar-b.ar).slice(0,5);
+  function mkRow(t){
+    const tag=t.sys==='alpha'?`<span class="sys-tag tag-alpha">\u03B1 Alpha</span>`:`<span class="sys-tag tag-omega">\u03A9 Omega</span>`;
+    const col=t.ar>=0?'var(--green)':'var(--red)';
+    return`<tr><td style="color:var(--text3)">${t.d}</td><td>${tag}</td><td style="font-weight:700">${t.tk}</td><td style="text-align:right;color:${col};font-weight:700;font-size:13px">${fmtR(t.ar,1)}R</td></tr>`;
+  }
+  document.getElementById('sec-biggest-movers').innerHTML=`
+  <div class="pf-panel">
+    <div class="pf-panel-head"><div><div class="panel-eye">16 \u00B7 BIGGEST MOVERS</div><div class="panel-title">Top \u00B1R days tagged by system</div></div></div>
+    <div class="pf-grid-2">
+      <div><div style="font-family:var(--mono);font-size:10px;color:var(--green);font-weight:600;letter-spacing:1px;margin-bottom:8px">BEST</div>
+        <table class="movers-table"><thead><tr><th>DATE</th><th>SYSTEM</th><th>TICKER</th><th class="r">R</th></tr></thead><tbody>${best.map(mkRow).join('')}</tbody></table>
+      </div>
+      <div><div style="font-family:var(--mono);font-size:10px;color:var(--red);font-weight:600;letter-spacing:1px;margin-bottom:8px">WORST</div>
+        <table class="movers-table"><thead><tr><th>DATE</th><th>SYSTEM</th><th>TICKER</th><th class="r">R</th></tr></thead><tbody>${worst.map(mkRow).join('')}</tbody></table>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ══════ CALENDAR TAB ══════
+
+function renderHeatmap(){
+  const months=PD.monthly;
+  if(!months.length)return;
+  // Get all unique year-months
+  const yms=months.map(m=>m.ym);
+  const aVals=months.map(m=>rd(m.a,0));
+  const oVals=months.map(m=>rd(m.o,0));
+  const netVals=months.map(m=>rd(m.a+m.o,0));
+  const maxAbs=Math.max(...[...aVals,...oVals,...netVals].map(Math.abs))||1;
+  const isLight=document.body.classList.contains('theme-indigo-light');
+  function cellStyle(v){
+    const intensity=Math.min(Math.abs(v)/maxAbs,1);
+    const hue=v>=0?(isLight?'rgba(15,157,98,':'rgba(95,225,166,'):(isLight?'rgba(212,51,74,':'rgba(255,122,134,');
+    const bg=hue+(intensity*0.7).toFixed(2)+')';
+    const txt=intensity>0.5?(isLight?'#111':'#fff'):'var(--text)';
+    return`background:${bg};color:${txt}`;
+  }
+  function mkRow(label,vals){
+    return`<div class="hm-row"><div class="hm-label">${label}</div>${vals.map(v=>`<div class="hm-cell" style="${cellStyle(v)}">${v>=0?'+':''}${v}</div>`).join('')}</div>`;
+  }
+  document.getElementById('sec-heatmap').innerHTML=`
+  <div class="pf-panel">
+    <div class="pf-panel-head"><div><div class="panel-eye">17 \u00B7 MONTHLY R HEATMAP</div><div class="panel-title">R performance month-by-month \u00B7 both systems</div></div><span class="panel-r">intensity = magnitude \u00B7 hue = direction</span></div>
+    <div class="heatmap-wrap"><div class="hm-grid">
+      ${mkRow('\u03B1 Alpha',aVals)}
+      ${mkRow('\u03A9 Omega',oVals)}
+      ${mkRow('\u2295 Net',netVals)}
+      <div class="hm-axis"><div></div>${yms.map(ym=>`<div class="hm-ax">${ym.slice(2,4)}-${ym.slice(5)}</div>`).join('')}</div>
+    </div></div>
+  </div>`;
+}
+
+function renderMonthlyBars(){
+  const months=PD.monthly;
+  if(!months.length)return;
+  const netVals=months.map(m=>rd(m.a+m.o,0));
+  const maxAbs=Math.max(...netVals.map(Math.abs))||1;
+  const upMonths=netVals.filter(v=>v>0).length;
+  const downMonths=netVals.filter(v=>v<0).length;
+  const bestMonth=Math.max(...netVals);
+  const worstMonth=Math.min(...netVals);
+  const isLight=document.body.classList.contains('theme-indigo-light');
+  const gridC=isLight?'rgba(60,45,110,0.10)':'rgba(201,178,255,0.12)';
+  const txtC=isLight?'#716a8a':'#a39cc0';
+  document.getElementById('sec-monthly-bars').innerHTML=`
+  <div class="pf-panel">
+    <div class="pf-panel-head"><div><div class="panel-eye">18 \u00B7 MONTHLY R BARS</div><div class="panel-title">Combined net R by month</div></div><span class="panel-r">red = down month \u00B7 green = up month</span></div>
+    <div class="chart-wrap" style="height:300px"><canvas id="mb-canvas"></canvas></div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:12px;padding-top:10px;border-top:1px dashed var(--border)">
+      <div><span class="sst-k">UP MONTHS</span><div class="sst-v">${upMonths}</div></div>
+      <div><span class="sst-k">DOWN MONTHS</span><div class="sst-v">${downMonths}</div></div>
+      <div><span class="sst-k">BEST</span><div class="sst-v" style="color:var(--green)">${fmtR(bestMonth,0)}R</div></div>
+      <div><span class="sst-k">WORST</span><div class="sst-v" style="color:var(--red)">${worstMonth>=0?fmtR(worstMonth,0):fmtR(worstMonth,0)}R</div></div>
+    </div>
+  </div>`;
+  const ctx=document.getElementById('mb-canvas');if(!ctx)return;
+  const greenC=getComputedStyle(document.body).getPropertyValue('--green').trim();
+  const redC=getComputedStyle(document.body).getPropertyValue('--red').trim();
+  new Chart(ctx,{type:'bar',data:{
+    labels:months.map(m=>m.ym.slice(2).replace('-',' ')),
+    datasets:[{data:netVals,backgroundColor:netVals.map(v=>v>=0?greenC:redC),borderRadius:2}]
+  },options:{responsive:true,maintainAspectRatio:false,scales:{
+    x:{grid:{display:false},ticks:{color:txtC,font:{family:'JetBrains Mono',size:9},maxRotation:45}},
+    y:{grid:{color:gridC,drawTicks:false},ticks:{color:txtC,font:{family:'JetBrains Mono',size:10},callback:v=>v+'R'}}
+  },plugins:{legend:{display:false}}}});
 }
 
 // ── Meta footer ──
