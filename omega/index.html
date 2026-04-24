@@ -1679,12 +1679,14 @@ function buildSetupDetailPanel(id, setupName){
   if(!el) return;
 
   const all = allT();
-  const trades = all.filter(t=>t.s===setupName);
-  if(!trades.length){ el.innerHTML='<div style="font-size:10px;color:var(--text3)">No trades found.</div>'; return; }
+  const filtered = filterByDate(all.filter(t=>t.s===setupName), setupFrom, setupTo);
+  if(!filtered.length){ el.innerHTML='<div style="font-size:10px;color:var(--text3)">No trades found for this period.</div>'; return; }
+
+  const rangeLabel = (setupFrom||setupTo) ? (setupFrom||'start')+' to '+(setupTo||'now') : 'all-time';
 
   // Group by month
   const months = {};
-  trades.forEach(t => {
+  filtered.forEach(t => {
     const m = t.ym || '';
     if(!m) return;
     if(!months[m]) months[m] = [];
@@ -1708,11 +1710,19 @@ function buildSetupDetailPanel(id, setupName){
   })[setupName] || '#94a3b8';
 
   const topN = monthStats.slice(0,3);
-  const hasNeg = monthStats.some(d=>d.accR<0);
+
+  // Sort trades by date for the trade table
+  const sortedTrades = [...filtered].sort((a,b) => {
+    const da = parseDate(a.dt), db = parseDate(b.dt);
+    return (db||0) - (da||0);
+  });
+
+  const tblId = id + '-trades-tbl';
+  const toggleId = id + '-trades-toggle';
 
   el.innerHTML = `
     <div style="font-size:9px;font-family:'JetBrains Mono',monospace;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px">
-      ${setupName} · all-time monthly breakdown · ${trades.length} total trades
+      ${setupName} · ${rangeLabel} · ${filtered.length} trades
     </div>
 
     <div style="display:flex;gap:16px;margin-bottom:10px;flex-wrap:wrap">
@@ -1742,7 +1752,72 @@ function buildSetupDetailPanel(id, setupName){
         </div>
         <div style="width:28px;font-size:8px;font-family:'JetBrains Mono',monospace;color:${rank<=3?col:'var(--text3)'};font-weight:700;flex-shrink:0">#${rank}</div>
       </div>`;
-    }).join('')}`;
+    }).join('')}
+
+    <div style="margin-top:12px;border-top:1px solid var(--border);padding-top:10px;display:flex;align-items:center;gap:8px">
+      <button id="${toggleId}" onclick="(function(){var t=document.getElementById('${tblId}'),b=document.getElementById('${toggleId}');if(t.style.display==='none'){t.style.display='block';b.textContent='Hide trades';}else{t.style.display='none';b.textContent='View ${filtered.length} trades';}})()"
+        style="background:var(--bg2);border:1px solid var(--border2);border-radius:4px;color:var(--text2);font-size:10px;font-family:'JetBrains Mono',monospace;font-weight:600;padding:4px 10px;cursor:pointer">
+        View ${filtered.length} trades
+      </button>
+      <button onclick="dlSetupCsv('${setupName}')"
+        style="background:var(--bg2);border:1px solid var(--border2);border-radius:4px;color:var(--acc);font-size:10px;font-family:'JetBrains Mono',monospace;font-weight:600;padding:4px 10px;cursor:pointer">
+        ⬇ CSV
+      </button>
+    </div>
+
+    <div id="${tblId}" style="display:none;margin-top:8px;max-height:400px;overflow-y:auto;border-radius:4px">
+      <table style="width:100%;border-collapse:collapse;font-size:10px;font-family:'JetBrains Mono',monospace">
+        <thead><tr style="position:sticky;top:0;background:var(--bg2);z-index:1">
+          <th style="text-align:left;padding:4px 6px;color:var(--text3);font-weight:600;border-bottom:1px solid var(--border)">Date</th>
+          <th style="text-align:left;padding:4px 6px;color:var(--text3);font-weight:600;border-bottom:1px solid var(--border)">Ticker</th>
+          <th style="text-align:left;padding:4px 6px;color:var(--text3);font-weight:600;border-bottom:1px solid var(--border)">Cat</th>
+          <th style="text-align:right;padding:4px 6px;color:var(--text3);font-weight:600;border-bottom:1px solid var(--border)">Entry</th>
+          <th style="text-align:right;padding:4px 6px;color:var(--text3);font-weight:600;border-bottom:1px solid var(--border)">Exit</th>
+          <th style="text-align:right;padding:4px 6px;color:var(--text3);font-weight:600;border-bottom:1px solid var(--border)">Net R</th>
+          <th style="text-align:right;padding:4px 6px;color:var(--text3);font-weight:600;border-bottom:1px solid var(--border)">AccR</th>
+          <th style="text-align:center;padding:4px 6px;color:var(--text3);font-weight:600;border-bottom:1px solid var(--border)">W/L</th>
+        </tr></thead>
+        <tbody>
+          ${sortedTrades.map(t => {
+            const wl = t.w ? 'W' : 'L';
+            const wlCol = t.w ? 'var(--green)' : 'var(--red)';
+            const rnCol = (t.rn||0) >= 0 ? 'var(--green)' : 'var(--red)';
+            const arCol = (t.ar||0) >= 0 ? 'var(--green)' : 'var(--red)';
+            const shBadge = t.sh ? '<span style="color:var(--red);font-size:8px;margin-left:3px">SH</span>' : '';
+            return '<tr style="border-bottom:1px solid rgba(255,255,255,.04)">' +
+              '<td style="padding:3px 6px;color:var(--text2)">' + (t.dt||'') + '</td>' +
+              '<td style="padding:3px 6px;color:var(--text);font-weight:700">' + (t.tk||'') + shBadge + '</td>' +
+              '<td style="padding:3px 6px;color:var(--text3)">' + (t.c||'') + '</td>' +
+              '<td style="padding:3px 6px;text-align:right;color:var(--text2)">' + (t.en||'') + '</td>' +
+              '<td style="padding:3px 6px;text-align:right;color:var(--text2)">' + (t.ex||'') + '</td>' +
+              '<td style="padding:3px 6px;text-align:right;color:' + rnCol + ';font-weight:700">' + ((t.rn||0)>=0?'+':'') + (t.rn||0).toFixed(3) + '</td>' +
+              '<td style="padding:3px 6px;text-align:right;color:' + arCol + ';font-weight:700">' + ((t.ar||0)>=0?'+':'') + (t.ar||0).toFixed(2) + '%</td>' +
+              '<td style="padding:3px 6px;text-align:center;color:' + wlCol + ';font-weight:800">' + wl + '</td>' +
+            '</tr>';
+          }).join('')}
+        </tbody>
+      </table>
+    </div>`;
+}
+
+function dlSetupCsv(setupName){
+  const all = allT();
+  const filtered = filterByDate(all.filter(t=>t.s===setupName), setupFrom, setupTo);
+  const sorted = [...filtered].sort((a,b) => {
+    const da = parseDate(a.dt), db = parseDate(b.dt);
+    return (da||0) - (db||0);
+  });
+  const cols = [
+    {key:'dt',label:'Date'},{key:'tk',label:'Ticker'},
+    {key:'s',label:'Setup'},{key:'c',label:'Category'},
+    {key:'al',label:'Alloc%'},{key:'en',label:'Entry'},
+    {key:'ex',label:'Exit'},{key:'rg',label:'GrossR'},
+    {key:'rn',label:'NetR'},{key:'ar',label:'AccR'},
+    {key:'w',label:'WL',fn:r=>r.w?'W':'L'},
+    {key:'sh',label:'StopHit',fn:r=>r.sh?'Y':'N'}
+  ];
+  const rangeTag = (setupFrom||setupTo) ? '_'+(setupFrom||'start')+'_to_'+(setupTo||'now') : '';
+  downloadCSV(toCSV(sorted,cols),'omega_'+setupName+rangeTag+'_'+new Date().toISOString().slice(0,10));
 }
 
 function setupFilterChange(){
