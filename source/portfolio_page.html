@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Portfolio — Enki Trading</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root{
+  /* Portfolio palette — blend of Omega's cyan and Alpha's gold */
+  --bg:#0a0e1a;--bg2:#12172a;--bg3:#1a2040;--bg4:#242a54;
+  --border:rgba(255,255,255,.08);--border2:rgba(255,255,255,.15);
+  --text:#e8edff;--text2:#a0a9c8;--text3:#5a6280;
+  --green:#00d084;--gdim:rgba(0,208,132,.12);
+  --red:#f56565;--rdim:rgba(245,101,101,.10);
+  --amber:#fbbf24;--adim:rgba(251,191,36,.12);
+  --alpha:#fbbf24;--omega:#22d3ee;
+  --acc:#a78bfa;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;min-height:100vh;padding:0 0 40px}
+.sticky-top{position:sticky;top:0;z-index:50;background:var(--bg);padding-bottom:0}
+.hdr{padding:18px 24px 0;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:12px}
+.hdr h1{font-size:22px;font-weight:800;letter-spacing:-.4px}
+.hdr h1 .alpha-brand{color:var(--alpha)}
+.hdr h1 .omega-brand{color:var(--omega)}
+.hdr h1 .sep{color:var(--text3);margin:0 6px;font-weight:400}
+.sub{font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--text3);letter-spacing:.08em;margin-top:2px}
+.nav-btn{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--text);background:var(--bg3);border:1px solid var(--border2);padding:4px 10px;border-radius:6px;text-decoration:none;letter-spacing:.04em;transition:all .15s}
+.nav-btn:hover{border-color:var(--acc);color:var(--acc);background:var(--bg4)}
+.nav-btn.alpha:hover{border-color:var(--alpha);color:var(--alpha)}
+.nav-btn.omega:hover{border-color:var(--omega);color:var(--omega)}
+.view{padding:0 24px 32px}
+.sec{font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--text3);letter-spacing:.12em;text-transform:uppercase;margin:24px 0 10px;display:flex;align-items:center;gap:8px}
+.sec::after{content:'';flex:1;height:1px;background:var(--border)}
+/* metric grids */
+.mg{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+.mg5{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:14px}
+.mg3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.mc{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:13px 14px}
+.mc.alpha{border-left:3px solid var(--alpha)}
+.mc.omega{border-left:3px solid var(--omega)}
+.mc.port{border-left:3px solid var(--acc);background:linear-gradient(135deg,var(--bg2) 0%,rgba(167,139,250,.05) 100%)}
+.ml{font-size:9px;font-family:'JetBrains Mono',monospace;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;margin-bottom:3px}
+.mv{font-size:20px;font-weight:800;font-family:'JetBrains Mono',monospace;letter-spacing:-.5px}
+.mv.sm{font-size:14px}
+.ms{font-size:9px;font-family:'JetBrains Mono',monospace;color:var(--text3);margin-top:2px;letter-spacing:.05em}
+.gc{color:var(--green)}.rc{color:var(--red)}.ac{color:var(--amber)}.cc{color:var(--omega)}.pc{color:var(--acc)}.ald{color:var(--alpha)}
+/* panels */
+.panel{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px 16px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+/* table */
+table{width:100%;border-collapse:collapse;font-size:11px;font-family:'JetBrains Mono',monospace}
+table th{text-align:left;padding:8px 10px;font-size:9px;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;border-bottom:1px solid var(--border);font-weight:600}
+table td{padding:9px 10px;border-bottom:1px solid var(--border);color:var(--text)}
+table td.r{text-align:right}
+table tr:last-child td{border-bottom:none}
+.pill{display:inline-block;padding:2px 8px;border-radius:4px;font-size:9px;font-weight:600;letter-spacing:.05em}
+.pill.alpha{background:rgba(251,191,36,.12);color:var(--alpha)}
+.pill.omega{background:rgba(34,211,238,.12);color:var(--omega)}
+/* correlation heatmap */
+.corr-grid{display:grid;grid-template-columns:auto 1fr 1fr;gap:6px;align-items:center}
+.corr-cell{padding:12px;border-radius:6px;text-align:center;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:18px;border:1px solid var(--border)}
+.corr-label{font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--text3);text-align:right;padding-right:8px}
+.corr-hdr{font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--text3);text-align:center;letter-spacing:.08em;padding:6px}
+/* info box */
+.info{background:var(--bg3);border-left:3px solid var(--acc);border-radius:4px;padding:10px 14px;font-size:11px;color:var(--text2);line-height:1.6;margin-bottom:12px}
+.info strong{color:var(--text)}
+/* Auth overlay (same as dashboards) */
+#auth-overlay{position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;align-items:center;justify-content:center;transition:opacity .3s}
+#auth-overlay.hidden{opacity:0;pointer-events:none}
+.auth-box{background:var(--bg2);border:1px solid var(--border2);border-radius:20px;padding:36px 40px;width:100%;max-width:380px;box-shadow:0 24px 80px rgba(0,0,0,.6)}
+.auth-logo{font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--text3);letter-spacing:.18em;text-transform:uppercase;margin-bottom:8px}
+.auth-title{font-size:22px;font-weight:800;margin-bottom:4px}
+.auth-title span{color:var(--acc)}
+.auth-sub{font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--text3);margin-bottom:22px}
+.auth-lbl{font-size:9px;font-family:'JetBrains Mono',monospace;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:5px}
+.auth-inp{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;margin-bottom:12px}
+.auth-inp:focus{border-color:var(--acc)}
+.auth-btn{width:100%;background:var(--acc);color:#000;border:none;border-radius:8px;padding:11px;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;cursor:pointer;letter-spacing:.04em}
+.auth-err{font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--red);background:rgba(245,101,101,.1);border:1px solid rgba(245,101,101,.2);border-radius:6px;padding:7px 10px;margin-bottom:10px;display:none}
+.auth-err.show{display:block}
+.user-badge{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.05);border:1px solid var(--border2);border-radius:20px;padding:4px 12px 4px 8px;font-family:'JetBrains Mono',monospace}
+.user-avatar{width:22px;height:22px;border-radius:50%;background:var(--acc);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#000}
+.user-email{font-size:10px;color:var(--text2);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.logout-btn{font-size:9px;color:var(--text3);background:transparent;border:none;cursor:pointer;font-family:'JetBrains Mono',monospace}
+.logout-btn:hover{color:var(--red)}
+@media (max-width:760px){.mg,.mg5{grid-template-columns:repeat(2,1fr)}.g2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div id="auth-overlay">
+  <div class="auth-box">
+    <div class="auth-logo">Enki Trading Systems</div>
+    <div class="auth-title"><span>Portfolio</span> View</div>
+    <div class="auth-sub">Private access only</div>
+    <div class="auth-lbl">Email</div>
+    <input class="auth-inp" type="email" id="auth-email" autocomplete="email">
+    <div class="auth-lbl">Password</div>
+    <input class="auth-inp" type="password" id="auth-pass" autocomplete="current-password">
+    <div class="auth-err" id="auth-err"></div>
+    <button class="auth-btn" onclick="authSignIn()">Sign in →</button>
+  </div>
+</div>
+
+<div class="sticky-top">
+<div class="hdr">
+  <div>
+    <h1><span class="alpha-brand">Alpha</span><span class="sep">+</span><span class="omega-brand">Omega</span> Portfolio</h1>
+    <div class="sub"><span>COMBINED VIEW · SAME SETUPS · DIFFERENT ENTRY RULES</span></div>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+    <a class="nav-btn" href="../" title="Back to hub">⌂ Hub</a>
+    <a class="nav-btn alpha" href="../alpha/" title="Alpha dashboard">→ Alpha</a>
+    <a class="nav-btn omega" href="../omega/" title="Omega dashboard">→ Omega</a>
+    <div id="user-badge-wrap" style="display:none"></div>
+  </div>
+</div>
+</div>
+
+<div class="view">
+
+<!-- Combined headline stats -->
+<div class="sec">Combined Performance</div>
+<div class="mg">
+  <div class="mc alpha">
+    <div class="ml">Alpha</div>
+    <div class="mv ald">881</div>
+    <div class="ms">WR 81.3% · Net +74.93R · AccR 1,845%</div>
+  </div>
+  <div class="mc omega">
+    <div class="ml">Omega</div>
+    <div class="mv cc">818</div>
+    <div class="ms">WR 77.1% · Net +41.39R · AccR 1,248%</div>
+  </div>
+  <div class="mc port">
+    <div class="ml">Combined trades</div>
+    <div class="mv pc">1699</div>
+    <div class="ms">1347 wins · combined WR 79.3%</div>
+  </div>
+  <div class="mc port">
+    <div class="ml">Combined AccR</div>
+    <div class="mv gc">+3,094%</div>
+    <div class="ms">sum of both systems</div>
+  </div>
+</div>
+
+<!-- Correlation section -->
+<div class="sec">Correlation matrix · Alpha vs Omega</div>
+<div class="g2">
+  <div class="panel">
+    <div style="font-size:11px;color:var(--text2);margin-bottom:12px">Daily AccR correlation · Pearson</div>
+    <div class="corr-grid">
+      <div></div><div class="corr-hdr">Alpha</div><div class="corr-hdr">Omega</div>
+      <div class="corr-label">Alpha</div>
+      <div class="corr-cell" style="background:var(--adim);color:var(--alpha)">1.00</div>
+      <div class="corr-cell" id="corr-ao" style="background:rgba(167,139,250,.15);color:var(--acc)">0.65</div>
+      <div class="corr-label">Omega</div>
+      <div class="corr-cell" id="corr-oa" style="background:rgba(167,139,250,.15);color:var(--acc)">0.65</div>
+      <div class="corr-cell" style="background:rgba(34,211,238,.12);color:var(--omega)">1.00</div>
+    </div>
+    <div style="margin-top:14px;font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--text3);line-height:1.7">
+      · Daily (both-traded days, n=383): <strong style="color:var(--text)">0.65</strong><br>
+      · Daily (full series): <strong style="color:var(--text)">0.61</strong><br>
+      · Monthly (n=34): <strong style="color:var(--text)">0.59</strong>
+    </div>
+  </div>
+  <div class="panel">
+    <div style="font-size:11px;color:var(--text2);margin-bottom:12px">Day overlap</div>
+    <div class="mg3" style="margin-bottom:0">
+      <div class="mc" style="padding:12px"><div class="ml">Both traded</div><div class="mv sm gc">383</div><div class="ms">same day</div></div>
+      <div class="mc alpha" style="padding:12px"><div class="ml">Alpha only</div><div class="mv sm ald">87</div><div class="ms">Omega skipped</div></div>
+      <div class="mc omega" style="padding:12px"><div class="ml">Omega only</div><div class="mv sm cc">31</div><div class="ms">Alpha skipped</div></div>
+    </div>
+    <div style="margin-top:14px;font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--text3);line-height:1.7">
+      · Shared (ticker+day): <strong style="color:var(--text)">636</strong><br>
+      · Both systems traded the same ticker on the same day<br>
+      · Low overlap on a ticker basis = diversification benefit
+    </div>
+  </div>
+</div>
+
+<div class="info" style="margin-top:12px">
+  <strong>How to read this:</strong> Alpha and Omega run the same setup list but diverge on exit rules (Omega: intraday target or EoD close · Alpha: overnight hold to next close). D2 and Op100 share identical rules. Daily correlation of <strong>0.65</strong> confirms meaningful but imperfect overlap — gap-day outcomes drive the divergence.
+</div>
+
+<!-- Equity curves -->
+<div class="sec">Cumulative AccR · Equity curves</div>
+<div class="panel" style="padding:12px 14px;margin-bottom:12px">
+  <div style="height:340px"><canvas id="eq-chart"></canvas></div>
+</div>
+
+<!-- Drawdown overlay -->
+<div class="sec">Drawdown overlay</div>
+<div class="g2">
+  <div class="panel" style="padding:12px 14px">
+    <div style="font-size:10px;color:var(--text3);margin-bottom:6px">Compound equity drawdown %</div>
+    <div style="height:220px"><canvas id="dd-chart"></canvas></div>
+  </div>
+  <div class="panel">
+    <div style="font-size:11px;color:var(--text2);margin-bottom:10px">Max drawdown summary</div>
+    <table>
+      <thead><tr><th>System</th><th class="r">Max DD</th><th class="r">End equity</th></tr></thead>
+      <tbody>
+        <tr><td><span class="pill alpha">Alpha</span></td><td class="r rc">-77.34%</td><td class="r ald">$9.79B</td></tr>
+        <tr><td><span class="pill omega">Omega</span></td><td class="r rc">-60.14%</td><td class="r cc">$297.1M</td></tr>
+        <tr><td><span style="color:var(--acc);font-weight:700">50/50 blend</span></td><td class="r rc">-65.24%</td><td class="r pc">$3.08B</td></tr>
+      </tbody>
+    </table>
+    <div style="margin-top:12px;font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--text3);line-height:1.7">
+      · 50/50 blend: daily AccR averaged, then compounded<br>
+      · Lower blend DD vs worse system = diversification value<br>
+      · Higher blend DD vs best system = correlation drag
+    </div>
+  </div>
+</div>
+
+<!-- By Setup side-by-side -->
+<div class="sec">By setup · Alpha vs Omega</div>
+<div class="panel" style="padding:0;overflow-x:auto">
+<table>
+<thead><tr>
+  <th rowspan="2" style="vertical-align:bottom">Setup</th>
+  <th colspan="4" style="text-align:center;border-left:1px solid var(--border)"><span class="pill alpha">Alpha</span></th>
+  <th colspan="4" style="text-align:center;border-left:1px solid var(--border)"><span class="pill omega">Omega</span></th>
+  <th rowspan="2" class="r" style="vertical-align:bottom;border-left:1px solid var(--border)">A − O<br>(Net R)</th>
+</tr>
+<tr>
+  <th class="r" style="border-left:1px solid var(--border)">n</th><th class="r">WR</th><th class="r">Net R</th><th class="r">AccR</th>
+  <th class="r" style="border-left:1px solid var(--border)">n</th><th class="r">WR</th><th class="r">Net R</th><th class="r">AccR</th>
+</tr></thead>
+<tbody id="setup-body"></tbody>
+</table>
+</div>
+
+<!-- Monthly bar comparison -->
+<div class="sec">Monthly AccR comparison</div>
+<div class="panel" style="padding:12px 14px">
+  <div style="height:280px"><canvas id="monthly-chart"></canvas></div>
+</div>
+
+<!-- Footer note -->
+<div style="margin-top:32px;padding:12px 0;text-align:center;font-size:9px;font-family:'JetBrains Mono',monospace;color:var(--text3);letter-spacing:.08em">
+  ENKI TRADING · PORTFOLIO VIEW · ALPHA 30% FEES (SH CAP) · OMEGA 20% FEES · COMPOUND METHOD A
+</div>
+
+</div>
+
+<script>
+const PD = {"meta":{"alpha_trades":881,"alpha_wins":716,"alpha_net":74.929,"alpha_ar":1845.26,"alpha_dd":-77.34,"alpha_end_eq":9790588116.38,"omega_trades":818,"omega_wins":631,"omega_net":41.391,"omega_ar":1248.25,"omega_dd":-60.14,"omega_end_eq":297115551.89,"port_ar":1609.25,"port_dd":-65.24,"port_end_eq":3079423711.28,"overlap_days":383,"alpha_only_days":87,"omega_only_days":31,"shared_ticker_day":636,"corr_daily_both":0.6516,"corr_daily_all":0.6072,"corr_monthly":0.592},"daily":[{"date":"1/5/2026","a":0.0,"o":-0.52,"p":-0.26,"a_eq":3000.0,"o_eq":2984.4,"p_eq":2992.2},{"date":"2023-07-10","a":5.477,"o":0.0,"p":2.738,"a_eq":3164.3,"o_eq":2984.4,"p_eq":3074.14},{"date":"2023-07-11","a":6.042,"o":0.0,"p":3.021,"a_eq":3355.5,"o_eq":2984.4,"p_eq":3167.01},{"date":"2023-07-12","a":14.329,"o":0.0,"p":7.165,"a_eq":3836.33,"o_eq":2984.4,"p_eq":3393.92},{"date":"2023-07-13","a":7.37,"o":0.0,"p":3.685,"a_eq":4119.05,"o_eq":2984.4,"p_eq":3518.98},{"date":"2023-07-14","a":15.355,"o":0.0,"p":7.678,"a_eq":4751.54,"o_eq":2984.4,"p_eq":3789.15},{"date":"2023-07-17","a":1.097,"o":0.0,"p":0.549,"a_eq":4803.68,"o_eq":2984.4,"p_eq":3809.94},{"date":"2023-07-18","a":0.059,"o":0.0,"p":0.03,"a_eq":4806.53,"o_eq":2984.4,"p_eq":3811.07},{"date":"2023-07-19","a":5.943,"o":0.0,"p":2.971,"a_eq":5092.17,"o_eq":2984.4,"p_eq":3924.32},{"date":"2023-07-20","a":1.555,"o":0.0,"p":0.777,"a_eq":5171.36,"o_eq":2984.4,"p_eq":3954.83},{"date":"2023-07-21","a":7.393,"o":0.0,"p":3.696,"a_eq":5553.65,"o_eq":2984.4,"p_eq":4101.01},{"date":"2023-07-24","a":7.271,"o":0.0,"p":3.635,"a_eq":5957.45,"o_eq":2984.4,"p_eq":4250.1},{"date":"2023-07-26","a":11.582,"o":0.0,"p":5.791,"a_eq":6647.47,"o_eq":2984.4,"p_eq":4496.23},{"date":"2023-08-01","a":8.386,"o":0.0,"p":4.193,"a_eq":7204.93,"o_eq":2984.4,"p_eq":4684.76},{"date":"2023-08-02","a":1.374,"o":0.0,"p":0.687,"a_eq":7303.94,"o_eq":2984.4,"p_eq":4716.95},{"date":"2023-08-07","a":9.001,"o":0.0,"p":4.501,"a_eq":7961.38,"o_eq":2984.4,"p_eq":4929.24},{"date":"2023-08-08","a":18.972,"o":0.0,"p":9.486,"a_eq":9471.84,"o_eq":2984.4,"p_eq":5396.84},{"date":"2023-08-09","a":6.989,"o":0.0,"p":3.494,"a_eq":10133.81,"o_eq":2984.4,"p_eq":5585.42},{"date":"2023-08-15","a":-0.398,"o":0.0,"p":-0.199,"a_eq":10093.5,"o_eq":2984.4,"p_eq":5574.32},{"date":"2023-08-18","a":8.864,"o":0.0,"p":4.432,"a_eq":10988.15,"o_eq":2984.4,"p_eq":5821.36},{"date":"2023-08-25","a":1.809,"o":0.0,"p":0.904,"a_eq":11186.92,"o_eq":2984.4,"p_eq":5874.01},{"date":"2023-08-30","a":5.098,"o":0.0,"p":2.549,"a_eq":11757.19,"o_eq":2984.4,"p_eq":6023.73},{"date":"2023-09-01","a":9.471,"o":0.0,"p":4.736,"a_eq":12870.71,"o_eq":2984.4,"p_eq":6308.98},{"date":"2023-09-05","a":2.181,"o":0.0,"p":1.09,"a_eq":13151.38,"o_eq":2984.4,"p_eq":6377.77},{"date":"2023-09-08","a":3.266,"o":0.0,"p":1.633,"a_eq":13580.85,"o_eq":2984.4,"p_eq":6481.91},{"date":"2023-09-11","a":9.408,"o":0.0,"p":4.704,"a_eq":14858.54,"o_eq":2984.4,"p_eq":6786.82},{"date":"2023-09-12","a":-3.182,"o":0.0,"p":-1.591,"a_eq":14385.74,"o_eq":2984.4,"p_eq":6678.84},{"date":"2023-09-25","a":10.939,"o":0.0,"p":5.47,"a_eq":15959.43,"o_eq":2984.4,"p_eq":7044.14},{"date":"2023-09-27","a":6.698,"o":0.0,"p":3.349,"a_eq":17028.33,"o_eq":2984.4,"p_eq":7280.04},{"date":"2023-09-28","a":9.268,"o":0.0,"p":4.634,"a_eq":18606.51,"o_eq":2984.4,"p_eq":7617.4},{"date":"2023-10-02","a":6.031,"o":0.0,"p":3.016,"a_eq":19728.71,"o_eq":2984.4,"p_eq":7847.11},{"date":"2023-10-03","a":2.702,"o":0.0,"p":1.351,"a_eq":20261.78,"o_eq":2984.4,"p_eq":7953.12},{"date":"2023-10-04","a":2.566,"o":0.0,"p":1.283,"a_eq":20781.67,"o_eq":2984.4,"p_eq":8055.16},{"date":"2023-10-10","a":4.575,"o":0.0,"p":2.287,"a_eq":21732.43,"o_eq":2984.4,"p_eq":8239.42},{"date":"2023-10-11","a":-19.744,"o":0.0,"p":-9.872,"a_eq":17441.58,"o_eq":2984.4,"p_eq":7426.02},{"date":"2023-10-12","a":11.534,"o":0.0,"p":5.767,"a_eq":19453.36,"o_eq":2984.4,"p_eq":7854.3},{"date":"2023-10-20","a":0.834,"o":0.0,"p":0.417,"a_eq":19615.61,"o_eq":2984.4,"p_eq":7887.05},{"date":"2023-10-23","a":6.461,"o":0.0,"p":3.23,"a_eq":20882.93,"o_eq":2984.4,"p_eq":8141.83},{"date":"2023-10-24","a":9.864,"o":0.0,"p":4.932,"a_eq":22942.91,"o_eq":2984.4,"p_eq":8543.4},{"date":"2023-10-26","a":16.609,"o":0.0,"p":8.304,"a_eq":26753.45,"o_eq":2984.4,"p_eq":9252.88},{"date":"2023-10-30","a":1.588,"o":0.0,"p":0.794,"a_eq":27178.29,"o_eq":2984.4,"p_eq":9326.35},{"date":"2023-11-03","a":-15.134,"o":0.0,"p":-7.567,"a_eq":23065.02,"o_eq":2984.4,"p_eq":8620.61},{"date":"2023-11-09","a":-0.865,"o":0.0,"p":-0.433,"a_eq":22865.46,"o_eq":2984.4,"p_eq":8583.31},{"date":"2023-11-10","a":0.109,"o":0.0,"p":0.055,"a_eq":22890.43,"o_eq":2984.4,"p_eq":8588.0},{"date":"2023-11-13","a":1.576,"o":0.0,"p":0.788,"a_eq":23251.09,"o_eq":2984.4,"p_eq":8655.66},{"date":"2023-11-16","a":10.062,"o":0.0,"p":5.031,"a_eq":25590.62,"o_eq":2984.4,"p_eq":9091.12},{"date":"2023-11-30","a":18.158,"o":0.0,"p":9.079,"a_eq":30237.47,"o_eq":2984.4,"p_eq":9916.52},{"date":"2023-12-01","a":7.263,"o":0.0,"p":3.632,"a_eq":32433.67,"o_eq":2984.4,"p_eq":10276.65},{"date":"2023-12-04","a":13.614,"o":0.0,"p":6.807,"a_eq":36849.13,"o_eq":2984.4,"p_eq":10976.17},{"date":"2023-12-05","a":2.684,"o":0.0,"p":1.342,"a_eq":37838.16,"o_eq":2984.4,"p_eq":11123.47},{"date":"2023-12-07","a":1.833,"o":0.0,"p":0.917,"a_eq":38531.85,"o_eq":2984.4,"p_eq":11225.44},{"date":"2023-12-08","a":3.353,"o":0.0,"p":1.676,"a_eq":39823.63,"o_eq":2984.4,"p_eq":11413.6},{"date":"2023-12-14","a":0.442,"o":0.0,"p":0.221,"a_eq":39999.49,"o_eq":2984.4,"p_eq":11438.8},{"date":"2023-12-18","a":5.686,"o":0.0,"p":2.843,"a_eq":42273.7,"o_eq":2984.4,"p_eq":11763.99},{"date":"2023-12-19","a":6.95,"o":0.0,"p":3.475,"a_eq":45211.89,"o_eq":2984.4,"p_eq":12172.81},{"date":"2023-12-22","a":-24.779,"o":0.0,"p":-12.389,"a_eq":34008.97,"o_eq":2984.4,"p_eq":10664.68},{"date":"2023-12-26","a":-15.075,"o":0.0,"p":-7.537,"a_eq":28882.25,"o_eq":2984.4,"p_eq":9860.85},{"date":"2023-12-28","a":0.079,"o":0.0,"p":0.04,"a_eq":28905.07,"o_eq":2984.4,"p_eq":9864.74},{"date":"2023-12-29","a":4.749,"o":0.0,"p":2.374,"a_eq":30277.72,"o_eq":2984.4,"p_eq":10098.97},{"date":"2024-01-03","a":5.856,"o":0.0,"p":2.928,"a_eq":32050.78,"o_eq":2984.4,"p_eq":10394.67},{"date":"2024-01-04","a":4.805,"o":1.42,"p":3.112,"a_eq":33590.75,"o_eq":3026.78,"p_eq":10718.19},{"date":"2024-01-10","a":9.433,"o":3.28,"p":6.357,"a_eq":36759.44,"o_eq":3126.06,"p_eq":11399.5},{"date":"2024-01-12","a":-2.146,"o":-8.27,"p":-5.208,"a_eq":35970.73,"o_eq":2867.53,"p_eq":10805.84},{"date":"2024-01-18","a":9.186,"o":8.1,"p":8.643,"a_eq":39274.93,"o_eq":3099.8,"p_eq":11739.78},{"date":"2024-01-23","a":-28.979,"o":-25.06,"p":-27.019,"a_eq":27893.6,"o_eq":2322.99,"p_eq":8567.77},{"date":"2024-01-24","a":5.247,"o":7.44,"p":6.344,"a_eq":29357.29,"o_eq":2495.82,"p_eq":9111.29},{"date":"2024-01-25","a":-0.398,"o":-0.37,"p":-0.384,"a_eq":29240.36,"o_eq":2486.59,"p_eq":9076.29},{"date":"2024-01-26","a":20.344,"o":1.52,"p":10.932,"a_eq":35188.9,"o_eq":2524.38,"p_eq":10068.49},{"date":"2024-01-29","a":1.147,"o":0.0,"p":0.574,"a_eq":35592.59,"o_eq":2524.38,"p_eq":10126.24},{"date":"2024-01-30","a":5.621,"o":6.63,"p":6.126,"a_eq":37593.32,"o_eq":2691.75,"p_eq":10746.53},{"date":"2024-02-02","a":1.598,"o":0.0,"p":0.799,"a_eq":38194.21,"o_eq":2691.75,"p_eq":10832.42},{"date":"2024-02-05","a":0.0,"o":-1.61,"p":-0.805,"a_eq":38194.21,"o_eq":2648.41,"p_eq":10745.22},{"date":"2024-02-09","a":-13.408,"o":-22.32,"p":-17.864,"a_eq":33073.21,"o_eq":2057.29,"p_eq":8825.7},{"date":"2024-02-12","a":-21.523,"o":0.0,"p":-10.761,"a_eq":25954.86,"o_eq":2057.29,"p_eq":7875.93},{"date":"2024-02-13","a":31.175,"o":22.18,"p":26.677,"a_eq":34046.26,"o_eq":2513.59,"p_eq":9977.02},{"date":"2024-02-14","a":12.386,"o":15.47,"p":13.928,"a_eq":38263.23,"o_eq":2902.45,"p_eq":11366.62},{"date":"2024-02-15","a":32.527,"o":32.9,"p":32.714,"a_eq":50709.27,"o_eq":3857.35,"p_eq":15085.06},{"date":"2024-02-16","a":5.366,"o":6.05,"p":5.708,"a_eq":53430.23,"o_eq":4090.72,"p_eq":15946.1},{"date":"2024-02-20","a":10.058,"o":6.23,"p":8.144,"a_eq":58804.03,"o_eq":4345.57,"p_eq":17244.72},{"date":"2024-02-21","a":15.875,"o":20.08,"p":17.978,"a_eq":68139.28,"o_eq":5218.16,"p_eq":20344.91},{"date":"2024-02-22","a":31.77,"o":20.86,"p":26.315,"a_eq":89787.27,"o_eq":6306.67,"p_eq":25698.69},{"date":"2024-02-23","a":21.139,"o":7.29,"p":14.214,"a_eq":108767.04,"o_eq":6766.43,"p_eq":29351.58},{"date":"2024-02-26","a":3.48,"o":-12.96,"p":-4.74,"a_eq":112552.14,"o_eq":5889.5,"p_eq":27960.32},{"date":"2024-02-27","a":0.0,"o":8.99,"p":4.495,"a_eq":112552.14,"o_eq":6418.97,"p_eq":29217.13},{"date":"2024-02-28","a":16.966,"o":18.29,"p":17.628,"a_eq":131647.28,"o_eq":7593.0,"p_eq":34367.47},{"date":"2024-02-29","a":3.024,"o":3.13,"p":3.077,"a_eq":135628.29,"o_eq":7830.66,"p_eq":35424.96},{"date":"2024-03-01","a":15.488,"o":19.08,"p":17.284,"a_eq":156634.95,"o_eq":9324.75,"p_eq":41547.88},{"date":"2024-03-04","a":10.092,"o":7.65,"p":8.871,"a_eq":172442.55,"o_eq":10038.09,"p_eq":45233.59},{"date":"2024-03-05","a":-24.0,"o":-26.86,"p":-25.43,"a_eq":131056.33,"o_eq":7341.86,"p_eq":33730.69},{"date":"2024-03-06","a":-40.03,"o":7.71,"p":-16.16,"a_eq":78594.75,"o_eq":7907.92,"p_eq":28279.84},{"date":"2024-03-07","a":5.764,"o":1.62,"p":3.692,"a_eq":83125.1,"o_eq":8036.02,"p_eq":29323.96},{"date":"2024-03-08","a":15.494,"o":16.62,"p":16.057,"a_eq":96004.84,"o_eq":9371.61,"p_eq":34032.57},{"date":"2024-03-11","a":12.406,"o":10.49,"p":11.448,"a_eq":107915.39,"o_eq":10354.69,"p_eq":37928.65},{"date":"2024-03-12","a":8.692,"o":0.0,"p":4.346,"a_eq":117295.83,"o_eq":10354.69,"p_eq":39577.11},{"date":"2024-03-13","a":3.946,"o":2.92,"p":3.433,"a_eq":121923.85,"o_eq":10657.05,"p_eq":40935.71},{"date":"2024-03-14","a":-3.254,"o":-2.13,"p":-2.692,"a_eq":117956.94,"o_eq":10430.06,"p_eq":39833.8},{"date":"2024-03-15","a":-24.0,"o":-2.12,"p":-13.06,"a_eq":89647.27,"o_eq":10208.94,"p_eq":34631.51},{"date":"2024-03-18","a":0.809,"o":0.0,"p":0.404,"a_eq":90372.34,"o_eq":10208.94,"p_eq":34771.56},{"date":"2024-03-21","a":-8.492,"o":0.0,"p":-4.246,"a_eq":82697.56,"o_eq":10208.94,"p_eq":33295.09},{"date":"2024-03-22","a":5.126,"o":3.1,"p":4.113,"a_eq":86936.97,"o_eq":10525.41,"p_eq":34664.58},{"date":"2024-03-25","a":2.011,"o":5.37,"p":3.691,"a_eq":88685.27,"o_eq":11090.63,"p_eq":35943.88},{"date":"2024-03-26","a":-12.025,"o":2.4,"p":-4.813,"a_eq":78020.69,"o_eq":11356.8,"p_eq":34214.04},{"date":"2024-03-28","a":-13.695,"o":-3.1,"p":-8.397,"a_eq":67336.07,"o_eq":11004.74,"p_eq":31340.99},{"date":"2024-04-01","a":0.0,"o":3.29,"p":1.645,"a_eq":67336.07,"o_eq":11366.8,"p_eq":31856.55},{"date":"2024-04-02","a":0.0,"o":-10.58,"p":-5.29,"a_eq":67336.07,"o_eq":10164.19,"p_eq":30171.34},{"date":"2024-04-04","a":-19.583,"o":-14.12,"p":-16.852,"a_eq":54149.51,"o_eq":8729.01,"p_eq":25086.98},{"date":"2024-04-05","a":1.051,"o":13.59,"p":7.32,"a_eq":54718.41,"o_eq":9915.28,"p_eq":26923.43},{"date":"2024-04-08","a":6.38,"o":6.63,"p":6.505,"a_eq":58209.6,"o_eq":10572.66,"p_eq":28674.84},{"date":"2024-04-09","a":4.92,"o":4.11,"p":4.515,"a_eq":61073.34,"o_eq":11007.2,"p_eq":29969.46},{"date":"2024-04-10","a":-3.33,"o":7.86,"p":2.265,"a_eq":59039.36,"o_eq":11872.37,"p_eq":30648.21},{"date":"2024-04-11","a":4.735,"o":3.57,"p":4.152,"a_eq":61834.63,"o_eq":12296.21,"p_eq":31920.82},{"date":"2024-04-12","a":0.0,"o":5.18,"p":2.59,"a_eq":61834.63,"o_eq":12933.15,"p_eq":32747.56},{"date":"2024-04-15","a":-11.786,"o":2.99,"p":-4.398,"a_eq":54546.56,"o_eq":13319.85,"p_eq":31307.26},{"date":"2024-04-17","a":23.679,"o":4.42,"p":14.05,"a_eq":67462.74,"o_eq":13908.59,"p_eq":35705.81},{"date":"2024-04-18","a":0.0,"o":2.02,"p":1.01,"a_eq":67462.74,"o_eq":14189.55,"p_eq":36066.43},{"date":"2024-04-19","a":1.228,"o":0.0,"p":0.614,"a_eq":68290.92,"o_eq":14189.55,"p_eq":36287.81},{"date":"2024-04-22","a":7.248,"o":5.1,"p":6.174,"a_eq":73240.64,"o_eq":14913.21,"p_eq":38528.22},{"date":"2024-04-24","a":2.68,"o":1.96,"p":2.32,"a_eq":75203.42,"o_eq":15205.51,"p_eq":39422.05},{"date":"2024-04-25","a":-0.893,"o":-3.44,"p":-2.166,"a_eq":74532.0,"o_eq":14682.44,"p_eq":38568.02},{"date":"2024-04-26","a":6.985,"o":4.91,"p":5.947,"a_eq":79737.76,"o_eq":15403.35,"p_eq":40861.77},{"date":"2024-04-30","a":3.598,"o":0.0,"p":1.799,"a_eq":82607.05,"o_eq":15403.35,"p_eq":41596.96},{"date":"2024-05-01","a":-0.105,"o":0.0,"p":-0.053,"a_eq":82520.06,"o_eq":15403.35,"p_eq":41575.06},{"date":"2024-05-02","a":0.725,"o":12.2,"p":6.463,"a_eq":83118.5,"o_eq":17282.56,"p_eq":44261.88},{"date":"2024-05-03","a":6.751,"o":7.56,"p":7.156,"a_eq":88729.91,"o_eq":18589.12,"p_eq":47429.07},{"date":"2024-05-06","a":8.635,"o":7.5,"p":8.068,"a_eq":96392.09,"o_eq":19983.3,"p_eq":51255.5},{"date":"2024-05-07","a":5.056,"o":5.78,"p":5.418,"a_eq":101265.49,"o_eq":21138.34,"p_eq":54032.47},{"date":"2024-05-08","a":3.985,"o":0.0,"p":1.992,"a_eq":105300.71,"o_eq":21138.34,"p_eq":55109.02},{"date":"2024-05-09","a":1.435,"o":5.06,"p":3.248,"a_eq":106812.31,"o_eq":22207.94,"p_eq":56898.82},{"date":"2024-05-10","a":-4.334,"o":0.0,"p":-2.167,"a_eq":102182.63,"o_eq":22207.94,"p_eq":55665.71},{"date":"2024-05-13","a":1.638,"o":-3.49,"p":-0.926,"a_eq":103856.38,"o_eq":21432.88,"p_eq":55150.24},{"date":"2024-05-14","a":-11.132,"o":8.83,"p":-1.151,"a_eq":92295.09,"o_eq":23325.41,"p_eq":54515.46},{"date":"2024-05-15","a":3.897,"o":4.46,"p":4.179,"a_eq":95892.2,"o_eq":24365.72,"p_eq":56793.5},{"date":"2024-05-16","a":2.857,"o":-10.15,"p":-3.646,"a_eq":98632.22,"o_eq":21892.6,"p_eq":54722.64},{"date":"2024-05-17","a":-5.732,"o":-14.22,"p":-9.976,"a_eq":92978.82,"o_eq":18779.47,"p_eq":49263.56},{"date":"2024-05-20","a":13.807,"o":6.64,"p":10.223,"a_eq":105816.41,"o_eq":20026.43,"p_eq":54300.02},{"date":"2024-05-21","a":6.61,"o":6.76,"p":6.685,"a_eq":112810.45,"o_eq":21380.21,"p_eq":57929.87},{"date":"2024-05-22","a":9.946,"o":7.94,"p":8.943,"a_eq":124030.13,"o_eq":23077.8,"p_eq":63110.43},{"date":"2024-05-23","a":-31.574,"o":-0.94,"p":-16.257,"a_eq":84869.35,"o_eq":22860.87,"p_eq":52850.69},{"date":"2024-05-24","a":6.569,"o":10.19,"p":8.38,"a_eq":90444.76,"o_eq":25190.39,"p_eq":57279.42},{"date":"2024-05-28","a":3.489,"o":2.94,"p":3.214,"a_eq":93600.19,"o_eq":25930.99,"p_eq":59120.61},{"date":"2024-05-29","a":15.445,"o":6.32,"p":10.883,"a_eq":108056.74,"o_eq":27569.83,"p_eq":65554.41},{"date":"2024-05-30","a":0.0,"o":3.5,"p":1.75,"a_eq":108056.74,"o_eq":28534.77,"p_eq":66701.61},{"date":"2024-05-31","a":0.0,"o":-0.73,"p":-0.365,"a_eq":108056.74,"o_eq":28326.47,"p_eq":66458.15},{"date":"2024-06-03","a":7.121,"o":5.88,"p":6.5,"a_eq":115751.14,"o_eq":29992.07,"p_eq":70778.16},{"date":"2024-06-04","a":-6.973,"o":0.0,"p":-3.486,"a_eq":107679.81,"o_eq":29992.07,"p_eq":68310.48},{"date":"2024-06-05","a":23.963,"o":11.02,"p":17.491,"a_eq":133483.02,"o_eq":33297.19,"p_eq":80258.98},{"date":"2024-06-06","a":22.447,"o":15.3,"p":18.873,"a_eq":163445.95,"o_eq":38391.66,"p_eq":95406.65},{"date":"2024-06-11","a":-0.688,"o":1.04,"p":0.176,"a_eq":162322.1,"o_eq":38790.94,"p_eq":95574.76},{"date":"2024-06-13","a":-7.601,"o":-2.27,"p":-4.935,"a_eq":149984.0,"o_eq":37910.38,"p_eq":90857.67},{"date":"2024-06-14","a":0.0,"o":6.86,"p":3.43,"a_eq":149984.0,"o_eq":40511.04,"p_eq":93974.09},{"date":"2024-06-18","a":-1.484,"o":1.94,"p":0.228,"a_eq":147758.23,"o_eq":41296.95,"p_eq":94188.35},{"date":"2024-06-20","a":10.884,"o":3.69,"p":7.287,"a_eq":163839.65,"o_eq":42820.81,"p_eq":101051.66},{"date":"2024-06-24","a":1.96,"o":0.0,"p":0.98,"a_eq":167050.9,"o_eq":42820.81,"p_eq":102041.97},{"date":"2024-06-25","a":-7.042,"o":0.0,"p":-3.521,"a_eq":155287.85,"o_eq":42820.81,"p_eq":98449.28},{"date":"2024-06-26","a":3.572,"o":8.46,"p":6.016,"a_eq":160834.11,"o_eq":46443.45,"p_eq":104371.79},{"date":"2024-06-27","a":4.444,"o":5.08,"p":4.762,"a_eq":167981.26,"o_eq":48802.77,"p_eq":109341.87},{"date":"2024-06-28","a":-6.638,"o":-0.46,"p":-3.549,"a_eq":156829.99,"o_eq":48578.28,"p_eq":105461.11},{"date":"2024-07-01","a":4.872,"o":0.0,"p":2.436,"a_eq":164471.37,"o_eq":48578.28,"p_eq":108030.35},{"date":"2024-07-03","a":0.459,"o":7.85,"p":4.155,"a_eq":165226.62,"o_eq":52391.68,"p_eq":112518.58},{"date":"2024-07-05","a":0.886,"o":0.0,"p":0.443,"a_eq":166689.87,"o_eq":52391.68,"p_eq":113016.81},{"date":"2024-07-08","a":0.0,"o":3.54,"p":1.77,"a_eq":166689.87,"o_eq":54246.34,"p_eq":115017.21},{"date":"2024-07-09","a":-10.397,"o":-22.91,"p":-16.654,"a_eq":149358.63,"o_eq":41818.5,"p_eq":95862.64},{"date":"2024-07-10","a":4.863,"o":17.53,"p":11.197,"a_eq":156622.08,"o_eq":49149.29,"p_eq":106595.95},{"date":"2024-07-11","a":3.149,"o":5.95,"p":4.55,"a_eq":161554.11,"o_eq":52073.67,"p_eq":111445.54},{"date":"2024-07-12","a":-0.616,"o":0.66,"p":0.022,"a_eq":160558.62,"o_eq":52417.36,"p_eq":111469.94},{"date":"2024-07-15","a":-2.6,"o":3.18,"p":0.29,"a_eq":156384.09,"o_eq":54084.23,"p_eq":111793.21},{"date":"2024-07-16","a":0.0,"o":5.45,"p":2.725,"a_eq":156384.09,"o_eq":57031.82,"p_eq":114839.57},{"date":"2024-07-17","a":6.286,"o":2.12,"p":4.203,"a_eq":166214.71,"o_eq":58240.89,"p_eq":119666.39},{"date":"2024-07-18","a":0.0,"o":5.14,"p":2.57,"a_eq":166214.71,"o_eq":61234.48,"p_eq":122741.82},{"date":"2024-07-19","a":8.172,"o":10.95,"p":9.561,"a_eq":179797.11,"o_eq":67939.65,"p_eq":134476.92},{"date":"2024-07-22","a":4.485,"o":6.92,"p":5.703,"a_eq":187861.01,"o_eq":72641.08,"p_eq":142145.47},{"date":"2024-07-23","a":10.363,"o":6.26,"p":8.311,"a_eq":207328.11,"o_eq":77188.41,"p_eq":153959.53},{"date":"2024-07-24","a":7.28,"o":-6.63,"p":0.325,"a_eq":222421.6,"o_eq":72070.82,"p_eq":154459.9},{"date":"2024-07-25","a":6.648,"o":1.21,"p":3.929,"a_eq":237208.63,"o_eq":72942.87,"p_eq":160528.78},{"date":"2024-07-26","a":1.938,"o":0.0,"p":0.969,"a_eq":241804.78,"o_eq":72942.87,"p_eq":162083.99},{"date":"2024-07-29","a":0.0,"o":20.03,"p":10.015,"a_eq":241804.78,"o_eq":87553.33,"p_eq":178316.7},{"date":"2024-07-30","a":3.661,"o":13.44,"p":8.55,"a_eq":250656.77,"o_eq":99320.5,"p_eq":193563.49},{"date":"2024-08-13","a":0.0,"o":2.62,"p":1.31,"a_eq":250656.77,"o_eq":101922.69,"p_eq":196099.17},{"date":"2024-08-14","a":0.0,"o":-0.85,"p":-0.425,"a_eq":250656.77,"o_eq":101056.35,"p_eq":195265.75},{"date":"2024-08-19","a":18.836,"o":16.31,"p":17.573,"a_eq":297869.98,"o_eq":117538.64,"p_eq":229579.6},{"date":"2024-08-20","a":15.096,"o":0.0,"p":7.548,"a_eq":342836.43,"o_eq":117538.64,"p_eq":246908.27},{"date":"2024-08-21","a":-14.875,"o":4.22,"p":-5.328,"a_eq":291838.83,"o_eq":122498.77,"p_eq":233753.99},{"date":"2024-08-22","a":15.947,"o":0.04,"p":7.993,"a_eq":338377.78,"o_eq":122547.77,"p_eq":252438.88},{"date":"2024-08-23","a":7.348,"o":15.65,"p":11.499,"a_eq":363242.46,"o_eq":141726.5,"p_eq":281467.08},{"date":"2024-08-26","a":1.981,"o":7.09,"p":4.536,"a_eq":370439.74,"o_eq":151774.91,"p_eq":294233.58},{"date":"2024-08-27","a":2.568,"o":1.94,"p":2.254,"a_eq":379951.53,"o_eq":154719.34,"p_eq":300865.16},{"date":"2024-08-29","a":-5.994,"o":-3.38,"p":-4.687,"a_eq":357178.75,"o_eq":149489.83,"p_eq":286764.21},{"date":"2024-08-30","a":2.282,"o":-18.48,"p":-8.099,"a_eq":365329.57,"o_eq":121864.11,"p_eq":263539.18},{"date":"2024-09-03","a":-0.098,"o":11.51,"p":5.706,"a_eq":364970.09,"o_eq":135890.67,"p_eq":278576.2},{"date":"2024-09-04","a":-4.298,"o":-14.07,"p":-9.184,"a_eq":349282.21,"o_eq":116770.85,"p_eq":252991.2},{"date":"2024-09-05","a":6.237,"o":4.37,"p":5.304,"a_eq":371068.34,"o_eq":121873.74,"p_eq":266409.1},{"date":"2024-09-06","a":3.434,"o":0.0,"p":1.717,"a_eq":383812.31,"o_eq":121873.74,"p_eq":270983.87},{"date":"2024-09-09","a":5.124,"o":1.25,"p":3.187,"a_eq":403478.85,"o_eq":123397.16,"p_eq":279620.13},{"date":"2024-09-10","a":-0.376,"o":6.38,"p":3.002,"a_eq":401960.16,"o_eq":131269.9,"p_eq":288013.77},{"date":"2024-09-11","a":19.863,"o":9.47,"p":14.667,"a_eq":481802.31,"o_eq":143701.16,"p_eq":330255.59},{"date":"2024-09-12","a":15.383,"o":7.55,"p":11.466,"a_eq":555917.48,"o_eq":154550.59,"p_eq":368124.19},{"date":"2024-09-18","a":1.968,"o":-3.99,"p":-1.011,"a_eq":566857.93,"o_eq":148384.02,"p_eq":364402.45},{"date":"2024-09-19","a":6.905,"o":0.0,"p":3.452,"a_eq":605998.34,"o_eq":148384.02,"p_eq":376983.08},{"date":"2024-09-20","a":9.442,"o":1.83,"p":5.636,"a_eq":663216.1,"o_eq":151099.45,"p_eq":398229.66},{"date":"2024-09-27","a":0.0,"o":1.79,"p":0.895,"a_eq":663216.1,"o_eq":153804.13,"p_eq":401793.81},{"date":"2024-09-30","a":-1.555,"o":0.33,"p":-0.612,"a_eq":652904.41,"o_eq":154311.69,"p_eq":399333.23},{"date":"2024-10-02","a":3.393,"o":5.24,"p":4.316,"a_eq":675057.46,"o_eq":162397.62,"p_eq":416570.45},{"date":"2024-10-03","a":0.696,"o":0.56,"p":0.628,"a_eq":679755.86,"o_eq":163307.04,"p_eq":419186.51},{"date":"2024-10-04","a":2.758,"o":1.13,"p":1.944,"a_eq":698500.81,"o_eq":165152.41,"p_eq":427334.66},{"date":"2024-10-07","a":0.068,"o":0.08,"p":0.074,"a_eq":698972.99,"o_eq":165284.54,"p_eq":427650.03},{"date":"2024-10-08","a":2.013,"o":0.49,"p":1.252,"a_eq":713044.72,"o_eq":166094.43,"p_eq":433002.5},{"date":"2024-10-09","a":1.053,"o":0.11,"p":0.582,"a_eq":720553.08,"o_eq":166277.13,"p_eq":435520.41},{"date":"2024-10-11","a":-7.318,"o":-18.69,"p":-13.004,"a_eq":667823.01,"o_eq":135199.94,"p_eq":378885.33},{"date":"2024-10-14","a":0.0,"o":0.44,"p":0.22,"a_eq":667823.01,"o_eq":135794.82,"p_eq":379718.88},{"date":"2024-10-16","a":11.115,"o":14.18,"p":12.647,"a_eq":742049.53,"o_eq":155050.52,"p_eq":427743.26},{"date":"2024-10-17","a":22.519,"o":19.26,"p":20.889,"a_eq":909150.18,"o_eq":184913.25,"p_eq":517096.26},{"date":"2024-10-18","a":5.558,"o":5.91,"p":5.734,"a_eq":959684.38,"o_eq":195841.63,"p_eq":546747.59},{"date":"2024-10-21","a":10.31,"o":17.29,"p":13.8,"a_eq":1058626.88,"o_eq":229702.64,"p_eq":622198.49},{"date":"2024-10-22","a":3.391,"o":0.52,"p":1.956,"a_eq":1094527.04,"o_eq":230897.1,"p_eq":634366.2},{"date":"2024-10-23","a":13.706,"o":7.9,"p":10.803,"a_eq":1244546.2,"o_eq":249137.97,"p_eq":702897.73},{"date":"2024-10-24","a":0.177,"o":4.27,"p":2.223,"a_eq":1246746.55,"o_eq":259776.16,"p_eq":718525.96},{"date":"2024-10-25","a":16.167,"o":-3.02,"p":6.574,"a_eq":1448308.07,"o_eq":251930.92,"p_eq":765758.26},{"date":"2024-10-28","a":-0.541,"o":1.3,"p":0.38,"a_eq":1440475.62,"o_eq":255206.02,"p_eq":768665.08},{"date":"2024-10-29","a":10.114,"o":5.53,"p":7.822,"a_eq":1586166.76,"o_eq":269318.91,"p_eq":828790.45},{"date":"2024-10-31","a":6.41,"o":5.17,"p":5.79,"a_eq":1687846.4,"o_eq":283242.7,"p_eq":876779.07},{"date":"2024-11-01","a":0.401,"o":3.51,"p":1.955,"a_eq":1694611.29,"o_eq":293184.52,"p_eq":893923.61},{"date":"2024-11-04","a":4.378,"o":7.59,"p":5.984,"a_eq":1768808.15,"o_eq":315437.23,"p_eq":947417.79},{"date":"2024-11-05","a":5.827,"o":2.25,"p":4.038,"a_eq":1871869.52,"o_eq":322534.56,"p_eq":985677.36},{"date":"2024-11-06","a":5.394,"o":10.83,"p":8.112,"a_eq":1972845.65,"o_eq":357465.06,"p_eq":1065637.48},{"date":"2024-11-12","a":-20.18,"o":-26.5,"p":-23.34,"a_eq":1574733.29,"o_eq":262736.82,"p_eq":816919.82},{"date":"2024-11-13","a":0.0,"o":0.65,"p":0.325,"a_eq":1574733.29,"o_eq":264444.61,"p_eq":819574.81},{"date":"2024-11-14","a":6.172,"o":1.46,"p":3.816,"a_eq":1671922.68,"o_eq":268305.5,"p_eq":850848.97},{"date":"2024-11-15","a":18.645,"o":7.13,"p":12.887,"a_eq":1983652.66,"o_eq":287435.68,"p_eq":960502.13},{"date":"2024-11-18","a":-11.394,"o":-0.09,"p":-5.742,"a_eq":1757643.21,"o_eq":287176.99,"p_eq":905352.02},{"date":"2024-11-19","a":-0.309,"o":-11.13,"p":-5.72,"a_eq":1752205.07,"o_eq":255214.19,"p_eq":853568.6},{"date":"2024-11-22","a":-0.257,"o":0.0,"p":-0.128,"a_eq":1747705.4,"o_eq":255214.19,"p_eq":852472.62},{"date":"2024-11-25","a":-3.373,"o":-3.58,"p":-3.476,"a_eq":1688762.29,"o_eq":246077.52,"p_eq":822838.11},{"date":"2024-11-26","a":18.266,"o":3.5,"p":10.883,"a_eq":1997238.37,"o_eq":254690.23,"p_eq":912389.23},{"date":"2024-11-29","a":-22.856,"o":-13.99,"p":-18.423,"a_eq":1540741.58,"o_eq":219059.07,"p_eq":744297.94},{"date":"2024-12-02","a":10.533,"o":19.89,"p":15.212,"a_eq":1703030.97,"o_eq":262629.92,"p_eq":857517.56},{"date":"2024-12-03","a":-22.056,"o":-21.15,"p":-21.603,"a_eq":1327417.27,"o_eq":207083.69,"p_eq":672269.76},{"date":"2024-12-04","a":9.688,"o":-1.36,"p":4.164,"a_eq":1456017.45,"o_eq":204267.35,"p_eq":700263.07},{"date":"2024-12-06","a":-18.918,"o":3.82,"p":-7.549,"a_eq":1180568.07,"o_eq":212070.37,"p_eq":647400.21},{"date":"2024-12-09","a":5.914,"o":-2.59,"p":1.662,"a_eq":1250389.23,"o_eq":206577.74,"p_eq":658160.65},{"date":"2024-12-10","a":3.609,"o":1.13,"p":2.369,"a_eq":1295513.28,"o_eq":208912.07,"p_eq":673755.11},{"date":"2024-12-11","a":-11.879,"o":4.07,"p":-3.905,"a_eq":1141614.07,"o_eq":217414.79,"p_eq":647446.99},{"date":"2024-12-12","a":3.701,"o":3.34,"p":3.52,"a_eq":1183862.93,"o_eq":224676.45,"p_eq":670239.72},{"date":"2024-12-13","a":-0.207,"o":0.0,"p":-0.104,"a_eq":1181409.96,"o_eq":224676.45,"p_eq":669545.35},{"date":"2024-12-16","a":8.332,"o":-2.74,"p":2.796,"a_eq":1279840.31,"o_eq":218520.31,"p_eq":688264.5},{"date":"2024-12-17","a":-64.632,"o":-25.59,"p":-45.111,"a_eq":452656.48,"o_eq":162600.96,"p_eq":377782.19},{"date":"2024-12-18","a":8.453,"o":-12.38,"p":-1.963,"a_eq":490920.44,"o_eq":142470.97,"p_eq":370364.81},{"date":"2024-12-19","a":31.506,"o":25.44,"p":28.473,"a_eq":645587.87,"o_eq":178715.58,"p_eq":475818.04},{"date":"2024-12-20","a":-6.194,"o":2.28,"p":-1.957,"a_eq":605597.57,"o_eq":182790.29,"p_eq":466505.33},{"date":"2024-12-23","a":-21.755,"o":15.35,"p":-3.202,"a_eq":473851.64,"o_eq":210848.6,"p_eq":451566.2},{"date":"2024-12-24","a":19.926,"o":25.21,"p":22.568,"a_eq":568272.26,"o_eq":264003.54,"p_eq":553476.11},{"date":"2024-12-26","a":8.913,"o":6.5,"p":7.707,"a_eq":618922.37,"o_eq":281163.77,"p_eq":596129.75},{"date":"2024-12-27","a":-24.376,"o":4.76,"p":-9.808,"a_eq":468053.85,"o_eq":294547.16,"p_eq":537661.34},{"date":"2024-12-30","a":2.522,"o":3.05,"p":2.786,"a_eq":479858.17,"o_eq":303530.85,"p_eq":552640.59},{"date":"2024-12-31","a":22.238,"o":25.43,"p":23.834,"a_eq":586570.95,"o_eq":380718.75,"p_eq":684358.05},{"date":"2025-01-02","a":13.451,"o":10.71,"p":12.08,"a_eq":665470.02,"o_eq":421493.72,"p_eq":767031.58},{"date":"2025-01-06","a":18.827,"o":7.71,"p":13.268,"a_eq":790756.73,"o_eq":453990.89,"p_eq":868804.4},{"date":"2025-01-07","a":0.075,"o":-0.49,"p":-0.208,"a_eq":791346.64,"o_eq":451766.34,"p_eq":866999.89},{"date":"2025-01-08","a":24.067,"o":10.75,"p":17.409,"a_eq":981800.04,"o_eq":500331.22,"p_eq":1017931.57},{"date":"2025-01-10","a":17.539,"o":7.27,"p":12.405,"a_eq":1153997.94,"o_eq":536705.3,"p_eq":1144200.89},{"date":"2025-01-13","a":3.679,"o":0.58,"p":2.13,"a_eq":1196454.68,"o_eq":539818.19,"p_eq":1168567.22},{"date":"2025-01-14","a":2.335,"o":5.86,"p":4.098,"a_eq":1224394.29,"o_eq":571451.53,"p_eq":1216450.43},{"date":"2025-01-15","a":2.618,"o":3.24,"p":2.929,"a_eq":1256442.81,"o_eq":589966.56,"p_eq":1252077.23},{"date":"2025-01-16","a":2.701,"o":15.23,"p":8.966,"a_eq":1290384.36,"o_eq":679818.47,"p_eq":1364334.71},{"date":"2025-01-17","a":6.622,"o":5.67,"p":6.146,"a_eq":1375833.61,"o_eq":718364.18,"p_eq":1448186.73},{"date":"2025-01-21","a":11.827,"o":11.1,"p":11.464,"a_eq":1538558.95,"o_eq":798102.6,"p_eq":1614202.51},{"date":"2025-01-22","a":2.128,"o":5.82,"p":3.974,"a_eq":1571307.18,"o_eq":844552.17,"p_eq":1678354.95},{"date":"2025-01-24","a":8.247,"o":24.37,"p":16.308,"a_eq":1700885.03,"o_eq":1050369.54,"p_eq":1952065.27},{"date":"2025-01-27","a":17.69,"o":20.22,"p":18.955,"a_eq":2001774.99,"o_eq":1262754.26,"p_eq":2322081.2},{"date":"2025-01-28","a":6.989,"o":3.47,"p":5.229,"a_eq":2141675.04,"o_eq":1306571.83,"p_eq":2443512.11},{"date":"2025-01-29","a":7.632,"o":-0.65,"p":3.491,"a_eq":2305127.68,"o_eq":1298079.11,"p_eq":2528815.12},{"date":"2025-01-30","a":14.808,"o":11.32,"p":13.064,"a_eq":2646461.77,"o_eq":1445021.67,"p_eq":2859174.47},{"date":"2025-02-03","a":2.815,"o":0.6,"p":1.708,"a_eq":2720959.67,"o_eq":1453691.8,"p_eq":2907994.87},{"date":"2025-02-04","a":-6.223,"o":5.0,"p":-0.612,"a_eq":2551628.91,"o_eq":1526376.39,"p_eq":2890209.57},{"date":"2025-02-05","a":2.1,"o":1.35,"p":1.725,"a_eq":2605205.46,"o_eq":1546982.47,"p_eq":2940061.35},{"date":"2025-02-06","a":8.793,"o":5.63,"p":7.211,"a_eq":2834268.15,"o_eq":1634077.58,"p_eq":3152076.53},{"date":"2025-02-07","a":5.889,"o":3.07,"p":4.479,"a_eq":3001178.2,"o_eq":1684243.76,"p_eq":3293273.8},{"date":"2025-02-10","a":1.75,"o":1.17,"p":1.46,"a_eq":3053692.81,"o_eq":1703949.41,"p_eq":3341352.3},{"date":"2025-02-11","a":1.649,"o":4.05,"p":2.85,"a_eq":3104054.32,"o_eq":1772959.37,"p_eq":3436567.48},{"date":"2025-02-12","a":-11.403,"o":-8.47,"p":-9.936,"a_eq":2750111.42,"o_eq":1622789.71,"p_eq":3095099.82},{"date":"2025-02-13","a":0.0,"o":-1.46,"p":-0.73,"a_eq":2750111.42,"o_eq":1599096.98,"p_eq":3072505.59},{"date":"2025-02-18","a":-4.218,"o":4.72,"p":0.251,"a_eq":2634122.72,"o_eq":1674574.36,"p_eq":3080223.73},{"date":"2025-02-19","a":8.719,"o":7.81,"p":8.265,"a_eq":2863797.15,"o_eq":1805358.61,"p_eq":3334791.9},{"date":"2025-02-20","a":19.247,"o":12.01,"p":15.628,"a_eq":3414980.73,"o_eq":2022182.18,"p_eq":3855963.18},{"date":"2025-02-21","a":5.034,"o":-3.45,"p":0.792,"a_eq":3586894.27,"o_eq":1952416.9,"p_eq":3886504.34},{"date":"2025-02-24","a":8.085,"o":11.84,"p":9.963,"a_eq":3876901.85,"o_eq":2183583.06,"p_eq":4273701.22},{"date":"2025-02-25","a":27.329,"o":19.19,"p":23.26,"a_eq":4936428.11,"o_eq":2602612.65,"p_eq":5267747.02},{"date":"2025-02-26","a":5.422,"o":1.06,"p":3.241,"a_eq":5204086.18,"o_eq":2630200.34,"p_eq":5438477.34},{"date":"2025-02-27","a":9.742,"o":4.38,"p":7.061,"a_eq":5711078.66,"o_eq":2745403.11,"p_eq":5822493.66},{"date":"2025-02-28","a":8.672,"o":7.73,"p":8.201,"a_eq":6206320.56,"o_eq":2957622.78,"p_eq":6299984.72},{"date":"2025-03-03","a":13.855,"o":6.76,"p":10.308,"a_eq":7066212.48,"o_eq":3157558.08,"p_eq":6949358.8},{"date":"2025-03-06","a":-11.922,"o":4.59,"p":-3.666,"a_eq":6223806.89,"o_eq":3302489.99,"p_eq":6694609.2},{"date":"2025-03-13","a":2.98,"o":3.83,"p":3.405,"a_eq":6409251.44,"o_eq":3428975.36,"p_eq":6922547.26},{"date":"2025-03-17","a":7.8,"o":5.17,"p":6.485,"a_eq":6909173.06,"o_eq":3606253.38,"p_eq":7371474.45},{"date":"2025-03-18","a":5.969,"o":2.96,"p":4.464,"a_eq":7321567.78,"o_eq":3712998.48,"p_eq":7700566.55},{"date":"2025-03-19","a":4.85,"o":3.42,"p":4.135,"a_eq":7676634.53,"o_eq":3839983.03,"p_eq":8018969.58},{"date":"2025-03-20","a":6.3,"o":1.54,"p":3.92,"a_eq":8160247.15,"o_eq":3899118.77,"p_eq":8333305.17},{"date":"2025-03-21","a":11.416,"o":8.04,"p":9.728,"a_eq":9091788.33,"o_eq":4212607.92,"p_eq":9143952.43},{"date":"2025-03-25","a":4.719,"o":5.43,"p":5.075,"a_eq":9520829.82,"o_eq":4441352.53,"p_eq":9607962.29},{"date":"2025-03-26","a":7.976,"o":-0.03,"p":3.973,"a_eq":10280182.64,"o_eq":4440020.12,"p_eq":9989672.22},{"date":"2025-03-27","a":6.468,"o":3.74,"p":5.104,"a_eq":10945104.85,"o_eq":4606076.88,"p_eq":10499545.09},{"date":"2025-03-31","a":11.609,"o":3.94,"p":7.774,"a_eq":12215722.08,"o_eq":4787556.31,"p_eq":11315832.23},{"date":"2025-04-01","a":20.834,"o":-21.91,"p":-0.538,"a_eq":14760770.04,"o_eq":3738602.72,"p_eq":11254964.36},{"date":"2025-04-02","a":24.73,"o":5.87,"p":15.3,"a_eq":18411078.96,"o_eq":3958058.7,"p_eq":12976962.66},{"date":"2025-04-03","a":7.537,"o":5.27,"p":6.403,"a_eq":19798685.15,"o_eq":4166648.39,"p_eq":13807929.48},{"date":"2025-04-04","a":0.0,"o":2.77,"p":1.385,"a_eq":19798685.15,"o_eq":4282064.55,"p_eq":13999169.31},{"date":"2025-04-08","a":9.358,"o":-1.51,"p":3.924,"a_eq":21651446.11,"o_eq":4217405.38,"p_eq":14548496.71},{"date":"2025-04-09","a":2.14,"o":1.73,"p":1.935,"a_eq":22114743.75,"o_eq":4290366.49,"p_eq":14829995.57},{"date":"2025-04-10","a":7.396,"o":0.0,"p":3.698,"a_eq":23750438.66,"o_eq":4290366.49,"p_eq":15378438.47},{"date":"2025-04-15","a":9.392,"o":4.58,"p":6.986,"a_eq":25981032.36,"o_eq":4486865.28,"p_eq":16452760.8},{"date":"2025-04-16","a":-2.025,"o":0.0,"p":-1.013,"a_eq":25454812.53,"o_eq":4486865.28,"p_eq":16286143.7},{"date":"2025-04-17","a":15.016,"o":15.65,"p":15.333,"a_eq":29277056.27,"o_eq":5189059.69,"p_eq":18783281.82},{"date":"2025-04-22","a":4.934,"o":3.53,"p":4.232,"a_eq":30721527.67,"o_eq":5372233.5,"p_eq":19578171.53},{"date":"2025-04-23","a":9.996,"o":7.95,"p":8.973,"a_eq":33792451.58,"o_eq":5799326.06,"p_eq":21334920.86},{"date":"2025-04-24","a":10.75,"o":15.98,"p":13.365,"a_eq":37425275.29,"o_eq":6726058.37,"p_eq":24186375.7},{"date":"2025-04-28","a":8.46,"o":2.44,"p":5.45,"a_eq":40591603.28,"o_eq":6890174.19,"p_eq":25504581.55},{"date":"2025-04-29","a":1.724,"o":1.18,"p":1.452,"a_eq":41291321.34,"o_eq":6971478.25,"p_eq":25874882.57},{"date":"2025-04-30","a":2.296,"o":4.31,"p":3.303,"a_eq":42239452.66,"o_eq":7271948.96,"p_eq":26729555.81},{"date":"2025-05-01","a":-35.0,"o":-15.55,"p":-25.275,"a_eq":27455644.23,"o_eq":6141160.9,"p_eq":19973660.58},{"date":"2025-05-05","a":-4.192,"o":-16.96,"p":-10.576,"a_eq":26304566.35,"o_eq":5099620.01,"p_eq":17861196.3},{"date":"2025-05-06","a":25.097,"o":8.58,"p":16.838,"a_eq":32906223.36,"o_eq":5537167.4,"p_eq":20868753.84},{"date":"2025-05-07","a":10.726,"o":4.48,"p":7.603,"a_eq":36435613.26,"o_eq":5785232.5,"p_eq":22455363.46},{"date":"2025-05-08","a":-16.44,"o":-16.33,"p":-16.385,"a_eq":30445671.31,"o_eq":4840504.04,"p_eq":18776074.61},{"date":"2025-05-09","a":5.66,"o":3.59,"p":4.625,"a_eq":32168957.19,"o_eq":5014278.13,"p_eq":19644486.84},{"date":"2025-05-13","a":20.201,"o":9.07,"p":14.636,"a_eq":38667472.58,"o_eq":5469073.16,"p_eq":22519575.36},{"date":"2025-05-14","a":4.794,"o":1.21,"p":3.002,"a_eq":40521345.88,"o_eq":5535248.94,"p_eq":23195658.05},{"date":"2025-05-15","a":2.938,"o":3.84,"p":3.389,"a_eq":41711863.02,"o_eq":5747802.5,"p_eq":23981758.9},{"date":"2025-05-16","a":5.065,"o":4.36,"p":4.713,"a_eq":43824652.31,"o_eq":5998406.69,"p_eq":25111923.27},{"date":"2025-05-19","a":5.353,"o":2.8,"p":4.077,"a_eq":46170761.25,"o_eq":6166362.08,"p_eq":26135661.04},{"date":"2025-05-20","a":16.064,"o":8.75,"p":12.407,"a_eq":53587724.67,"o_eq":6705918.76,"p_eq":29378338.65},{"date":"2025-05-21","a":6.742,"o":4.17,"p":5.456,"a_eq":57200501.89,"o_eq":6985555.57,"p_eq":30981191.42},{"date":"2025-05-23","a":0.0,"o":0.62,"p":0.31,"a_eq":57200501.89,"o_eq":7028866.02,"p_eq":31077233.12},{"date":"2025-05-27","a":7.351,"o":8.4,"p":7.875,"a_eq":61405196.39,"o_eq":7619290.76,"p_eq":33524689.53},{"date":"2025-05-28","a":4.16,"o":3.2,"p":3.68,"a_eq":63959652.56,"o_eq":7863108.07,"p_eq":34758398.11},{"date":"2025-05-29","a":4.908,"o":0.19,"p":2.549,"a_eq":67098536.47,"o_eq":7878047.97,"p_eq":35644320.16},{"date":"2025-05-30","a":9.054,"o":7.22,"p":8.137,"a_eq":73173839.25,"o_eq":8446843.04,"p_eq":38544751.96},{"date":"2025-06-02","a":11.808,"o":-26.54,"p":-7.366,"a_eq":81814498.89,"o_eq":6205050.89,"p_eq":35705622.62},{"date":"2025-06-03","a":-3.718,"o":3.26,"p":-0.229,"a_eq":78772635.82,"o_eq":6407335.55,"p_eq":35623856.74},{"date":"2025-06-04","a":15.194,"o":15.59,"p":15.392,"a_eq":90741665.2,"o_eq":7406239.17,"p_eq":41107152.02},{"date":"2025-06-06","a":4.867,"o":3.18,"p":4.024,"a_eq":95158243.53,"o_eq":7641757.57,"p_eq":42761139.39},{"date":"2025-06-09","a":0.998,"o":0.88,"p":0.939,"a_eq":96108303.43,"o_eq":7709005.04,"p_eq":43162752.01},{"date":"2025-06-10","a":21.692,"o":18.35,"p":20.021,"a_eq":116955924.39,"o_eq":9123607.46,"p_eq":51804323.43},{"date":"2025-06-11","a":15.92,"o":5.26,"p":10.59,"a_eq":135575541.47,"o_eq":9603509.22,"p_eq":57290453.08},{"date":"2025-06-12","a":2.79,"o":3.73,"p":3.26,"a_eq":139357827.92,"o_eq":9961720.11,"p_eq":59158064.56},{"date":"2025-06-13","a":16.264,"o":-3.14,"p":6.562,"a_eq":162022706.34,"o_eq":9648922.1,"p_eq":63039957.6},{"date":"2025-06-16","a":34.123,"o":11.23,"p":22.677,"a_eq":217310362.52,"o_eq":10732496.05,"p_eq":77335339.66},{"date":"2025-06-17","a":7.635,"o":15.5,"p":11.567,"a_eq":233902008.69,"o_eq":12396032.94,"p_eq":86281105.08},{"date":"2025-06-18","a":4.547,"o":4.39,"p":4.468,"a_eq":244536597.42,"o_eq":12940218.78,"p_eq":90136403.7},{"date":"2025-06-20","a":6.146,"o":2.5,"p":4.323,"a_eq":259566794.85,"o_eq":13263724.25,"p_eq":94033180.7},{"date":"2025-06-23","a":4.633,"o":1.89,"p":3.262,"a_eq":271593043.58,"o_eq":13514408.64,"p_eq":97100166.93},{"date":"2025-06-24","a":2.747,"o":3.08,"p":2.913,"a_eq":279053161.31,"o_eq":13930652.43,"p_eq":99929083.19},{"date":"2025-06-25","a":0.536,"o":16.46,"p":8.498,"a_eq":280548328.14,"o_eq":16223637.82,"p_eq":108420956.75},{"date":"2025-06-26","a":-0.197,"o":0.0,"p":-0.098,"a_eq":279996209.03,"o_eq":16223637.82,"p_eq":108314270.53},{"date":"2025-06-27","a":14.364,"o":2.43,"p":8.397,"a_eq":320213464.52,"o_eq":16617872.22,"p_eq":117409149.04},{"date":"2025-06-30","a":18.481,"o":16.39,"p":17.435,"a_eq":379391154.26,"o_eq":19341541.47,"p_eq":137879845.1},{"date":"2025-07-01","a":0.708,"o":10.07,"p":5.389,"a_eq":382078761.19,"o_eq":21289234.7,"p_eq":145310465.72},{"date":"2025-07-02","a":-15.369,"o":-10.6,"p":-12.985,"a_eq":323355930.15,"o_eq":19032575.82,"p_eq":126442410.33},{"date":"2025-07-03","a":4.581,"o":5.97,"p":5.275,"a_eq":338168865.31,"o_eq":20168820.6,"p_eq":133112879.69},{"date":"2025-07-07","a":19.985,"o":13.12,"p":16.552,"a_eq":405751913.04,"o_eq":22814969.86,"p_eq":155146389.1},{"date":"2025-07-08","a":0.0,"o":8.72,"p":4.36,"a_eq":405751913.04,"o_eq":24804435.23,"p_eq":161910771.66},{"date":"2025-07-09","a":6.163,"o":7.8,"p":6.982,"a_eq":430760026.45,"o_eq":26739181.18,"p_eq":173214896.01},{"date":"2025-07-10","a":18.785,"o":16.51,"p":17.647,"a_eq":511676574.38,"o_eq":31153819.99,"p_eq":203782648.35},{"date":"2025-07-11","a":8.832,"o":3.25,"p":6.041,"a_eq":556866826.07,"o_eq":32166319.14,"p_eq":216092954.35},{"date":"2025-07-14","a":21.524,"o":13.88,"p":17.702,"a_eq":676727398.58,"o_eq":36631004.24,"p_eq":254345837.18},{"date":"2025-07-15","a":-13.998,"o":3.4,"p":-5.299,"a_eq":582000450.79,"o_eq":37876458.38,"p_eq":240868305.61},{"date":"2025-07-16","a":7.913,"o":13.29,"p":10.601,"a_eq":628052982.46,"o_eq":42910239.7,"p_eq":266403718.17},{"date":"2025-07-17","a":1.379,"o":1.58,"p":1.48,"a_eq":636715717.24,"o_eq":43588221.49,"p_eq":270345560.78},{"date":"2025-07-18","a":4.873,"o":0.91,"p":2.892,"a_eq":667742874.14,"o_eq":43984874.31,"p_eq":278162602.67},{"date":"2025-07-21","a":2.042,"o":1.12,"p":1.581,"a_eq":681380854.61,"o_eq":44477504.9,"p_eq":282560909.74},{"date":"2025-07-22","a":0.0,"o":9.1,"p":4.55,"a_eq":681380854.61,"o_eq":48524957.84,"p_eq":295417431.14},{"date":"2025-07-23","a":5.504,"o":2.06,"p":3.782,"a_eq":718885419.6,"o_eq":49524571.97,"p_eq":306590413.8},{"date":"2025-07-25","a":-5.131,"o":-6.89,"p":-6.011,"a_eq":681997970.95,"o_eq":46112328.97,"p_eq":288162490.39},{"date":"2025-07-28","a":4.892,"o":-24.69,"p":-9.899,"a_eq":715359947.7,"o_eq":34727194.94,"p_eq":259636997.3},{"date":"2025-07-29","a":27.547,"o":12.68,"p":20.114,"a_eq":912421583.21,"o_eq":39130603.26,"p_eq":311859344.39},{"date":"2025-07-30","a":2.237,"o":2.12,"p":2.179,"a_eq":932837016.13,"o_eq":39960172.05,"p_eq":318653979.86},{"date":"2025-07-31","a":1.576,"o":0.96,"p":1.268,"a_eq":947534796.16,"o_eq":40343789.7,"p_eq":322693875.02},{"date":"2025-08-01","a":15.109,"o":0.0,"p":7.555,"a_eq":1090698776.05,"o_eq":40343789.7,"p_eq":347071945.15},{"date":"2025-08-04","a":9.653,"o":11.03,"p":10.341,"a_eq":1195979566.1,"o_eq":44793709.71,"p_eq":382963696.21},{"date":"2025-08-06","a":1.252,"o":1.33,"p":1.291,"a_eq":1210948446.35,"o_eq":45389466.05,"p_eq":387906991.6},{"date":"2025-08-07","a":9.526,"o":6.12,"p":7.823,"a_eq":1326298551.56,"o_eq":48167301.37,"p_eq":418252179.74},{"date":"2025-08-11","a":5.323,"o":2.01,"p":3.667,"a_eq":1396900076.05,"o_eq":49135464.13,"p_eq":433587814.17},{"date":"2025-08-12","a":-5.285,"o":-3.68,"p":-4.482,"a_eq":1323076700.83,"o_eq":47327279.05,"p_eq":414152673.98},{"date":"2025-08-13","a":1.385,"o":-3.81,"p":-1.213,"a_eq":1341398666.99,"o_eq":45524109.72,"p_eq":409130658.66},{"date":"2025-08-14","a":-7.093,"o":-8.92,"p":-8.006,"a_eq":1246259966.53,"o_eq":41463359.13,"p_eq":376374635.3},{"date":"2025-08-15","a":1.546,"o":1.77,"p":1.658,"a_eq":1265530884.39,"o_eq":42197260.59,"p_eq":382615491.32},{"date":"2025-08-18","a":9.737,"o":4.74,"p":7.239,"a_eq":1388756892.14,"o_eq":44197410.74,"p_eq":410311304.96},{"date":"2025-08-19","a":12.457,"o":4.53,"p":8.494,"a_eq":1561759893.22,"o_eq":46199553.44,"p_eq":445161916.27},{"date":"2025-08-20","a":-20.899,"o":-35.56,"p":-28.229,"a_eq":1235373940.18,"o_eq":29770992.24,"p_eq":319495823.44},{"date":"2025-08-21","a":-0.149,"o":-3.89,"p":-2.019,"a_eq":1233533233.0,"o_eq":28612900.64,"p_eq":313043605.29},{"date":"2025-08-22","a":13.235,"o":2.91,"p":8.073,"a_eq":1396796290.53,"o_eq":29445536.05,"p_eq":338314676.41},{"date":"2025-08-25","a":3.866,"o":1.87,"p":2.868,"a_eq":1450797831.91,"o_eq":29996167.57,"p_eq":348017710.49},{"date":"2025-08-26","a":12.15,"o":14.0,"p":13.075,"a_eq":1627072670.09,"o_eq":34195631.03,"p_eq":393521374.15},{"date":"2025-08-27","a":3.847,"o":4.79,"p":4.319,"a_eq":1689669409.85,"o_eq":35833601.76,"p_eq":410515988.22},{"date":"2025-08-28","a":-29.82,"o":-9.43,"p":-19.625,"a_eq":1185809991.83,"o_eq":32454493.11,"p_eq":329952225.53},{"date":"2025-08-29","a":8.679,"o":4.74,"p":6.71,"a_eq":1288731184.26,"o_eq":33992836.09,"p_eq":352091030.01},{"date":"2025-09-02","a":-16.548,"o":2.69,"p":-6.929,"a_eq":1075477102.82,"o_eq":34907243.38,"p_eq":327695346.72},{"date":"2025-09-03","a":-19.24,"o":-19.74,"p":-19.49,"a_eq":868558534.67,"o_eq":28016553.54,"p_eq":263828015.19},{"date":"2025-09-04","a":0.537,"o":2.41,"p":1.473,"a_eq":873220088.32,"o_eq":28691752.48,"p_eq":267715125.25},{"date":"2025-09-05","a":2.338,"o":2.08,"p":2.209,"a_eq":893632481.11,"o_eq":29288540.93,"p_eq":273628416.93},{"date":"2025-09-08","a":5.466,"o":2.15,"p":3.808,"a_eq":942482900.69,"o_eq":29918244.56,"p_eq":284048871.12},{"date":"2025-09-09","a":20.164,"o":31.03,"p":25.597,"a_eq":1132527980.23,"o_eq":39201875.84,"p_eq":356757286.74},{"date":"2025-09-10","a":0.135,"o":7.65,"p":3.893,"a_eq":1134056893.0,"o_eq":42200819.35,"p_eq":370644064.12},{"date":"2025-09-11","a":12.761,"o":11.55,"p":12.155,"a_eq":1278769356.89,"o_eq":47075013.98,"p_eq":415696962.05},{"date":"2025-09-12","a":15.447,"o":5.15,"p":10.298,"a_eq":1476295744.37,"o_eq":49499377.2,"p_eq":458506682.29},{"date":"2025-09-15","a":5.562,"o":3.74,"p":4.651,"a_eq":1558410266.27,"o_eq":51350653.91,"p_eq":479832286.59},{"date":"2025-09-16","a":12.886,"o":9.48,"p":11.183,"a_eq":1759230130.0,"o_eq":56218695.9,"p_eq":533492411.03},{"date":"2025-09-17","a":10.47,"o":13.25,"p":11.86,"a_eq":1943421524.61,"o_eq":63667673.1,"p_eq":596764610.98},{"date":"2025-09-18","a":5.387,"o":2.86,"p":4.124,"a_eq":2048117528.98,"o_eq":65488568.55,"p_eq":621372796.48},{"date":"2025-09-19","a":-16.727,"o":-20.62,"p":-18.674,"a_eq":1705524813.67,"o_eq":51984825.72,"p_eq":505340125.96},{"date":"2025-09-22","a":-4.237,"o":0.91,"p":-1.664,"a_eq":1633258316.27,"o_eq":52457887.63,"p_eq":496933287.62},{"date":"2025-09-23","a":8.069,"o":10.1,"p":9.085,"a_eq":1765049196.32,"o_eq":57756134.28,"p_eq":542077689.07},{"date":"2025-09-24","a":6.97,"o":4.8,"p":5.885,"a_eq":1888073125.31,"o_eq":60528428.73,"p_eq":573978961.07},{"date":"2025-09-25","a":1.07,"o":1.12,"p":1.095,"a_eq":1908277395.82,"o_eq":61206347.13,"p_eq":580264317.68},{"date":"2025-09-26","a":7.553,"o":9.76,"p":8.656,"a_eq":2052400046.14,"o_eq":67180086.61,"p_eq":630493447.68},{"date":"2025-09-29","a":2.09,"o":3.54,"p":2.815,"a_eq":2095295207.11,"o_eq":69558261.68,"p_eq":648241838.24},{"date":"2025-10-03","a":-5.62,"o":-11.68,"p":-8.65,"a_eq":1977539616.47,"o_eq":61433856.71,"p_eq":592168919.23},{"date":"2025-10-06","a":-26.0,"o":-11.28,"p":-18.64,"a_eq":1463379316.19,"o_eq":54504117.68,"p_eq":481788632.68},{"date":"2025-10-07","a":23.74,"o":9.65,"p":16.695,"a_eq":1810787029.23,"o_eq":59763765.03,"p_eq":562223485.81},{"date":"2025-10-08","a":11.946,"o":10.91,"p":11.428,"a_eq":2027105458.53,"o_eq":66283991.8,"p_eq":626474666.87},{"date":"2025-10-09","a":1.936,"o":14.9,"p":8.418,"a_eq":2066348193.1,"o_eq":76160306.57,"p_eq":679210991.09},{"date":"2025-10-10","a":-9.0,"o":-7.54,"p":-8.27,"a_eq":1880376855.72,"o_eq":70417819.46,"p_eq":623040242.13},{"date":"2025-10-13","a":-33.117,"o":-46.05,"p":-39.583,"a_eq":1257656213.16,"o_eq":37990413.6,"p_eq":376419730.93},{"date":"2025-10-14","a":-0.738,"o":-0.68,"p":-0.709,"a_eq":1248377225.62,"o_eq":37732078.79,"p_eq":373751291.46},{"date":"2025-10-15","a":13.292,"o":8.76,"p":11.026,"a_eq":1414312774.83,"o_eq":41037408.89,"p_eq":414961295.73},{"date":"2025-10-16","a":16.411,"o":17.28,"p":16.845,"a_eq":1646414230.0,"o_eq":48128673.14,"p_eq":484863393.32},{"date":"2025-10-17","a":5.418,"o":6.24,"p":5.829,"a_eq":1735620245.8,"o_eq":51131902.35,"p_eq":513126565.38},{"date":"2025-10-20","a":1.734,"o":1.98,"p":1.857,"a_eq":1765715900.87,"o_eq":52144314.01,"p_eq":522655325.7},{"date":"2025-10-21","a":-5.772,"o":3.2,"p":-1.286,"a_eq":1663797013.35,"o_eq":53812932.06,"p_eq":515933716.88},{"date":"2025-10-23","a":-5.062,"o":-5.39,"p":-5.226,"a_eq":1579572280.94,"o_eq":50912415.02,"p_eq":488970504.9},{"date":"2025-10-24","a":9.93,"o":5.35,"p":7.64,"a_eq":1736423808.44,"o_eq":53636229.23,"p_eq":526327851.48},{"date":"2025-10-27","a":6.752,"o":9.1,"p":7.926,"a_eq":1853670616.83,"o_eq":58517126.09,"p_eq":568045123.31},{"date":"2025-10-28","a":9.201,"o":5.6,"p":7.401,"a_eq":2024234264.97,"o_eq":61794085.15,"p_eq":610084438.75},{"date":"2025-10-29","a":0.0,"o":-0.17,"p":-0.085,"a_eq":2024234264.97,"o_eq":61689035.2,"p_eq":609565866.98},{"date":"2025-10-30","a":9.103,"o":10.74,"p":9.921,"a_eq":2208494237.41,"o_eq":68314437.58,"p_eq":670043030.12},{"date":"2025-10-31","a":7.005,"o":6.81,"p":6.907,"a_eq":2363199258.74,"o_eq":72966650.78,"p_eq":716326252.43},{"date":"2025-11-03","a":2.128,"o":2.83,"p":2.479,"a_eq":2413499954.96,"o_eq":75031607.0,"p_eq":734085771.04},{"date":"2025-11-05","a":2.537,"o":3.09,"p":2.813,"a_eq":2474725621.82,"o_eq":77350083.66,"p_eq":754738540.13},{"date":"2025-11-07","a":5.412,"o":1.61,"p":3.511,"a_eq":2608667671.37,"o_eq":78595420.0,"p_eq":781238919.75},{"date":"2025-11-10","a":21.164,"o":12.86,"p":17.012,"a_eq":3160766097.34,"o_eq":88702791.02,"p_eq":914143284.77},{"date":"2025-11-11","a":0.0,"o":5.59,"p":2.795,"a_eq":3160766097.34,"o_eq":93661277.03,"p_eq":939693589.58},{"date":"2025-11-12","a":7.462,"o":2.48,"p":4.971,"a_eq":3396622463.53,"o_eq":95984076.7,"p_eq":986405757.92},{"date":"2025-11-13","a":0.113,"o":0.0,"p":0.056,"a_eq":3400453853.67,"o_eq":95984076.7,"p_eq":986962090.77},{"date":"2025-11-17","a":5.322,"o":1.89,"p":3.606,"a_eq":3581432808.67,"o_eq":97798175.75,"p_eq":1022552930.73},{"date":"2025-11-20","a":9.191,"o":12.12,"p":10.655,"a_eq":3910602298.11,"o_eq":109651314.66,"p_eq":1131511058.26},{"date":"2025-11-25","a":-5.91,"o":-24.71,"p":-15.31,"a_eq":3679501344.7,"o_eq":82556474.8,"p_eq":958278978.26},{"date":"2025-11-26","a":-0.84,"o":-0.78,"p":-0.81,"a_eq":3648600892.41,"o_eq":81912534.3,"p_eq":950517876.82},{"date":"2025-12-01","a":-4.265,"o":-8.79,"p":-6.527,"a_eq":3492988064.35,"o_eq":74712422.54,"p_eq":888472822.41},{"date":"2025-12-03","a":-6.656,"o":-2.3,"p":-4.478,"a_eq":3260480806.83,"o_eq":72994036.82,"p_eq":848685232.47},{"date":"2025-12-04","a":4.418,"o":4.06,"p":4.239,"a_eq":3404541890.8,"o_eq":75957594.71,"p_eq":884662696.85},{"date":"2025-12-05","a":1.752,"o":2.31,"p":2.031,"a_eq":3464203082.9,"o_eq":77712215.15,"p_eq":902631965.55},{"date":"2025-12-08","a":-5.469,"o":2.47,"p":-1.5,"a_eq":3274738887.89,"o_eq":79631706.86,"p_eq":889096096.59},{"date":"2025-12-10","a":-2.44,"o":-11.62,"p":-7.03,"a_eq":3194838533.76,"o_eq":70378502.53,"p_eq":826593085.55},{"date":"2025-12-11","a":9.518,"o":11.72,"p":10.619,"a_eq":3498907291.21,"o_eq":78626863.02,"p_eq":914366938.82},{"date":"2025-12-15","a":3.389,"o":7.26,"p":5.324,"a_eq":3617478261.5,"o_eq":84335173.28,"p_eq":963051492.11},{"date":"2025-12-16","a":1.98,"o":3.02,"p":2.5,"a_eq":3689104331.07,"o_eq":86882095.51,"p_eq":987127779.42},{"date":"2025-12-17","a":9.339,"o":3.86,"p":6.599,"a_eq":4033622406.34,"o_eq":90235744.4,"p_eq":1052272290.09},{"date":"2025-12-23","a":2.557,"o":2.99,"p":2.773,"a_eq":4136754064.03,"o_eq":92933793.16,"p_eq":1081456009.78},{"date":"2025-12-29","a":-3.539,"o":-3.77,"p":-3.654,"a_eq":3990370884.72,"o_eq":89430189.15,"p_eq":1041936362.82},{"date":"2025-12-30","a":4.421,"o":0.78,"p":2.601,"a_eq":4166793162.28,"o_eq":90127744.63,"p_eq":1069032959.87},{"date":"2026-01-02","a":0.0,"o":4.82,"p":2.41,"a_eq":4166793162.28,"o_eq":94471901.92,"p_eq":1094796654.2},{"date":"2026-01-05","a":-0.491,"o":0.0,"p":-0.246,"a_eq":4146317540.68,"o_eq":94471901.92,"p_eq":1092106738.82},{"date":"2026-01-08","a":-9.642,"o":-7.44,"p":-8.541,"a_eq":3746546188.67,"o_eq":87443192.42,"p_eq":998832086.47},{"date":"2026-01-09","a":21.019,"o":23.9,"p":22.459,"a_eq":4534025238.98,"o_eq":108342115.41,"p_eq":1223163780.1},{"date":"2026-01-12","a":-26.0,"o":-8.25,"p":-17.125,"a_eq":3355178676.84,"o_eq":99403890.88,"p_eq":1013696982.76},{"date":"2026-01-13","a":4.447,"o":-19.28,"p":-7.416,"a_eq":3504396893.32,"o_eq":80238820.72,"p_eq":938518173.43},{"date":"2026-01-14","a":0.0,"o":2.12,"p":1.06,"a_eq":3504396893.32,"o_eq":81939883.72,"p_eq":948466466.07},{"date":"2026-01-15","a":2.394,"o":-1.19,"p":0.602,"a_eq":3588292154.94,"o_eq":80964799.1,"p_eq":954176234.19},{"date":"2026-01-16","a":-22.961,"o":-30.59,"p":-26.776,"a_eq":2764377216.66,"o_eq":56197667.06,"p_eq":698689822.43},{"date":"2026-01-20","a":11.315,"o":15.35,"p":13.332,"a_eq":3077160969.97,"o_eq":64824008.95,"p_eq":791841944.31},{"date":"2026-01-21","a":15.5,"o":11.65,"p":13.575,"a_eq":3554133228.96,"o_eq":72376006.0,"p_eq":899336071.94},{"date":"2026-01-23","a":4.272,"o":8.04,"p":6.156,"a_eq":3705972908.77,"o_eq":78195036.88,"p_eq":954700099.86},{"date":"2026-01-26","a":7.753,"o":0.09,"p":3.922,"a_eq":3993300694.36,"o_eq":78265412.41,"p_eq":992139141.63},{"date":"2026-01-27","a":19.68,"o":25.22,"p":22.45,"a_eq":4779198244.22,"o_eq":98003949.42,"p_eq":1214876363.2},{"date":"2026-01-28","a":6.799,"o":7.95,"p":7.375,"a_eq":5104145491.24,"o_eq":105795263.4,"p_eq":1304468635.49},{"date":"2026-01-29","a":1.635,"o":-1.21,"p":0.213,"a_eq":5187598270.02,"o_eq":104515140.71,"p_eq":1307240631.34},{"date":"2026-01-30","a":3.346,"o":4.41,"p":3.878,"a_eq":5361185683.33,"o_eq":109124258.42,"p_eq":1357936730.26},{"date":"2026-02-02","a":3.231,"o":1.94,"p":2.585,"a_eq":5534405592.76,"o_eq":111241269.03,"p_eq":1393046184.42},{"date":"2026-02-04","a":-4.831,"o":-5.14,"p":-4.985,"a_eq":5267049527.38,"o_eq":105523467.8,"p_eq":1323597259.94},{"date":"2026-02-05","a":0.0,"o":5.62,"p":2.81,"a_eq":5267049527.38,"o_eq":111453886.69,"p_eq":1360790342.95},{"date":"2026-02-09","a":-0.517,"o":3.25,"p":1.367,"a_eq":5239829415.43,"o_eq":115076138.01,"p_eq":1379386903.77},{"date":"2026-02-10","a":3.743,"o":1.66,"p":2.702,"a_eq":5435961470.27,"o_eq":116986401.9,"p_eq":1416651730.67},{"date":"2026-02-11","a":-17.68,"o":-16.32,"p":-17.0,"a_eq":4474883482.33,"o_eq":97894221.11,"p_eq":1175820936.46},{"date":"2026-02-17","a":10.855,"o":6.15,"p":8.503,"a_eq":4960632084.34,"o_eq":103914715.71,"p_eq":1275795111.58},{"date":"2026-02-18","a":4.519,"o":4.99,"p":4.755,"a_eq":5184812969.49,"o_eq":109100060.02,"p_eq":1336454065.96},{"date":"2026-02-19","a":3.04,"o":3.47,"p":3.255,"a_eq":5342410544.51,"o_eq":112885832.11,"p_eq":1379952972.89},{"date":"2026-02-23","a":5.886,"o":-1.2,"p":2.343,"a_eq":5656886198.81,"o_eq":111531202.12,"p_eq":1412288030.96},{"date":"2026-02-24","a":8.262,"o":10.47,"p":9.366,"a_eq":6124258136.55,"o_eq":123208518.98,"p_eq":1544562927.93},{"date":"2026-03-02","a":-26.671,"o":-2.32,"p":-14.495,"a_eq":4490857248.95,"o_eq":120350081.34,"p_eq":1320670808.72},{"date":"2026-03-03","a":13.023,"o":3.55,"p":8.287,"a_eq":5075710570.2,"o_eq":124622509.23,"p_eq":1430109515.95},{"date":"2026-03-04","a":3.714,"o":-1.05,"p":1.332,"a_eq":5264222460.77,"o_eq":123313972.88,"p_eq":1449158574.7},{"date":"2026-03-16","a":17.544,"o":20.05,"p":18.797,"a_eq":6187777649.29,"o_eq":148038424.45,"p_eq":1721556911.99},{"date":"2026-03-17","a":0.0,"o":13.17,"p":6.585,"a_eq":6187777649.29,"o_eq":167535084.95,"p_eq":1834921434.65},{"date":"2026-03-18","a":0.0,"o":2.88,"p":1.44,"a_eq":6187777649.29,"o_eq":172360095.39,"p_eq":1861344303.3},{"date":"2026-03-23","a":5.44,"o":6.22,"p":5.83,"a_eq":6524392753.41,"o_eq":183080893.33,"p_eq":1969860676.19},{"date":"2026-03-25","a":0.0,"o":-0.27,"p":-0.135,"a_eq":6524392753.41,"o_eq":182586574.91,"p_eq":1967201364.27},{"date":"2026-03-26","a":4.44,"o":5.08,"p":4.76,"a_eq":6814101889.24,"o_eq":191861972.92,"p_eq":2060844083.62},{"date":"2026-03-27","a":7.615,"o":10.04,"p":8.828,"a_eq":7333023004.51,"o_eq":211124915.0,"p_eq":2242769216.79},{"date":"2026-03-30","a":-8.157,"o":-1.35,"p":-4.753,"a_eq":6734868318.03,"o_eq":208274728.65,"p_eq":2136159182.07},{"date":"2026-04-02","a":2.243,"o":8.17,"p":5.206,"a_eq":6885917944.67,"o_eq":225290773.98,"p_eq":2247376173.72},{"date":"2026-04-06","a":6.841,"o":3.99,"p":5.416,"a_eq":7356997363.1,"o_eq":234279875.86,"p_eq":2369085077.78},{"date":"2026-04-08","a":17.252,"o":19.71,"p":18.481,"a_eq":8626197120.19,"o_eq":280456439.39,"p_eq":2806910952.84},{"date":"2026-04-09","a":6.589,"o":5.94,"p":6.265,"a_eq":9194594500.83,"o_eq":297115551.89,"p_eq":2982752696.39},{"date":"2026-04-10","a":6.482,"o":0.0,"p":3.241,"a_eq":9790588116.38,"o_eq":297115551.89,"p_eq":3079423711.28}],"monthly":[{"ym":"2023-07","a":83.47,"o":0.0},{"ym":"2023-08","a":60.1,"o":0.0},{"ym":"2023-09","a":48.05,"o":0.0},{"ym":"2023-10","a":43.02,"o":0.0},{"ym":"2023-11","a":13.91,"o":0.0},{"ym":"2023-12","a":6.8,"o":0.0},{"ym":"2024-01","a":30.12,"o":-10.81},{"ym":"2024-02","a":150.43,"o":118.98},{"ym":"2024-03","a":-45.67,"o":46.6},{"ym":"2024-04","a":26.91,"o":32.67},{"ym":"2024-05","a":37.97,"o":47.51},{"ym":"2024-06","a":43.96,"o":57.35},{"ym":"2024-07","a":49.45,"o":73.09},{"ym":"2024-08","a":43.19,"o":27.44},{"ym":"2024-09","a":62.03,"o":17.92},{"ym":"2024-10","a":101.59,"o":70.64},{"ym":"2024-11","a":0.71,"o":-21.85},{"ym":"2024-12","a":-34.68,"o":80.13},{"ym":"2025-01","a":161.23,"o":130.53},{"ym":"2025-02","a":93.4,"o":72.87},{"ym":"2025-03","a":72.02,"o":55.44},{"ym":"2025-04","a":132.54,"o":41.25},{"ym":"2025-05","a":72.48,"o":32.22},{"ym":"2025-06","a":178.83,"o":95.95},{"ym":"2025-07","a":104.04,"o":68.45},{"ym":"2025-08","a":44.52,"o":-17.2},{"ym":"2025-09","a":60.15,"o":71.14},{"ym":"2025-10","a":31.16,"o":19.49},{"ym":"2025-11","a":46.58,"o":11.41},{"ym":"2025-12","a":15.0,"o":13.02},{"ym":"2026-01","a":39.07,"o":19.48},{"ym":"2026-02","a":16.51,"o":12.9},{"ym":"2026-03","a":16.95,"o":47.01},{"ym":"2026-04","a":39.41,"o":34.61}],"by_setup":{"A":{"a":{"n":248,"w":203,"net":24.147500000000004,"ar":462.4774999999999},"o":{"n":180,"w":147,"net":14.110500000000002,"ar":449.44120000000015}},"AtmShelf":{"a":{"n":86,"w":68,"net":8.219900000000003,"ar":230.1572},"o":{"n":55,"w":41,"net":-0.45890000000000014,"ar":-13.23919999999999}},"D2":{"a":{"n":82,"w":58,"net":2.8867,"ar":75.05419999999998},"o":{"n":96,"w":61,"net":2.7556000000000003,"ar":82.66799999999998}},"Op100":{"a":{"n":65,"w":57,"net":8.8601,"ar":301.2434},"o":{"n":66,"w":58,"net":10.671100000000001,"ar":362.8174}},"S1n":{"a":{"n":34,"w":27,"net":2.275,"ar":18.08610000000001},"o":{"n":33,"w":26,"net":2.2214,"ar":17.660200000000003}},"T":{"a":{"n":366,"w":303,"net":28.539399999999997,"ar":758.2367999999992},"o":{"n":388,"w":298,"net":12.091500000000007,"ar":348.9021999999999}}}};
+
+// --- By Setup table ---
+(function(){
+  const tb = document.getElementById('setup-body');
+  const fmt = (v, d=2) => (v>=0?'+':'') + v.toFixed(d);
+  const rows = [];
+  for (const [setup, d] of Object.entries(PD.by_setup)) {
+    const a=d.a, o=d.o;
+    const awr = a.n ? (a.w/a.n*100).toFixed(1) : '—';
+    const owr = o.n ? (o.w/o.n*100).toFixed(1) : '—';
+    const diff = a.net - o.net;
+    const diffColor = diff>=0 ? 'var(--green)' : 'var(--red)';
+    rows.push(`<tr>
+      <td><strong>${setup}</strong></td>
+      <td class="r" style="border-left:1px solid var(--border)">${a.n||'—'}</td>
+      <td class="r">${a.n?awr+'%':'—'}</td>
+      <td class="r ald">${a.n?fmt(a.net):'—'}</td>
+      <td class="r ald" style="opacity:.7">${a.n?fmt(a.ar,1)+'%':'—'}</td>
+      <td class="r" style="border-left:1px solid var(--border)">${o.n||'—'}</td>
+      <td class="r">${o.n?owr+'%':'—'}</td>
+      <td class="r cc">${o.n?fmt(o.net):'—'}</td>
+      <td class="r cc" style="opacity:.7">${o.n?fmt(o.ar,1)+'%':'—'}</td>
+      <td class="r" style="color:${diffColor};font-weight:700;border-left:1px solid var(--border)">${fmt(diff)}</td>
+    </tr>`);
+  }
+  tb.innerHTML = rows.join('');
+})();
+
+// --- Chart.js defaults ---
+Chart.defaults.font.family = "'JetBrains Mono', monospace";
+Chart.defaults.font.size = 10;
+Chart.defaults.color = '#a0a9c8';
+const gridColor = 'rgba(255,255,255,0.05)';
+
+// --- Equity curve chart ---
+const eqCtx = document.getElementById('eq-chart').getContext('2d');
+const daily = PD.daily;
+// Cumulative sums for the chart
+let aCum=0, oCum=0, pCum=0;
+const labels = [], aData=[], oData=[], pData=[];
+for (const d of daily) {
+  labels.push(d.date);
+  aCum += d.a; oCum += d.o; pCum += d.p;
+  aData.push(aCum); oData.push(oCum); pData.push(pCum);
+}
+new Chart(eqCtx, {
+  type: 'line',
+  data: {
+    labels: labels,
+    datasets: [
+      { label:'Alpha cumulative AccR', data:aData, borderColor:'#fbbf24', backgroundColor:'rgba(251,191,36,.08)', borderWidth:2, tension:.15, pointRadius:0, fill:false },
+      { label:'Omega cumulative AccR', data:oData, borderColor:'#22d3ee', backgroundColor:'rgba(34,211,238,.08)', borderWidth:2, tension:.15, pointRadius:0, fill:false },
+      { label:'50/50 blend cumulative AccR', data:pData, borderColor:'#a78bfa', backgroundColor:'rgba(167,139,250,.12)', borderWidth:2, borderDash:[5,5], tension:.15, pointRadius:0, fill:true },
+    ]
+  },
+  options: {
+    responsive:true, maintainAspectRatio:false, interaction:{mode:'index', intersect:false},
+    plugins:{legend:{position:'top', labels:{boxWidth:14, font:{size:10}}}, tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${c.parsed.y.toFixed(1)}%`}}},
+    scales:{
+      x:{grid:{color:gridColor, drawBorder:false}, ticks:{maxTicksLimit:12}},
+      y:{grid:{color:gridColor, drawBorder:false}, ticks:{callback:v=>v+'%'}}
+    }
+  }
+});
+
+// --- Drawdown chart: compute running DD on each compound equity series ---
+function ddFromCum(arr) {
+  const out = [];
+  let peak = 0;
+  let eq = 3000;
+  for (const cum of arr) {
+    // cum is cumulative AccR sum; that's what we plotted above
+  }
+  return out;
+}
+// Use the pre-computed equity values in PD.daily
+const aEq = daily.map(d=>d.a_eq);
+const oEq = daily.map(d=>d.o_eq);
+const pEq = daily.map(d=>d.p_eq);
+function runningDD(eqArr) {
+  const out = [];
+  let peak = eqArr[0];
+  for (const e of eqArr) {
+    if (e > peak) peak = e;
+    out.push((e - peak) / peak * 100);
+  }
+  return out;
+}
+const aDD = runningDD(aEq), oDD = runningDD(oEq), pDD = runningDD(pEq);
+
+const ddCtx = document.getElementById('dd-chart').getContext('2d');
+new Chart(ddCtx, {
+  type: 'line',
+  data: {
+    labels: labels,
+    datasets: [
+      { label:'Alpha DD', data:aDD, borderColor:'#fbbf24', backgroundColor:'rgba(251,191,36,.1)', borderWidth:1.5, tension:.1, pointRadius:0, fill:true },
+      { label:'Omega DD', data:oDD, borderColor:'#22d3ee', backgroundColor:'rgba(34,211,238,.1)', borderWidth:1.5, tension:.1, pointRadius:0, fill:true },
+      { label:'Blend DD', data:pDD, borderColor:'#a78bfa', backgroundColor:'rgba(167,139,250,.05)', borderWidth:1.5, borderDash:[4,4], tension:.1, pointRadius:0, fill:false },
+    ]
+  },
+  options: {
+    responsive:true, maintainAspectRatio:false, interaction:{mode:'index', intersect:false},
+    plugins:{legend:{position:'top', labels:{boxWidth:12, font:{size:9}}}, tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${c.parsed.y.toFixed(2)}%`}}},
+    scales:{
+      x:{grid:{color:gridColor}, ticks:{maxTicksLimit:8, font:{size:9}}},
+      y:{grid:{color:gridColor}, ticks:{callback:v=>v+'%', font:{size:9}}}
+    }
+  }
+});
+
+// --- Monthly comparison bars ---
+const monCtx = document.getElementById('monthly-chart').getContext('2d');
+new Chart(monCtx, {
+  type: 'bar',
+  data: {
+    labels: PD.monthly.map(m=>m.ym),
+    datasets: [
+      { label:'Alpha', data:PD.monthly.map(m=>m.a), backgroundColor:'rgba(251,191,36,.7)', borderColor:'#fbbf24', borderWidth:1 },
+      { label:'Omega', data:PD.monthly.map(m=>m.o), backgroundColor:'rgba(34,211,238,.7)', borderColor:'#22d3ee', borderWidth:1 },
+    ]
+  },
+  options: {
+    responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{position:'top', labels:{boxWidth:12, font:{size:10}}}, tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${c.parsed.y>=0?'+':''}${c.parsed.y.toFixed(1)}%`}}},
+    scales:{
+      x:{grid:{color:gridColor}, ticks:{maxTicksLimit:18, font:{size:8}}},
+      y:{grid:{color:gridColor}, ticks:{callback:v=>(v>=0?'+':'')+v+'%', font:{size:9}}}
+    }
+  }
+});
+</script>
+
+<!-- Firebase auth (same as other pages) -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDaSqgXaxUO1AVJFHjmGJtbQfO_YCWf4WU",
+  authDomain: "trading-system-enki.firebaseapp.com",
+  databaseURL: "https://trading-system-enki-default-rtdb.firebaseio.com",
+  projectId: "trading-system-enki",
+  storageBucket: "trading-system-enki.firebasestorage.app",
+  messagingSenderId: "410422069967",
+  appId: "1:410422069967:web:d1218e4615d7b36ffec5ba"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+onAuthStateChanged(auth, user => {
+  if (user) {
+    document.getElementById('auth-overlay').classList.add('hidden');
+    setTimeout(()=>{const o=document.getElementById('auth-overlay'); if(o)o.style.display='none';}, 300);
+    const badge = document.getElementById('user-badge-wrap');
+    const initials = user.email.split('@')[0].slice(0,2).toUpperCase();
+    badge.innerHTML = `<div class="user-badge"><div class="user-avatar">${initials}</div><span class="user-email">${user.email}</span><button class="logout-btn" onclick="authSignOut()">sign out</button></div>`;
+    badge.style.display = 'flex';
+  } else {
+    document.getElementById('auth-overlay').classList.remove('hidden');
+    document.getElementById('auth-overlay').style.display = 'flex';
+  }
+});
+
+window.authSignIn = async function() {
+  const email = document.getElementById('auth-email').value.trim();
+  const pass = document.getElementById('auth-pass').value;
+  if (!email || !pass) { showAuthError('Enter email and password'); return; }
+  try { await signInWithEmailAndPassword(auth, email, pass); }
+  catch(e) { showAuthError('Sign in failed. ' + (e.code || '')); }
+};
+window.authSignOut = async function() { await signOut(auth); };
+function showAuthError(msg) { const el = document.getElementById('auth-err'); if (el) { el.textContent = msg; el.classList.add('show'); } }
+document.addEventListener('DOMContentLoaded', () => {
+  const pass = document.getElementById('auth-pass');
+  if (pass) pass.addEventListener('keydown', e => { if(e.key==='Enter') window.authSignIn(); });
+});
+</script>
+
+</body>
+</html>
