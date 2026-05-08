@@ -797,6 +797,9 @@ body.light .rm2-card{background:#eeeaf5;border-color:#d9d3e6}
       <div class="af-grp"><div class="af-lbl">Stop Hit?</div>
         <select class="af-sel" id="af-sh"><option value="N">No</option><option value="Y">Yes</option></select>
       </div>
+      <div class="af-grp"><div class="af-lbl">Strike #</div>
+        <select class="af-sel" id="af-strike"><option value="1">Strike 1</option><option value="2">Strike 2</option></select>
+      </div>
     </div>
     <!-- Missed trade -->
     <div class="af-g4" style="margin-bottom:6px">
@@ -1256,11 +1259,11 @@ function pfC(v){return v>=4?'var(--green)':v>=2?'var(--blue)':v>=1.5?'var(--ambe
 function wrC(v){return v>=85?'var(--green)':v>=75?'var(--blue)':v>=65?'var(--amber)':'var(--red)'}
 function sig(s){
   if(!s) return '<span class="pill py">—</span>';
-  if(s.pf<1||s.mn<0) return '<span class="pill pr">avoid</span>';
+  if(s.pf<1||s.mn<0) return '<span class="pill pr">weak</span>';
   if(s.pf>=5&&s.wr>=80) return '<span class="pill pga">elite</span>';
   if(s.pf>=2.5&&s.wr>=75) return '<span class="pill pg">strong</span>';
   if(s.pf>=1.5) return '<span class="pill pb">good</span>';
-  return '<span class="pill py">weak</span>';
+  return '<span class="pill py">caution</span>';
 }
 function wrBar(wr){
   const c=wr>=85?'var(--green)':wr>=75?'#63b3ed':wr>=65?'var(--amber)':'var(--red)';
@@ -2447,6 +2450,7 @@ function renderTL(){
       <td><span style="font-size:10px;background:var(--bg3);padding:1px 5px;border-radius:4px">${t.s}</span></td>
       <td style="font-size:10px">${t.c}</td>
       <td style="font-size:10px;color:var(--text3)">${t.al?t.al+'%':'—'}</td>
+      <td style="font-size:10px;font-weight:600;color:${t.sk===2?'var(--amber)':'var(--text3)'}">${t.sk||1}</td>
       <td class="r">$${f(t.en,2)}</td>
       <td class="r">$${f(t.ex,2)}</td>
       <td class="r" style="color:${t.w?'var(--green)':'var(--red)'};font-size:10px">${t.w?'+':''}${f(t.rg,4)}R</td>
@@ -2566,11 +2570,9 @@ function afOnEntry(){
   const warnEl=document.getElementById('af-av-warn');
   if(cat){
     const dv=document.getElementById('af-date').value;
-    const isV2 = dv && dv >= CUTOFF;
-    const sig = SIG[setup+'/'+cat] || '';
-    const av = false; // disabled per user request - no AVOID warning on add-trade form
-    const rng = CR[cat]||'';
     const alloc=getNewAlloc(cat,dv);
+    const av = alloc===0;
+    const rng = CR[cat]||'';
     if(catEl) catEl.innerHTML=`<span style="font-weight:800;color:${av?'var(--amber)':'var(--acc)'}">${cat}</span> <span style="font-size:10px;color:var(--text3)">${rng} · ${alloc}%</span>`;
     if(entEl){entEl.classList.toggle('cat-ok',!av);entEl.classList.toggle('cat-av',av);}
     if(warnEl) warnEl.classList.toggle('show',av);
@@ -2613,6 +2615,7 @@ function afSubmit(){
   const stop=parseFloat(document.getElementById('af-stop').value)||0;
   const exit_=parseFloat(document.getElementById('af-exit').value)||0;
   const sh=document.getElementById('af-sh').value==='Y';
+  const strike=parseInt(document.getElementById('af-strike').value)||1;
   const missedReason=document.getElementById('af-missed').value;
   const missedOther=document.getElementById('af-missed-other').value.trim();
   const ntReason=document.getElementById('af-nt').value;
@@ -2633,7 +2636,7 @@ function afSubmit(){
   const ar=parseFloat((alloc*rn).toFixed(4));
   const rec={s:setup,c:cat,tk:ticker,dt:fdt,ym,
     en:entry,ex:exit_,rg:parseFloat(rg.toFixed(4)),rn:parseFloat(rn.toFixed(4)),
-    w:win,sh,na:isNew,al:alloc,ar,subset,
+    w:win,sh,na:isNew,al:alloc,ar,subset,sk:strike,
     mr:missedReason||'',mo:missedOther||'',
     nt:ntReason||'',no:ntOther||'',
     by:window._tradeAuthor||'unknown',
@@ -2648,6 +2651,7 @@ function afSubmit(){
   document.getElementById('af-stop').value='';
   document.getElementById('af-exit').value='';
   document.getElementById('af-sh').value='N';
+  document.getElementById('af-strike').value='1';
   document.getElementById('af-missed').value='';
   document.getElementById('af-missed-other').value='';
   document.getElementById('af-missed-other-wrap').classList.remove('show');
@@ -2706,6 +2710,9 @@ function editTrade(idx){
       <div class="af-grp"><div class="af-lbl">Stop Hit?</div>
         <select class="af-sel" id="ed-sh"><option value="N"${!t.sh?' selected':''}>No</option><option value="Y"${t.sh?' selected':''}>Yes</option></select>
       </div>
+      <div class="af-grp"><div class="af-lbl">Strike #</div>
+        <select class="af-sel" id="ed-strike"><option value="1"${(t.sk||1)===1?' selected':''}>Strike 1</option><option value="2"${t.sk===2?' selected':''}>Strike 2</option></select>
+      </div>
     </div>`;
   document.getElementById('edit-modal').classList.add('show');
 }
@@ -2720,6 +2727,7 @@ function editSave(){
   const stop=parseFloat(document.getElementById('ed-stop').value)||0;
   const exit_=parseFloat(document.getElementById('ed-exit').value)||0;
   const sh=document.getElementById('ed-sh').value==='Y';
+  const strike=parseInt(document.getElementById('ed-strike').value)||1;
   if(!dateVal||!ticker||!entry||!stop||!exit_||stop<=entry) return;
   const cat=detCat(setup,entry,dateVal)||'?';
   const rg=(entry-exit_)/(stop-entry);
@@ -2732,7 +2740,7 @@ function editSave(){
   const ar=parseFloat((alloc*rn).toFixed(4));
   const updatedTrade = {...newTrades[editIdx],s:setup,c:cat,tk:ticker,dt:fdt,ym,
     en:entry,ex:exit_,rg:parseFloat(rg.toFixed(4)),rn:parseFloat(rn.toFixed(4)),
-    w:win,sh,na:isNew,al:alloc,ar,subset};
+    w:win,sh,na:isNew,al:alloc,ar,subset,sk:strike};
   newTrades[editIdx] = updatedTrade;
   try{localStorage.setItem('alphaNewTrades',JSON.stringify(newTrades));}catch(e){}
   // Update Firebase
@@ -4291,9 +4299,11 @@ document.querySelectorAll('.mtab').forEach(tab=>{
     document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));
     tab.classList.add('on');
     document.getElementById('v-'+tab.dataset.v).classList.add('on');
+    if(tab.dataset.v==='overview'){ buildOvMetrics();buildOvTable();buildHaid();buildHeatmap(); }
     if(tab.dataset.v==='log') initTL();
     if(tab.dataset.v==='categories') buildCat();
     if(tab.dataset.v==='setups') rebuildSetupCards();
+    if(tab.dataset.v==='monthly') buildMonthly();
     if(tab.dataset.v==='analytics'){ anPreset('all'); }
     if(tab.dataset.v==='ticker'){ tkClear(); }
     if(tab.dataset.v==='fees'){ feePreset('all'); }
