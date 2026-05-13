@@ -687,11 +687,12 @@ body.light .rm2-card{background:#eeeaf5;border-color:#d9d3e6}
     <button class="dr-btn" onclick="eqDrPreset('cm')">This month</button>
     <span class="dr-label" id="eq-dr-count" style="margin-left:auto"></span>
   </div>
-  <div class="mg4">
+  <div class="mg4" style="grid-template-columns:repeat(5,1fr)">
     <div class="mc"><div class="ml">Start equity</div><div class="mv">$3,000</div><div class="ms">Jan 2024</div></div>
-    <div class="mc"><div class="ml">End equity</div><div class="mv gold">$297.5M</div><div class="ms">Apr 2026</div></div>
-    <div class="mc"><div class="ml">Max drawdown</div><div class="mv rc">-60.14%</div><div class="ms">from peak</div></div>
-    <div class="mc"><div class="ml">Trading days</div><div class="mv cc">414</div><div class="ms">active sessions</div></div>
+    <div class="mc"><div class="ml">End equity</div><div class="mv gold" id="eq-end-val">—</div><div class="ms" id="eq-end-sub">—</div></div>
+    <div class="mc"><div class="ml">Max drawdown</div><div class="mv rc" id="eq-maxdd-val">—</div><div class="ms">from peak</div></div>
+    <div class="mc"><div class="ml">Current drawdown</div><div class="mv" id="eq-curdd-val" style="color:var(--amber)">—</div><div class="ms" id="eq-curdd-sub">now</div></div>
+    <div class="mc"><div class="ml">Trading days</div><div class="mv cc" id="eq-days-val">—</div><div class="ms">active sessions</div></div>
   </div>
   <div class="panel" style="padding:12px 14px;margin-bottom:12px">
     <div class="sec" style="margin-top:0">Equity curve (log scale)</div>
@@ -1533,6 +1534,8 @@ function buildHaid(){
   const lastYm=new Date(last.getFullYear(),last.getMonth()-1,1).toISOString().slice(0,7);
   const sameMonthLY=`${last.getFullYear()-1}-${String(last.getMonth()+1).padStart(2,'0')}`;
   const dayOfMonth=last.getDate();
+  const _mn=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const curMonthName=_mn[last.getMonth()];
 
   // Current month trades
   const cm=all.filter(t=>t.ym===curYm);
@@ -1595,7 +1598,7 @@ function buildHaid(){
       <div class="mtile2-sub">This month is ${(()=>{if(!lmS)return'n/a';const d=cmNet-(lmS?lmS.tn:0);return (d>=0?'<span style="color:var(--green)">+':'<span style="color:var(--red)">') +d.toFixed(2)+'R ahead</span>'})()}</div>
     </div>
     <div class="mtile2">
-      <div class="mtile2-k">April last year, same ${dayOfMonth} days</div>
+      <div class="mtile2-k">${curMonthName} last year, same ${dayOfMonth} days</div>
       <div class="mtile2-v" style="color:${lyS?lyS.tn>=0?'var(--green)':'var(--red)':'var(--text3)'}">
         ${lyS?`${lyS.tn>=0?'+':''}${lyS.tn.toFixed(2)}R`:'no data'}
       </div>
@@ -2132,8 +2135,8 @@ function buildOvMetrics(){
     `<div class="callout2 clickable" onclick="ovOpenSetupDrawer('${bestS}')"><span class="callout2-k">BEST SETUP</span><span class="callout2-v" style="color:var(--green)">${bestS}</span><span class="callout2-sub">WR ${bestSt.wr||0}% \u00b7 PF ${(bestSt.pf||0).toFixed(2)}\u00d7</span></div>`+
     `<div class="callout2 clickable" onclick="ovOpenSetupDrawer('${worstS}')"><span class="callout2-k">WORST BUCKET</span><span class="callout2-v" style="color:var(--red)">${worstS}</span><span class="callout2-sub">PF ${(worstSt.pf||0).toFixed(2)}\u00d7</span></div>`+
     `<div class="callout2"><span class="callout2-k">NEG MONTHS</span><span class="callout2-v">${negMo} <span style="color:var(--text3);font-size:13px">/ ${ML.length}</span></span><span class="callout2-sub">${posMo} profitable</span></div>`+
-    `<div class="callout2"><span class="callout2-k">20-SMA POSITION</span><span class="callout2-v" id="sma-ov-val">\u2014</span><span class="callout2-sub">running R on 20-day SMA</span></div>`;
-  if(DAY.length){const last=DAY[DAY.length-1];const sEl=document.getElementById('sma-ov-val');if(sEl)sEl.innerHTML=`<span class="sma-pill ${smaC(last.pos)}" style="font-size:11px">${smaL(last.pos)}</span>`;}
+    `<div class="callout2"><span class="callout2-k">CURRENT DRAWDOWN</span><span class="callout2-v" id="ov-curdd-val">\u2014</span><span class="callout2-sub" id="ov-curdd-sub">from peak</span></div>`;
+  if(DAY.length){const last=DAY[DAY.length-1];const curDDov=last.dd||0;const cdEl=document.getElementById('ov-curdd-val');if(cdEl){cdEl.textContent=curDDov===0?'0%':curDDov.toFixed(2)+'%';cdEl.style.color=curDDov===0?'var(--green)':'var(--amber)';}const cdSub=document.getElementById('ov-curdd-sub');if(cdSub)cdSub.textContent=curDDov===0?'at peak':'from peak';}
 }
 
 function buildOvTable(){
@@ -2305,16 +2308,21 @@ function buildEquityCharts(){
   // Update the static labels
   const endEq2=dayF[dayF.length-1].equity;
   const fmtEq2=endEq2>=1e9?'$'+(endEq2/1e9).toFixed(1)+'B':endEq2>=1e6?'$'+(endEq2/1e6).toFixed(1)+'M':endEq2>=1e3?'$'+(endEq2/1e3).toFixed(1)+'K':'$'+endEq2.toFixed(0);
-  const eqLbl=document.querySelector('#v-equity .mc .mv.gold');
-  if(eqLbl) eqLbl.textContent=fmtEq2;
+  const eqEndEl=document.getElementById('eq-end-val');
+  if(eqEndEl) eqEndEl.textContent=fmtEq2;
   const maxDD2=Math.min(...dayF.map(d=>d.dd||0));
-  const ddLbl=document.querySelector('#v-equity .mc .mv.rc');
-  if(ddLbl) ddLbl.textContent=maxDD2.toFixed(2)+'%';
-  const dayLbl=document.querySelector('#v-equity .mc .mv.cc');
-  if(dayLbl) dayLbl.textContent=dayF.length;
+  const ddEl=document.getElementById('eq-maxdd-val');
+  if(ddEl) ddEl.textContent=maxDD2.toFixed(2)+'%';
+  const curDD=dayF[dayF.length-1].dd||0;
+  const curDDEl=document.getElementById('eq-curdd-val');
+  if(curDDEl){curDDEl.textContent=curDD===0?'0%':curDD.toFixed(2)+'%';curDDEl.style.color=curDD===0?'var(--green)':'var(--amber)';}
+  const curDDSub=document.getElementById('eq-curdd-sub');
+  if(curDDSub) curDDSub.textContent=curDD===0?'at peak':'from peak';
+  const dayEl=document.getElementById('eq-days-val');
+  if(dayEl) dayEl.textContent=dayF.length;
   const lastDate=dayF[dayF.length-1].date;
-  const eqSubs=document.querySelectorAll('#v-equity .mc .ms');
-  if(eqSubs.length>=2){ const[y,m]=lastDate.split('-'); eqSubs[1].textContent=(['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+m]||'')+' '+y; }
+  const eqEndSub=document.getElementById('eq-end-sub');
+  if(eqEndSub){ const[y,m]=lastDate.split('-'); eqEndSub.textContent=(['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+m]||'')+' '+y; }
 
   const dates=dayF.map(d=>d.date);
   const eqV=dayF.map(d=>d.equity);
@@ -2455,7 +2463,7 @@ function renderTL(){
     // Status: avoid, missed, or executed
     // Avoid: alloc is 0 (either stored as 0, null, or cat is in avoid bracket)
     // Only trust stored t.al — already date-correct (V1 vs V2)
-    const isAvoid = (t.al===0 || t.al===null || t.al===undefined || t.al==='0');
+    const isAvoid = (!t.al || t.al <= 1);
     const isMissed = t.mr && t.mr !== '— Executed (no miss) —' && t.mr !== '' && !isAvoid;
     const statusBadge = isAvoid
       ? `<span style="font-size:8px;background:rgba(245,187,99,.15);color:var(--amber);
@@ -2577,7 +2585,7 @@ function afOnEntry(){
   if(cat){
     const dv=document.getElementById('af-date').value;
     const alloc=getNewAlloc(cat,dv);
-    const av=alloc===0;
+    const av=alloc<=1;
     const rng=CR[cat]||'';
     if(catEl) catEl.innerHTML=`<span style="font-weight:800;color:${av?'var(--amber)':'var(--acc)'}">${cat}</span> <span style="font-size:10px;color:var(--text3)">${rng} · ${alloc}%</span>`;
     if(entEl){entEl.classList.toggle('cat-ok',!av);entEl.classList.toggle('cat-av',av);}
@@ -3059,7 +3067,7 @@ function buildAllocMonitor(){
   newPeriod.forEach(t => {
     const cat = t.c;
     const rn  = t.rn;
-    const newA = t.al || 0;
+    const newA = NA[cat] !== undefined ? NA[cat] : (t.al || 0);
     const oldA = OA_REF[cat] || 0;
     const actualAr = newA * rn;
     const simAr    = oldA * rn;
@@ -3215,7 +3223,7 @@ function tkRender(q, exact){
 
   // Compute summary stats
   // Classify trades
-  const avoidFn = t=>(t.al===0||t.al===null||t.al===undefined);
+  const avoidFn = t=>(!t.al || t.al <= 1);
   const executed = trades.filter(t=>!avoidFn(t) && !(t.mr&&t.mr!=='— Executed (no miss) —'&&t.mr!==''));
   const avoids   = trades.filter(avoidFn);
   const misses   = trades.filter(t=>t.mr&&t.mr!=='— Executed (no miss) —'&&t.mr!=='');
@@ -3351,7 +3359,7 @@ function tkRender(q, exact){
               color:${t.sk===2?'var(--amber)':'var(--text3)'};font-weight:${t.sk===2?'700':'400'}">
               ${t.sk||1}</td>
             <td>${(()=>{
-              const isAv=(t.al===0||t.al===null||t.al===undefined);
+              const isAv=(!t.al||t.al<=1);
               const isMi=t.mr&&t.mr!=='— Executed (no miss) —'&&t.mr!==''&&!isAv;
               if(isAv) return '<span style="font-size:8px;background:rgba(245,187,99,.15);color:var(--amber);border:1px solid rgba(245,187,99,.3);border-radius:4px;padding:1px 5px">AVOID</span>';
               if(isMi) return '<span style="font-size:8px;background:rgba(255,122,134,.1);color:var(--red);border:1px solid rgba(255,122,134,.25);border-radius:4px;padding:1px 5px;cursor:help" title="'+t.mr+'">MISS</span>';
@@ -3861,12 +3869,15 @@ document.querySelectorAll('.mtab').forEach(tab=>{
     document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));
     tab.classList.add('on');
     document.getElementById('v-'+tab.dataset.v).classList.add('on');
+    if(tab.dataset.v==='overview'){ buildOvMetrics();buildOvTable();buildHaid();buildHeatmap(); }
     if(tab.dataset.v==='log') initTL();
     if(tab.dataset.v==='categories') buildCat();
     if(tab.dataset.v==='setups') rebuildSetupCards();
+    if(tab.dataset.v==='monthly') buildMonthly();
     if(tab.dataset.v==='analytics'){ anPreset('all'); }
     if(tab.dataset.v==='ticker'){ tkClear(); }
     if(tab.dataset.v==='fees'){ feePreset('all'); }
+    if(tab.dataset.v==='equity') buildEquityCharts();
   });
 });
 
